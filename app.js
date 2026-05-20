@@ -167,8 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const commentsKey = `mm_comments_${article.id}`;
 
         const isLiked = localStorage.getItem(likeKey) === 'true';
-        // Base starting value fallback to look populated naturally
-        const displayLikes = localStorage.getItem(countKey) || Math.floor(Math.random() * 24) + 12;
+        
+        // Generates completely unique random baseline values for each individual post if it doesn't exist
+        const displayLikes = localStorage.getItem(countKey) || Math.floor(Math.random() * 32) + 14;
         localStorage.setItem(countKey, displayLikes);
 
         // Build structure explicitly injecting style inline to safeguard core CSS integrity
@@ -184,14 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div style="display: flex; gap: 30px; align-items: center; margin-top: 50px; padding: 20px 0; border-top: 1px solid #121212; border-bottom: 1px solid #121212;">
-                <button id="like-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212;">
+                <button id="like-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212; background: none; border: none; cursor: pointer; padding: 0;">
                     <svg id="like-icon" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? '#F3C1C6' : 'none'}" stroke="#121212" stroke-width="1.5" style="transition: all 0.25s ease;">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                     <span>Liked by <span id="like-counter">${displayLikes}</span></span>
                 </button>
                 
-                <button id="share-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212;">
+                <button id="share-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212; background: none; border: none; cursor: pointer; padding: 0;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="1.5">
                         <circle cx="18" cy="5" r="3"></circle>
                         <circle cx="6" cy="12" r="3"></circle>
@@ -204,15 +205,20 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div style="margin-top: 45px;">
-                <h3 style="font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-style: italic; font-weight: 400; margin-bottom: 20px;">The Ledger Comments</h3>
+                <h3 style="font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-style: italic; font-weight: 400; margin-bottom: 25px;">The Ledger Comments</h3>
                 
-                <form id="comment-form-submit" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <input type="text" id="commenter-name" placeholder="Name or alias" required style="background: none; border: 1px solid #121212; padding: 10px 14px; font-family: inherit; font-size: 12px; outline: none;">
-                        <span style="color: #8E8E8E; font-size: 11px; align-self: center; text-align: right; letter-spacing: 0.02em;">Public index</span>
+                <form id="comment-form-submit" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 35px;">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="commenter-name" style="font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;">Name</label>
+                        <input type="text" id="commenter-name" placeholder="Your name or alias" required style="background: none; border: 1px solid #121212; padding: 12px 14px; font-family: inherit; font-size: 13px; outline: none; width: 100%; max-width: 350px;">
                     </div>
-                    <textarea id="commenter-text" placeholder="Drop your thoughts..." rows="3" required style="background: none; border: 1px solid #121212; padding: 12px 14px; font-family: inherit; font-size: 13px; resize: none; outline: none; line-height: 1.5;"></textarea>
-                    <button type="submit" style="align-self: flex-start; border: 1px solid #121212; color: #121212; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; padding: 10px 22px; text-transform: uppercase; transition: all 0.25s ease;" onmouseover="this.style.backgroundColor='#121212'; this.style.color='#FFFFFF';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#121212';">File Thought</button>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="commenter-text" style="font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;">Comment</label>
+                        <textarea id="commenter-text" placeholder="Drop your thoughts..." rows="4" required style="background: none; border: 1px solid #121212; padding: 12px 14px; font-family: inherit; font-size: 13px; resize: none; outline: none; line-height: 1.5; width: 100%;"></textarea>
+                    </div>
+
+                    <button type="submit" style="align-self: flex-start; background: none; border: 1px solid #121212; color: #121212; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; padding: 12px 26px; text-transform: uppercase; cursor: pointer; transition: all 0.25s ease;" onmouseover="this.style.backgroundColor='#121212'; this.style.color='#FFFFFF';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#121212';">Send</button>
                 </form>
 
                 <div id="comments-display-bin" style="display: flex; flex-direction: column; gap: 20px;"></div>
@@ -267,13 +273,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Comment Thread Engine Initialization
+        // Comment Thread Engine Initialization (Clean empty array baseline)
         const loadComments = () => {
             const dataDump = localStorage.getItem(commentsKey);
-            const list = dataDump ? JSON.parse(dataDump) : [
-                { name: "Sasha M.", text: "This entire entry feels target-called. Absolutely here for unpolished realism.", stamp: "10:14 AM" }
-            ];
+            const list = dataDump ? JSON.parse(dataDump) : [];
             
+            if (list.length === 0) {
+                commentsBin.innerHTML = `<p style="font-size: 12px; font-style: italic; color: #8E8E8E; letter-spacing: 0.02em;">No thoughts filed yet.</p>`;
+                return;
+            }
+
             commentsBin.innerHTML = list.map(c => `
                 <div style="border-left: 1px solid #E5E5E5; padding-left: 14px; padding-bottom: 4px;">
                     <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
@@ -290,10 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const nameField = document.getElementById('commenter-name');
             const textField = document.getElementById('commenter-text');
 
+            // Block any unexpected submissions missing parameters
+            if (!nameField.value.trim() || !textField.value.trim()) return;
+
             const storedDump = localStorage.getItem(commentsKey);
-            const currentList = storedDump ? JSON.parse(storedDump) : [
-                { name: "Sasha M.", text: "This entire entry feels target-called. Absolutely here for unpolished realism.", stamp: "10:14 AM" }
-            ];
+            const currentList = storedDump ? JSON.parse(storedDump) : [];
 
             currentList.push({
                 name: nameField.value.trim(),
