@@ -1,11 +1,14 @@
 /**
- * Milk Mondays — Dynamic Editorial Routing Engine
+ * Milk Mondays — Dynamic Editorial Routing Engine with Live Cloudflare Interactions
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     // Application States
     let allArticles = [];
     let currentCategory = 'all';
+
+    // Connected Production Live Cloudflare API Route
+    const LIKES_API_BASE = 'https://muddy-shadow-6c19.milkmondaysbiz.workers.dev';
 
     // UI Cache Registry
     const emptyStateEl = document.getElementById('empty-state');
@@ -19,13 +22,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const homeLogoBtn = document.getElementById('home-logo-btn');
 
     /**
+     * Generates a completely unique, consistent dummy baseline count based on the post ID string.
+     * This ensures each post has a different starting number, but never randomizes itself on page refresh.
+     */
+    function getPostBaselineLikes(postId) {
+        let hash = 0;
+        for (let i = 0; i < postId.length; i++) {
+            hash = postId.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        // Produces a reliable, unique starting number between 32 and 96 likes per post
+        return Math.abs(hash % 65) + 32;
+    }
+
+    /**
      * Initializes configuration and pulls published documents from CMS outputs
      */
     async function initMagazine() {
         try {
-            // Decap CMS delivers static JSON records or markdown formats to defined repos.
-            // For optimized serverless delivery, we reference a static data map file.
-            // If pulling individual files, point to your API index pipeline:
             const response = await fetch('/content/posts.json');
             
             if (!response.ok) {
@@ -62,11 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Dissolve empty loader
         emptyStateEl.style.display = 'none';
         magazineContentEl.className = 'visible-content';
 
-        // Filter contents based on runtime target categorization
         const filteredArticles = currentCategory === 'all' 
             ? allArticles 
             : allArticles.filter(art => art.category.toLowerCase() === currentCategory.toLowerCase());
@@ -77,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Render sections contextually based on choice selections
         if (currentCategory === 'all') {
             heroSectionEl.style.display = 'grid';
             renderHeroFeature(filteredArticles[0]);
@@ -118,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
         articles.forEach((article, index) => {
             const card = document.createElement('div');
             card.className = 'article-card';
-            // Stagger animations downwards cleanly
             card.style.animationDelay = `${index * 0.1}s`;
             
             const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
@@ -148,9 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Hydrates Reader Overlays dynamically
+     * Hydrates Reader Overlays dynamically with Real-Time Cloud Like and Share actions
      */
-    function launchArticleReader(article) {
+    async function launchArticleReader(article) {
         const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'long',
@@ -158,31 +167,136 @@ document.addEventListener('DOMContentLoaded', () => {
             year: 'numeric'
         });
 
-        // Process line breaks cleanly for raw editorial output styling without markdown dependencies
         const htmlBodyContent = article.body.split('\n').map(para => {
-    const trimmed = para.trim();
-    if (!trimmed) return ''; // Skips empty lines completely
+            const trimmed = para.trim();
+            if (!trimmed) return '';
 
-    if (trimmed.startsWith('>')) {
-        return `<blockquote>${trimmed.replace('>', '').trim()}</blockquote>`;
-    }
-    return `<p>${trimmed}</p>`;
-}).join('');
+            if (trimmed.startsWith('>')) {
+                return `<blockquote>${trimmed.replace('>', '').trim()}</blockquote>`;
+            }
+            return `<p>${trimmed}</p>`;
+        }).join('');
 
-modalBodyEl.innerHTML = `
-    <header class="reader-header">
-        <span class="tag-label pink-tag">${article.category}</span>
-        <h1 class="reader-title">${article.title}</h1>
-        <span class="reader-date">${formattedDate}</span>
-    </header>
-    <img class="reader-hero-img" src="${article.coverImage}" alt="${article.title}">
-    <div class="reader-rich-text">
-        ${htmlBodyContent}
-    </div>
-`;
+        // Unique Browser Identity State (Tracks if THIS browser pressed like)
+        const localLikeKey = `mm_liked_${article.id}`;
+        const isLiked = localStorage.getItem(localLikeKey) === 'true';
+
+        // Fetch this specific post's unique persistent baseline dummy like value
+        const baselineLikes = getPostBaselineLikes(article.id);
+
+        // Render layout overlay instantly showing baseline calculation placeholder
+        modalBodyEl.innerHTML = `
+            <header class="reader-header">
+                <span class="tag-label pink-tag">${article.category}</span>
+                <h1 class="reader-title">${article.title}</h1>
+                <span class="reader-date">${formattedDate}</span>
+            </header>
+            <img class="reader-hero-img" src="${article.coverImage}" alt="${article.title}">
+            <div class="reader-rich-text">
+                ${htmlBodyContent}
+            </div>
+
+            <div style="display: flex; gap: 35px; align-items: center; margin-top: 60px; margin-bottom: 30px; padding: 22px 0; border-top: 1px solid #121212; border-bottom: 1px solid #121212;">
+                <button id="like-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212; background: none; border: none; cursor: pointer; padding: 0;">
+                    <svg id="like-icon" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? '#F3C1C6' : 'none'}" stroke="#121212" stroke-width="1.5" style="transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span>Liked by <span id="like-counter">${baselineLikes}</span></span>
+                </button>
+                
+                <button id="share-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212; background: none; border: none; cursor: pointer; padding: 0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="1.5">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    <span id="share-btn-text">Share Entry</span>
+                </button>
+            </div>
+        `;
+
+        // Interactive Interface Event Wireframing
+        const likeBtn = document.getElementById('like-action-btn');
+        const likeIcon = document.getElementById('like-icon');
+        const likeCounter = document.getElementById('like-counter');
+        const shareBtn = document.getElementById('share-action-btn');
+        const shareBtnText = document.getElementById('share-btn-text');
+
+        // Track real-time server counter variable locally
+        let serverLikesCount = 0;
+
+        // ASYNC FETCH: Get real-time values from Cloudflare KV and add them directly to the baseline
+        try {
+            const getRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}`);
+            if (getRes.ok) {
+                const data = await getRes.json();
+                serverLikesCount = parseInt(data.likes, 10) || 0;
+                // Total displays baseline dummy count + actual live cloud database records
+                likeCounter.innerText = baselineLikes + serverLikesCount;
+            }
+        } catch (err) {
+            console.error("Database sync error. Falling back to static baseline.", err);
+        }
+
+        // Like Trigger Handling Loop
+        likeBtn.addEventListener('click', async () => {
+            const stateActive = localStorage.getItem(localLikeKey) === 'true';
+            const actionType = stateActive ? 'unlike' : 'like';
+
+            // Optimistic UI Update: Render changes instantly on screen for smooth visual feedback
+            if (!stateActive) {
+                localStorage.setItem(localLikeKey, 'true');
+                serverLikesCount += 1;
+                likeIcon.setAttribute('fill', '#F3C1C6');
+            } else {
+                localStorage.setItem(localLikeKey, 'false');
+                serverLikesCount = Math.max(0, serverLikesCount - 1);
+                likeIcon.setAttribute('fill', 'none');
+            }
+            likeCounter.innerText = baselineLikes + serverLikesCount;
+
+            // Sync structural modification back to database cluster instances
+            try {
+                const postRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: actionType })
+                });
+                if (postRes.ok) {
+                    const data = await postRes.json();
+                    const updatedServerLikes = parseInt(data.likes, 10) || 0;
+                    // Safely recalculate layout values to ensure exact state sync
+                    likeCounter.innerText = baselineLikes + updatedServerLikes;
+                }
+            } catch (err) {
+                console.error("Cloud coordinate handshake broken.");
+            }
+        });
+
+        // System Share / Link Copy Fallback Execution
+        shareBtn.addEventListener('click', async () => {
+            const articleUrl = `${window.location.origin}${window.location.pathname}?article=${article.id}`;
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: article.title,
+                        text: article.subtitle,
+                        url: articleUrl
+                    });
+                } catch (err) {
+                    console.log('Native share panel closed.');
+                }
+            } else {
+                navigator.clipboard.writeText(articleUrl);
+                shareBtnText.innerText = 'Link Copied!';
+                setTimeout(() => { shareBtnText.innerText = 'Share Entry'; }, 2000);
+            }
+        });
 
         articleModalEl.classList.add('open-modal');
-        document.body.style.overflow = 'hidden'; // Freeze background tracking
+        document.body.style.overflow = 'hidden';
     }
 
     function closeArticleReader() {
@@ -214,20 +328,17 @@ modalBodyEl.innerHTML = `
 
     closeModalBtn.addEventListener('click', closeArticleReader);
     
-    // Close overlay if user clicks outside container wrapper boundary bounds
     articleModalEl.addEventListener('click', (e) => {
         if (e.target === articleModalEl) {
             closeArticleReader();
         }
     });
 
-    // Escape handling
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && articleModalEl.classList.contains('open-modal')) {
             closeArticleReader();
         }
     });
 
-    // Initialize System Engine
     initMagazine();
 });
