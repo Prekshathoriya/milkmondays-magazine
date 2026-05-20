@@ -228,8 +228,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let serverLikesCount = 0;
 
         // ASYNC FETCH: Get real-time values from Cloudflare KV and add them directly to the baseline
+        // Includes a unique custom cache-busting timestamp param to strictly force bypass browser cache memory banks
         try {
-            const getRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}`);
+            const getRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}&_cb=${Date.now()}`);
             if (getRes.ok) {
                 const data = await getRes.json();
                 serverLikesCount = parseInt(data.likes, 10) || 0;
@@ -259,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Sync structural modification back to database cluster instances
             try {
-                const postRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}`, {
+                const postRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}&_cb=${Date.now()}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: actionType })
