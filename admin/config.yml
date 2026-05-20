@@ -1,0 +1,27 @@
+backend:
+  name: git-gateway
+  branch: main # Matches your current active production GitHub tracking branch
+
+media_folder: "assets/uploads" # Media asset directory destination
+public_folder: "/assets/uploads"
+
+collections:
+  - name: "posts"
+    label: "Magazine Entries"
+    folder: "content/posts_source" # Working raw text document repository tracking
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    format: "json" # Outputs structured raw files to cleanly update your app.js index
+    fields:
+      - { label: "Unique Post ID", name: "id", widget: "uuid" }
+      - { label: "Article Title", name: "title", widget: "string" }
+      - { label: "Subtitle / Catch Hook", name: "subtitle", widget: "string", required: false }
+      - { label: "Publication Date", name: "date", widget: "datetime" }
+      - { label: "Cover Image Link Asset", name: "coverImage", widget: "image" }
+      - { 
+          label: "Category Tag Selection", 
+          name: "category", 
+          widget: "select", 
+          options: ["Skincare", "Fashion", "Pop Culture", "Archives"] 
+        }
+      - { label: "Body Copy Editorial Entry", name: "body", widget: "markdown" }
