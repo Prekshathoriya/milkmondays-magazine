@@ -1,5 +1,5 @@
 /**
- * Milk Mondays — Dynamic Editorial Routing Engine with Interactions
+ * Milk Mondays — Dynamic Editorial Routing Engine
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     async function initMagazine() {
         try {
+            // Decap CMS delivers static JSON records or markdown formats to defined repos.
+            // For optimized serverless delivery, we reference a static data map file.
+            // If pulling individual files, point to your API index pipeline:
             const response = await fetch('/content/posts.json');
             
             if (!response.ok) {
@@ -59,9 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Dissolve empty loader
         emptyStateEl.style.display = 'none';
         magazineContentEl.className = 'visible-content';
 
+        // Filter contents based on runtime target categorization
         const filteredArticles = currentCategory === 'all' 
             ? allArticles 
             : allArticles.filter(art => art.category.toLowerCase() === currentCategory.toLowerCase());
@@ -72,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Render sections contextually based on choice selections
         if (currentCategory === 'all') {
             heroSectionEl.style.display = 'grid';
             renderHeroFeature(filteredArticles[0]);
@@ -112,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         articles.forEach((article, index) => {
             const card = document.createElement('div');
             card.className = 'article-card';
+            // Stagger animations downwards cleanly
             card.style.animationDelay = `${index * 0.1}s`;
             
             const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
@@ -141,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Hydrates Reader Overlays dynamically with Like, Comment, and Share actions
+     * Hydrates Reader Overlays dynamically
      */
     function launchArticleReader(article) {
         const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
@@ -151,176 +158,31 @@ document.addEventListener('DOMContentLoaded', () => {
             year: 'numeric'
         });
 
+        // Process line breaks cleanly for raw editorial output styling without markdown dependencies
         const htmlBodyContent = article.body.split('\n').map(para => {
-            const trimmed = para.trim();
-            if (!trimmed) return '';
+    const trimmed = para.trim();
+    if (!trimmed) return ''; // Skips empty lines completely
 
-            if (trimmed.startsWith('>')) {
-                return `<blockquote>${trimmed.replace('>', '').trim()}</blockquote>`;
-            }
-            return `<p>${trimmed}</p>`;
-        }).join('');
+    if (trimmed.startsWith('>')) {
+        return `<blockquote>${trimmed.replace('>', '').trim()}</blockquote>`;
+    }
+    return `<p>${trimmed}</p>`;
+}).join('');
 
-        // Unique Interaction State Identifiers
-        const likeKey = `mm_liked_${article.id}`;
-        const countKey = `mm_like_count_${article.id}`;
-        const commentsKey = `mm_comments_${article.id}`;
-
-        const isLiked = localStorage.getItem(likeKey) === 'true';
-        
-        // Generates completely unique random baseline values for each individual post if it doesn't exist
-        const displayLikes = localStorage.getItem(countKey) || Math.floor(Math.random() * 32) + 14;
-        localStorage.setItem(countKey, displayLikes);
-
-        // Build structure explicitly injecting style inline to safeguard core CSS integrity
-        modalBodyEl.innerHTML = `
-            <header class="reader-header">
-                <span class="tag-label pink-tag">${article.category}</span>
-                <h1 class="reader-title">${article.title}</h1>
-                <span class="reader-date">${formattedDate}</span>
-            </header>
-            <img class="reader-hero-img" src="${article.coverImage}" alt="${article.title}">
-            <div class="reader-rich-text">
-                ${htmlBodyContent}
-            </div>
-
-            <div style="display: flex; gap: 30px; align-items: center; margin-top: 50px; padding: 20px 0; border-top: 1px solid #121212; border-bottom: 1px solid #121212;">
-                <button id="like-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212; background: none; border: none; cursor: pointer; padding: 0;">
-                    <svg id="like-icon" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? '#F3C1C6' : 'none'}" stroke="#121212" stroke-width="1.5" style="transition: all 0.25s ease;">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                    <span>Liked by <span id="like-counter">${displayLikes}</span></span>
-                </button>
-                
-                <button id="share-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212; background: none; border: none; cursor: pointer; padding: 0;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#121212" stroke-width="1.5">
-                        <circle cx="18" cy="5" r="3"></circle>
-                        <circle cx="6" cy="12" r="3"></circle>
-                        <circle cx="18" cy="19" r="3"></circle>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                    </svg>
-                    <span id="share-btn-text">Share Entry</span>
-                </button>
-            </div>
-
-            <div style="margin-top: 45px;">
-                <h3 style="font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-style: italic; font-weight: 400; margin-bottom: 25px;">The Ledger Comments</h3>
-                
-                <form id="comment-form-submit" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 35px;">
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label for="commenter-name" style="font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;">Name</label>
-                        <input type="text" id="commenter-name" placeholder="Your name or alias" required style="background: none; border: 1px solid #121212; padding: 12px 14px; font-family: inherit; font-size: 13px; outline: none; width: 100%; max-width: 350px;">
-                    </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label for="commenter-text" style="font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;">Comment</label>
-                        <textarea id="commenter-text" placeholder="Drop your thoughts..." rows="4" required style="background: none; border: 1px solid #121212; padding: 12px 14px; font-family: inherit; font-size: 13px; resize: none; outline: none; line-height: 1.5; width: 100%;"></textarea>
-                    </div>
-
-                    <button type="submit" style="align-self: flex-start; background: none; border: 1px solid #121212; color: #121212; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; padding: 12px 26px; text-transform: uppercase; cursor: pointer; transition: all 0.25s ease;" onmouseover="this.style.backgroundColor='#121212'; this.style.color='#FFFFFF';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#121212';">Send</button>
-                </form>
-
-                <div id="comments-display-bin" style="display: flex; flex-direction: column; gap: 20px;"></div>
-            </div>
-        `;
-
-        // Interactive Interface Event Wireframing
-        const likeBtn = document.getElementById('like-action-btn');
-        const likeIcon = document.getElementById('like-icon');
-        const likeCounter = document.getElementById('like-counter');
-        const shareBtn = document.getElementById('share-action-btn');
-        const shareBtnText = document.getElementById('share-btn-text');
-        const commentForm = document.getElementById('comment-form-submit');
-        const commentsBin = document.getElementById('comments-display-bin');
-
-        // Like Trigger Handling Loop
-        likeBtn.addEventListener('click', () => {
-            const stateActive = localStorage.getItem(likeKey) === 'true';
-            let currentLikes = parseInt(likeCounter.innerText, 10);
-
-            if (!stateActive) {
-                localStorage.setItem(likeKey, 'true');
-                currentLikes += 1;
-                likeIcon.setAttribute('fill', '#F3C1C6');
-            } else {
-                localStorage.setItem(likeKey, 'false');
-                currentLikes -= 1;
-                likeIcon.setAttribute('fill', 'none');
-            }
-            
-            localStorage.setItem(countKey, currentLikes);
-            likeCounter.innerText = currentLikes;
-        });
-
-        // System Share / Link Copy Fallback Execution
-        shareBtn.addEventListener('click', async () => {
-            const articleUrl = `${window.location.origin}${window.location.pathname}?article=${article.id}`;
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: article.title,
-                        text: article.subtitle,
-                        url: articleUrl
-                    });
-                } catch (err) {
-                    console.log('Native share closed.');
-                }
-            } else {
-                navigator.clipboard.writeText(articleUrl);
-                shareBtnText.innerText = 'Link Copied!';
-                setTimeout(() => { shareBtnText.innerText = 'Share Entry'; }, 2000);
-            }
-        });
-
-        // Comment Thread Engine Initialization (Clean empty array baseline)
-        const loadComments = () => {
-            const dataDump = localStorage.getItem(commentsKey);
-            const list = dataDump ? JSON.parse(dataDump) : [];
-            
-            if (list.length === 0) {
-                commentsBin.innerHTML = `<p style="font-size: 12px; font-style: italic; color: #8E8E8E; letter-spacing: 0.02em;">No thoughts filed yet.</p>`;
-                return;
-            }
-
-            commentsBin.innerHTML = list.map(c => `
-                <div style="border-left: 1px solid #E5E5E5; padding-left: 14px; padding-bottom: 4px;">
-                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-                        <span style="font-weight: 500; font-size: 12px; color: #121212;">${c.name}</span>
-                        <span style="font-size: 10px; color: #8E8E8E;">${c.stamp}</span>
-                    </div>
-                    <p style="font-size: 12px; line-height: 1.6; color: #121212; opacity: 0.9;">${c.text}</p>
-                </div>
-            `).join('');
-        };
-
-        commentForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const nameField = document.getElementById('commenter-name');
-            const textField = document.getElementById('commenter-text');
-
-            // Block any unexpected submissions missing parameters
-            if (!nameField.value.trim() || !textField.value.trim()) return;
-
-            const storedDump = localStorage.getItem(commentsKey);
-            const currentList = storedDump ? JSON.parse(storedDump) : [];
-
-            currentList.push({
-                name: nameField.value.trim(),
-                text: textField.value.trim(),
-                stamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-
-            localStorage.setItem(commentsKey, JSON.stringify(currentList));
-            nameField.value = '';
-            textField.value = '';
-            loadComments();
-        });
-
-        loadComments();
+modalBodyEl.innerHTML = `
+    <header class="reader-header">
+        <span class="tag-label pink-tag">${article.category}</span>
+        <h1 class="reader-title">${article.title}</h1>
+        <span class="reader-date">${formattedDate}</span>
+    </header>
+    <img class="reader-hero-img" src="${article.coverImage}" alt="${article.title}">
+    <div class="reader-rich-text">
+        ${htmlBodyContent}
+    </div>
+`;
 
         articleModalEl.classList.add('open-modal');
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden'; // Freeze background tracking
     }
 
     function closeArticleReader() {
@@ -352,17 +214,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeModalBtn.addEventListener('click', closeArticleReader);
     
+    // Close overlay if user clicks outside container wrapper boundary bounds
     articleModalEl.addEventListener('click', (e) => {
         if (e.target === articleModalEl) {
             closeArticleReader();
         }
     });
 
+    // Escape handling
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && articleModalEl.classList.contains('open-modal')) {
             closeArticleReader();
         }
     });
 
+    // Initialize System Engine
     initMagazine();
 });
