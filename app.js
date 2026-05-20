@@ -21,6 +21,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryNavButtons = document.querySelectorAll('.nav-btn');
     const homeLogoBtn = document.getElementById('home-logo-btn');
 
+    // Inject minimal micro-interaction keyframes for the heart pop
+    if (!document.getElementById('mm-like-animation-styles')) {
+        const styleSheet = document.createElement("style");
+        styleSheet.id = 'mm-like-animation-styles';
+        styleSheet.innerText = `
+            @keyframes heartPop {
+                0% { transform: scale(1); }
+                14% { transform: scale(0.7); }
+                28% { transform: scale(1.2); }
+                42% { transform: scale(1.1); }
+                70% { transform: scale(1); }
+            }
+            .animate-pop {
+                animation: heartPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    }
+
     /**
      * Generates a completely unique, consistent dummy baseline count based on the post ID string.
      * This ensures each post has a different starting number, but never randomizes itself on page refresh.
@@ -197,8 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div style="display: flex; gap: 35px; align-items: center; margin-top: 60px; margin-bottom: 30px; padding: 22px 0; border-top: 1px solid #121212; border-bottom: 1px solid #121212;">
-                <button id="like-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212; background: none; border: none; cursor: pointer; padding: 0;">
-                    <svg id="like-icon" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? '#F3C1C6' : 'none'}" stroke="#121212" stroke-width="1.5" style="transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);">
+                <button id="like-action-btn" style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #121212; background: none; border: none; cursor: pointer; padding: 0; outline: none; -webkit-tap-highlight-color: transparent;">
+                    <svg id="like-icon" width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? '#F3C1C6' : 'none'}" stroke="${isLiked ? '#F3C1C6' : '#121212'}" stroke-width="1.5" style="transition: transform 0.1s ease, fill 0.2s ease, stroke 0.2s ease; display: block;">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                     <span>Liked by <span id="like-counter">${baselineLikes}</span></span>
@@ -228,13 +247,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let serverLikesCount = 0;
 
         // ASYNC FETCH: Get real-time values from Cloudflare KV and add them directly to the baseline
-        // Includes a unique custom cache-busting timestamp param to strictly force bypass browser cache memory banks
         try {
             const getRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}&_cb=${Date.now()}`);
             if (getRes.ok) {
                 const data = await getRes.json();
                 serverLikesCount = parseInt(data.likes, 10) || 0;
-                // Total displays baseline dummy count + actual live cloud database records
                 likeCounter.innerText = baselineLikes + serverLikesCount;
             }
         } catch (err) {
@@ -246,15 +263,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const stateActive = localStorage.getItem(localLikeKey) === 'true';
             const actionType = stateActive ? 'unlike' : 'like';
 
+            // Clean up and trigger the CSS pop animation class
+            likeIcon.classList.remove('animate-pop');
+            void likeIcon.offsetWidth; // Force CSS reflow to re-trigger the animation smoothly
+            likeIcon.classList.add('animate-pop');
+
             // Optimistic UI Update: Render changes instantly on screen for smooth visual feedback
             if (!stateActive) {
                 localStorage.setItem(localLikeKey, 'true');
                 serverLikesCount += 1;
                 likeIcon.setAttribute('fill', '#F3C1C6');
+                likeIcon.setAttribute('stroke', '#F3C1C6');
             } else {
                 localStorage.setItem(localLikeKey, 'false');
                 serverLikesCount = Math.max(0, serverLikesCount - 1);
                 likeIcon.setAttribute('fill', 'none');
+                likeIcon.setAttribute('stroke', '#121212');
             }
             likeCounter.innerText = baselineLikes + serverLikesCount;
 
@@ -268,7 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (postRes.ok) {
                     const data = await postRes.json();
                     const updatedServerLikes = parseInt(data.likes, 10) || 0;
-                    // Safely recalculate layout values to ensure exact state sync
                     likeCounter.innerText = baselineLikes + updatedServerLikes;
                 }
             } catch (err) {
