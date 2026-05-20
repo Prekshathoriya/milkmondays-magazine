@@ -159,24 +159,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Process line breaks cleanly for raw editorial output styling without markdown dependencies
-        const htmlBodyContent = article.body.split('\n\n').map(para => {
-            if (para.trim().startsWith('>')) {
-                return `<blockquote>${para.replace('>', '').trim()}</blockquote>`;
-            }
-            return `<p>${para.trim()}</p>`;
-        }).join('');
+        const htmlBodyContent = article.body.split('\n').map(para => {
+    const trimmed = para.trim();
+    if (!trimmed) return ''; // Skips empty lines completely
 
-        modalBodyEl.innerHTML = `
-            <header class="reader-header">
-                <span class="tag-label pink-tag">${article.category}</span>
-                <h1 class="reader-title">${article.title}</h1>
-                <span class="reader-date">${formattedDate}</span>
-            </header>
-            <img class="reader-hero-img" src="${article.coverImage}" alt="${article.title}">
-            <div class="reader-rich-text">
-                ${htmlBodyContent}
-            </div>
-        `;
+    if (trimmed.startsWith('>')) {
+        return `<blockquote>${trimmed.replace('>', '').trim()}</blockquote>`;
+    }
+    return `<p>${trimmed}</p>`;
+}).join('');
+
+modalBodyEl.innerHTML = `
+    <header class="reader-header">
+        <span class="tag-label pink-tag">${article.category}</span>
+        <h1 class="reader-title">${article.title}</h1>
+        <span class="reader-date">${formattedDate}</span>
+    </header>
+    <img class="reader-hero-img" src="${article.coverImage}" alt="${article.title}">
+    <div class="reader-rich-text">
+        ${htmlBodyContent}
+    </div>
+`;
 
         articleModalEl.classList.add('open-modal');
         document.body.style.overflow = 'hidden'; // Freeze background tracking
