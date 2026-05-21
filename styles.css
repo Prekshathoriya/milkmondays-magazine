@@ -612,3 +612,233 @@ button {
 .reader-rich-text a:hover {
     color: var(--color-milk-pink);
 }
+/* ==========================================================================
+   ELEVATED EDITORIAL ACCESS GATE
+   ========================================================================== */
+#gate-screen {
+    background-color: #ffffff !important;
+    background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0);
+    background-size: 24px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gate-container {
+    max-width: 400px;
+    width: 85%;
+    padding: 40px 30px;
+    background: #ffffff;
+    text-align: center;
+    animation: gateFadeUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gateFadeUp {
+    0% { opacity: 0; transform: translateY(15px); filter: blur(4px); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+/* Typography refinements */
+.gate-brand {
+    font-family: 'Playball', cursive;
+    font-size: 42px;
+    color: #121212;
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+}
+
+.gate-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+    color: #121212;
+}
+
+.gate-blurb {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: #666666;
+    margin-bottom: 40px;
+    line-height: 1.65;
+    letter-spacing: 0.01em;
+}
+
+/* Minimalist Input Fields */
+.gate-input {
+    width: 100%;
+    padding: 18px 0;
+    border: none;
+    border-bottom: 1px solid #e5e5e5;
+    background: transparent;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: #121212;
+    outline: none;
+    text-align: center;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, letter-spacing 0.3s ease;
+}
+
+.gate-input:focus {
+    border-bottom: 1px solid #121212;
+    letter-spacing: 0.03em;
+}
+
+.gate-input::placeholder {
+    color: #b5b5b5;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+}
+
+/* High-End CTA Button */
+.gate-submit-btn {
+    width: 100%;
+    padding: 18px;
+    background: #121212;
+    color: #ffffff;
+    border: 1px solid #121212;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 10px;
+    transition: background 0.3s ease, color 0.3s ease, letter-spacing 0.3s ease;
+}
+
+.gate-submit-btn:hover {
+    background: transparent;
+    color: #121212;
+    letter-spacing: 0.2em;
+}
+/* Gate Screen Refinement & Micro-Animations */
+.gate-container.style-manifesto {
+    max-width: 480px;
+    width: 90%;
+    margin: 0 auto;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: gateEntranceReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.gate-brand {
+    display: inline-block;
+    font-size: 3.5rem;
+    line-height: 1;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+}
+
+.gate-title.custom-tagline {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: #121212;
+    max-width: 380px;
+    margin: 0 auto 12px auto;
+    text-transform: lowercase;
+    letter-spacing: -0.01em;
+}
+
+.gate-blurb.action-prompt {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    font-size: 0.9rem;
+    color: #707070;
+    margin-bottom: 32px;
+    text-transform: lowercase;
+}
+
+/* Smooth Fade-Out Routine for the Gate Wrapper */
+.gate-fade-out {
+    opacity: 0 !important;
+    transform: scale(0.99);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+/* Spinner Styles */
+.btn-loader-spinner {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spinnerRotate 0.6s linear infinite;
+    display: inline-block;
+}
+
+.hidden-spinner {
+    display: none;
+}
+
+@keyframes gateEntranceReveal {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spinnerRotate {
+    to { transform: rotate(360deg); }
+}
+/* Active Profile State Node Rules */
+.matrix-node-checked {
+    background: #121212 !important;
+    border-color: #121212 !important;
+    position: relative;
+}
+.matrix-node-checked::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 8px;
+    border: solid #ffffff;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+    top: 2px;
+    left: 5px;
+}
+.text-node-crossed {
+    text-decoration: line-through !important;
+    opacity: 0.45;
+}
+/* Account Modal Checklist Node Visual States */
+.matrix-check-node, #chk-node-interaction {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Checked Checklist Box Rendering Signature */
+.matrix-node-checked {
+    background: #F3C1C6 !important;
+    border-color: #F3C1C6 !important;
+}
+
+/* Subtle cross out effect for completed text strings */
+.text-node-crossed {
+    text-decoration: line-through !important;
+    opacity: 0.5;
+}
+
+/* Add an internal checkmark symbol inside the nodes dynamically */
+.matrix-node-checked::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    top: 1px;
+    left: 5px;
+}
