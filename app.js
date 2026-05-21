@@ -71,6 +71,17 @@ document.addEventListener('DOMContentLoaded', () => {
             allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
             
             renderMagazineView();
+
+            // Deep Linking Engine: Check if an article query param is present on page load
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetArticleId = urlParams.get('article');
+            
+            if (targetArticleId) {
+                const targetArticle = allArticles.find(art => art.id === targetArticleId);
+                if (targetArticle) {
+                    launchArticleReader(targetArticle);
+                }
+            }
         } catch (error) {
             console.warn("Milk Mondays Content Pipe: Dynamic collection empty. Displaying curated fallback state.");
             renderInitialEmptyState();
@@ -299,9 +310,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // System Share / Link Copy Fallback Execution
+        // System Share / Deep Linking Execution Strategy
         shareBtn.addEventListener('click', async () => {
-            const articleUrl = `${window.location.origin}${window.location.pathname}?article=${article.id}`;
+            const articleUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.id)}`;
             if (navigator.share) {
                 try {
                     await navigator.share({
@@ -319,6 +330,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Gently switch address parameter window history context upon opening
+        const targetUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.id)}`;
+        window.history.pushState({ path: targetUrl }, '', targetUrl);
+
         articleModalEl.classList.add('open-modal');
         document.body.style.overflow = 'hidden';
     }
@@ -326,6 +341,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeArticleReader() {
         articleModalEl.classList.remove('open-modal');
         document.body.style.overflow = '';
+
+        // Revert browser route cleanly back to the base grid domain path upon closing
+        const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+        window.history.pushState({ path: cleanUrl }, '', cleanUrl);
     }
 
     // ==========================================================================
