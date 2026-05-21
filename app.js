@@ -2,6 +2,11 @@
  * Milk Mondays — Dynamic Editorial Routing Engine with Live Cloudflare Interactions
  */
 
+// Gate check — redirect to form if user hasn't completed it yet
+if (localStorage.getItem('mm_gate_passed') !== 'true') {
+    window.location.href = 'gate-form.html';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Application States
     let allArticles = [];
