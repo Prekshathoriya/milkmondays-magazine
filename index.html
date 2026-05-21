@@ -4,174 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Milk Mondays — Low-effort luxury.</title>
+    <!-- Fonts: Playfair Display for Serifs, DM Sans for clean technical typography, and a script styling font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Playball&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <link rel="stylesheet" href="styles.css">
+    <!-- Netlify Identity Widget for Admin Login Authentication -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
 
+    <!-- Overlay Film Grain Texture Effect -->
     <div class="grain-overlay"></div>
 
-    <div id="gate-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #ffffff;">
-        <div class="gate-container style-manifesto">
-            <span class="gate-brand">
-                <span class="logo-milk" style="color: #F3C1C6; font-family: 'Playball', cursive;">Milk</span> 
-                <span class="logo-mondays" style="color: #121212; font-family: 'Playfair Display', serif; font-style: italic; font-weight: 600; margin-left: -4px;">Mondays</span>
-            </span>
-            
-            <h1 class="gate-title custom-tagline">for the girls who always need to know what everyone’s talking about online.</h1>
-            <p class="gate-blurb action-prompt">enter your email to continue.</p>
-            
-            <form id="gate-form">
-                <input type="email" id="gate-input-email" class="gate-input" placeholder="your email address" required autocomplete="off">
-                <button type="submit" class="gate-submit-btn">
-                    <span class="btn-text">Get Started</span>
-                    <div class="btn-loader-spinner hidden-spinner"></div>
-                </button>
-            </form>
-        </div>
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <p>A collection of everyday things. If it looks good, it belongs here.</p>
     </div>
 
-    <div id="main-app-wrapper" style="opacity: 0; transition: opacity 0.4s ease;">
-        
-        <div class="announcement-bar">
-            <p>A collection of everyday things. If it looks good, it belongs here.</p>
+    <!-- Main Navigation Header -->
+    <header class="main-header">
+        <div class="logo-container">
+            <a href="#" class="brand-logo" id="home-logo-btn">
+                <span class="logo-milk">Milk</span> <span class="logo-mondays">Mondays</span>
+            </a>
         </div>
+        <nav class="nav-links">
+            <button class="nav-btn active" data-category="all">Home</button>
+            <button class="nav-btn" data-category="skincare">Skincare</button>
+            <button class="nav-btn" data-category="fashion">Fashion</button>
+            <button class="nav-btn" data-category="pop-culture">Pop Culture</button>
+            <button class="nav-btn" data-category="archives">Archives</button>
+        </nav>
+    </header>
 
-        <header class="main-header">
-            <div class="logo-container">
-                <a href="#" class="brand-logo" id="home-logo-btn">
-                    <span class="logo-milk">Milk</span> <span class="logo-mondays">Mondays</span>
-                </a>
-            </div>
-            <nav class="nav-links">
-                <button class="nav-btn active" data-category="all">Home</button>
-                <button class="nav-btn" data-category="skincare">Skincare</button>
-                <button class="nav-btn" data-category="fashion">Fashion</button>
-                <button class="nav-btn" data-category="pop-culture">Pop Culture</button>
-                <button class="nav-btn" data-category="archives">Archives</button>
-                <button id="portal-trigger-btn" class="nav-btn" style="margin-left: 15px; font-weight: 500; opacity: 0.85;">Account</button>
-            </nav>
-        </header>
-
-        <main class="magazine-container">
-            <div id="empty-state" class="empty-state-view fade-in">
-                <div class="empty-state-content">
-                    <p class="empty-title">Mondays loading...</p>
-                    <p class="empty-subtitle">Check back soon for archives, skincare routines, and pop culture commentary.</p>
-                    <div class="empty-status-line"></div>
-                </div>
-            </div>
-
-            <div id="magazine-content" class="hidden-content">
-                <section id="hero-feature" class="hero-section"></section>
-                <div class="section-divider">
-                    <span>The Feed</span>
-                    <div class="divider-line"></div>
-                </div>
-                <section id="posts-grid" class="magazine-grid"></section>
-            </div>
-        </main>
-
-        <div id="article-modal" class="modal-overlay">
-            <div class="modal-wrapper">
-                <button class="close-modal-btn" aria-label="Close article">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-                <article id="modal-article-body" class="modal-content-body">
-                </article>
+    <main class="magazine-container">
+        <!-- Initial Empty State Container (Visible by default, hidden when CMS data is parsed) -->
+        <div id="empty-state" class="empty-state-view fade-in">
+            <div class="empty-state-content">
+                <p class="empty-title">Mondays loading...</p>
+                <p class="empty-subtitle">Check back soon for archives, skincare routines, and pop culture commentary.</p>
+                <div class="empty-status-line"></div>
             </div>
         </div>
 
-        <footer class="editorial-footer">
-            <div class="footer-grid">
-                <div class="footer-col about-col">
-                    <h4 class="footer-title">Milk Mondays</h4>
-                    <p class="footer-blurb">A collection of everyday things. This page is built around skincare, makeup, and fashion. If it looks good, it belongs here.</p>
-                </div>
-                <div class="footer-col form-col">
-                    <h4 class="footer-title">Join The Club</h4>
-                    <p class="footer-subtitle">Drop your thoughts or apply to collaborate below.</p>
-                    <a href="https://forms.gle/xEZQGAnCKHLkUvFTA" target="_blank" rel="noopener noreferrer" class="cta-link-btn">
-                        Open Digital Application Form ↗
-                    </a>
-                </div>
-                <div class="footer-col connect-col">
-                    <h4 class="footer-title">Digital Indexes</h4>
-                    <ul class="footer-social-links">
-                        <li><a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener noreferrer" class="social-link">Instagram ↗</a></li>
-                        <li><a href="mailto:milkmondaysbiz@gmail.com" class="social-link">Email Editorial ↗</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom-bar">
-                <p>&copy; 2026 Milk Mondays. All rights reserved. Curated for the modern archive.</p>
-            </div>
-        </footer>
-    </div>
+        <!-- Dynamic Magazine Layout Shell (Hidden until content loads) -->
+        <div id="magazine-content" class="hidden-content">
+            
+            <!-- Asymmetrical Hero Feature Layout -->
+            <section id="hero-feature" class="hero-section"></section>
 
-    <div id="account-portal-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999999; background: rgba(255, 255, 255, 0.98); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
-        <div class="account-modal-wrapper" style="max-width: 420px; width: 90%; text-align: left; padding: 20px; position: relative; pointer-events: auto;">
-            <button id="close-account-modal-btn" class="close-modal-btn" aria-label="Close Profile" style="position: absolute; top: 0; right: 0; background: none; border: none; cursor: pointer; color: #121212;">
+            <!-- Grid Header Separator -->
+            <div class="section-divider">
+                <span>The Feed</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <!-- The Pinterest/Insta-Style Masonry Post Feed Grid -->
+            <section id="posts-grid" class="magazine-grid"></section>
+        </div>
+    </main>
+
+    <!-- Premium Distraction-Free Article Reading Viewer Modal -->
+    <div id="article-modal" class="modal-overlay">
+        <div class="modal-wrapper">
+            <button class="close-modal-btn" aria-label="Close article">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </button>
-
-            <header class="account-header" style="margin-bottom: 35px;">
-                <span class="tag-label pink-tag" style="font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: #ffffff; background: #F3C1C6; padding: 4px 8px; font-family: 'DM Sans', sans-serif;">Archive Member</span>
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; font-style: italic; font-weight: 500; color: #121212; margin: 12px 0 6px 0;">your workspace profile.</h2>
-                <p style="font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: #707070; margin: 0;" id="account-display-email">subscriber.member</p>
-            </header>
-
-            <div class="completion-meter-box" style="margin-bottom: 40px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: #121212;">
-                    <span>Profile Space Integrity</span>
-                    <span id="completion-percentage-value">0%</span>
-                </div>
-                <div class="meter-track-base" style="width: 100%; height: 2px; background: #EFEFEF; position: relative;">
-                    <div id="completion-meter-fill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: #F3C1C6; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);"></div>
-                </div>
-            </div>
-
-            <ul class="index-checklist-group" style="list-style: none; padding: 0; margin: 0 0 40px 0; display: flex; flex-direction: column; gap: 22px;">
-                <li style="display: flex; align-items: flex-start; gap: 15px;">
-                    <button id="chk-action-insta" class="matrix-check-node" style="background: none; border: 1px solid #121212; width: 16px; height: 16px; min-width: 16px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 2px; transition: background 0.2s ease, border-color 0.2s ease; outline: none; position: relative; z-index: 10;"></button>
-                    <div>
-                        <a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener noreferrer" id="link-node-insta" style="font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 400; color: #121212; text-decoration: none; border-bottom: 1px solid rgba(18,18,18,0.25); position: relative; z-index: 10;">Followed @milkmondayss on Instagram ↗</a>
-                        <p style="font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: #707070; margin: 4px 0 0 0;">sync your link to keep tabs on community moodboards.</p>
-                    </div>
-                </li>
-                <li style="display: flex; align-items: flex-start; gap: 15px;">
-                    <button id="chk-action-form" class="matrix-check-node" style="background: none; border: 1px solid #121212; width: 16px; height: 16px; min-width: 16px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 2px; transition: background 0.2s ease, border-color 0.2s ease; outline: none; position: relative; z-index: 10;"></button>
-                    <div>
-                        <a href="https://forms.gle/xEZQGAnCKHLkUvFTA" target="_blank" rel="noopener noreferrer" id="link-node-form" style="font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 400; color: #121212; text-decoration: none; border-bottom: 1px solid rgba(18,18,18,0.25); position: relative; z-index: 10;">Filed Editorial Application Form ↗</a>
-                        <p style="font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: #707070; margin: 4px 0 0 0;">drop your raw thoughts, digital routines, or hidden confessions.</p>
-                    </div>
-                </li>
-                <li style="display: flex; align-items: flex-start; gap: 15px;">
-                    <div id="chk-node-interaction" style="border: 1px solid #121212; width: 16px; height: 16px; min-width: 16px; display: flex; align-items: center; justify-content: center; margin-top: 2px; transition: background 0.2s ease, border-color 0.2s ease;"></div>
-                    <div>
-                        <span style="font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 400; color: #121212;">Engaged with the Dynamic Feed</span>
-                        <p style="font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: #707070; margin: 4px 0 0 0;">unlocks automatically by selecting or liking entries on your dashboard.</p>
-                    </div>
-                </li>
-            </ul>
-
-            <button id="account-portal-disconnect-btn" style="width: 100%; background: none; border: 1px solid rgba(18, 18, 18, 0.15); font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: #FF6B6B; padding: 14px 0; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease; position: relative; z-index: 10;">Disconnect Digital Session token</button>
+            <article id="modal-article-body" class="modal-content-body">
+                <!-- Injected dynamically via JavaScript -->
+            </article>
         </div>
     </div>
 
+    <!-- Editorial Footer Component -->
+    <footer class="editorial-footer">
+        <div class="footer-grid">
+            <div class="footer-col about-col">
+                <h4 class="footer-title">Milk Mondays</h4>
+                <p class="footer-blurb">A collection of everyday things. This page is built around skincare, makeup, and fashion. If it looks good, it belongs here. Everything is picked with some thought.</p>
+            </div>
+            <div class="footer-col Form-col">
+                <h4 class="footer-title">Join The Club</h4>
+                <p class="footer-subtitle">Drop your thoughts or apply to collaborate below.</p>
+                <a href="https://forms.gle/xEZQGAnCKHLkUvFTA" target="_blank" rel="noopener noreferrer" class="cta-link-btn">
+                    Open Digital Application Form ↗
+                </a>
+            </div>
+            <div class="footer-col connect-col">
+                <h4 class="footer-title">Digital Indexes</h4>
+                <ul class="footer-social-links">
+                    <li><a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener noreferrer" class="social-link">Instagram ↗</a></li>
+                    <li><a href="mailto:milkmondaysbiz@gmail.com" class="social-link">Email Editorial ↗</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom-bar">
+            <p>&copy; 2026 Milk Mondays. All rights reserved. Curated for the modern archive.</p>
+        </div>
+    </footer>
+
+    <!-- Core Dynamic App logic initialization -->
     <script src="app.js"></script>
     <script>
+        // Connect Netlify Identity widget logic for administrative access routing
         if (window.netlifyIdentity) {
             window.netlifyIdentity.on("init", user => {
                 if (!user) {

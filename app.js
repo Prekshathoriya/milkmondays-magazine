@@ -1,22 +1,13 @@
 /**
- * Milk Mondays — Dynamic Editorial Routing Engine with Live Supabase Integration
+ * Milk Mondays — Dynamic Editorial Routing Engine with Live Cloudflare Interactions
  */
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Application States
     let allArticles = [];
     let currentCategory = 'all';
 
-    // ==========================================================================
-    // 1. INITIALIZE SUPABASE CLIENT
-    // ==========================================================================
-    const SUPABASE_URL = "https://tkhfktlnfeltwrwosibd.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_Ks3oUifHdADLHYW_80TJqw_JRp2w3pb";
-    
-    // Initialize the global supabase object loaded via the HTML CDN tag
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Connected Production Live Cloudflare API Route for Likes
+    // Connected Production Live Cloudflare API Route
     const LIKES_API_BASE = 'https://muddy-shadow-6c19.milkmondaysbiz.workers.dev';
 
     // UI Cache Registry
@@ -29,199 +20,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeModalBtn = document.querySelector('.close-modal-btn');
     const categoryNavButtons = document.querySelectorAll('.nav-btn');
     const homeLogoBtn = document.getElementById('home-logo-btn');
-
-    // Access Gate UI Interceptors
-    const gateScreenEl = document.getElementById('gate-screen');
-    const mainAppWrapperEl = document.getElementById('main-app-wrapper');
-    const gateFormEl = document.getElementById('gate-form');
-    const gateEmailInput = document.getElementById('gate-input-email');
-    const accountTriggerBtn = document.getElementById('portal-trigger-btn');
-
-    // Account Workspace Portal Modal UI DOM Cache Elements
-    const accountPortalModalEl = document.getElementById('account-portal-modal');
-    const closeAccountModalBtnEl = document.getElementById('close-account-modal-btn');
-    const accountDisconnectBtnEl = document.getElementById('account-portal-disconnect-btn');
-    const accountDisplayEmailEl = document.getElementById('account-display-email');
-    
-    const fillMeterBarEl = document.getElementById('completion-meter-fill');
-    const percentValLabelEl = document.getElementById('completion-percentage-value');
-    
-    const chkInstaBtn = document.getElementById('chk-action-insta');
-    const chkFormBtn = document.getElementById('chk-action-form');
-    const chkInteractNode = document.getElementById('chk-node-interaction');
-    
-    const linkInstaText = document.getElementById('link-node-insta');
-    const linkFormText = document.getElementById('link-node-form');
-
-    // ==========================================================================
-    // 2. SUPABASE DIRECT NEWSLETTER ACCESS ENGINE & PROFILE SPACE PORTAL
-    // ==========================================================================
-    
-    const isUnlocked = localStorage.getItem('milk_mondays_unlocked') === 'true';
-
-    if (isUnlocked) {
-        if (gateScreenEl) gateScreenEl.style.display = 'none';
-        revealMainApplication(localStorage.getItem('milk_mondays_active_identity') || "subscriber.member");
-    } else {
-        if (gateScreenEl) {
-            gateScreenEl.style.display = 'flex';
-            gateScreenEl.style.opacity = '1';
-        }
-        if (mainAppWrapperEl) mainAppWrapperEl.style.display = 'none';
-    }
-
-    if (gateFormEl) {
-        gateFormEl.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const targetEmail = gateEmailInput.value.trim();
-            const submitBtn = gateFormEl.querySelector('.gate-submit-btn');
-            const btnText = gateFormEl.querySelector('.btn-text');
-            const btnSpinner = gateFormEl.querySelector('.btn-loader-spinner');
-
-            if (targetEmail) {
-                // Trigger minimal visual loading state
-                if (submitBtn) submitBtn.disabled = true;
-                if (btnText) btnText.style.opacity = '0';
-                if (btnSpinner) btnSpinner.classList.remove('hidden-spinner');
-
-                try {
-                    // Direct table injection to bypass email triggers entirely
-                    const { error } = await supabase
-                        .from('subscribers')
-                        .insert([{ email: targetEmail }]);
-
-                    if (error) {
-                        console.warn('Supabase entry intercepted by RLS policy. Transitioning to local fallback:', error.message);
-                    }
-
-                } catch (err) {
-                    console.error('System Pipeline Halt:', err);
-                }
-
-                // Smooth pass-through transition
-                localStorage.setItem('milk_mondays_unlocked', 'true');
-                localStorage.setItem('milk_mondays_active_identity', targetEmail);
-                
-                if (gateScreenEl) {
-                    gateScreenEl.classList.add('gate-fade-out');
-                    setTimeout(() => {
-                        gateScreenEl.style.display = 'none';
-                    }, 500);
-                }
-
-                revealMainApplication(targetEmail);
-            }
-        });
-    }
-
-    function revealMainApplication(userEmail) {
-        if (mainAppWrapperEl) {
-            mainAppWrapperEl.style.display = 'block';
-            setTimeout(() => { mainAppWrapperEl.style.opacity = '1'; }, 50);
-        }
-        if (accountTriggerBtn) accountTriggerBtn.innerText = 'Account';
-        if (accountDisplayEmailEl) accountDisplayEmailEl.innerText = userEmail;
-        
-        initMagazine();
-        recalculateProfileIntegrity();
-    }
-
-    // ==========================================================================
-    // ACCOUNT PORTAL INTEGRITY METRIC CALCULATION ENGINE
-    // ==========================================================================
-    function recalculateProfileIntegrity() {
-        let itemsCompleted = 0;
-        const totalItems = 3;
-
-        // Condition 1: Instagram Link Click Tracking Checks
-        if (localStorage.getItem('mm_meta_insta_linked') === 'true') {
-            itemsCompleted++;
-            if (chkInstaBtn) chkInstaBtn.classList.add('matrix-node-checked');
-            if (linkInstaText) linkInstaText.classList.add('text-node-crossed');
-        } else {
-            if (chkInstaBtn) chkInstaBtn.classList.remove('matrix-node-checked');
-            if (linkInstaText) linkInstaText.classList.remove('text-node-crossed');
-        }
-
-        // Condition 2: Digital Form Submissions Link Clicks
-        if (localStorage.getItem('mm_meta_form_filed') === 'true') {
-            itemsCompleted++;
-            if (chkFormBtn) chkFormBtn.classList.add('matrix-node-checked');
-            if (linkFormText) linkFormText.classList.add('text-node-crossed');
-        } else {
-            if (chkFormBtn) chkFormBtn.classList.remove('matrix-node-checked');
-            if (linkFormText) linkFormText.classList.remove('text-node-crossed');
-        }
-
-        // Condition 3: Article Interactions Tracking Flags
-        if (localStorage.getItem('mm_meta_feed_interacted') === 'true') {
-            itemsCompleted++;
-            if (chkInteractNode) chkInteractNode.classList.add('matrix-node-checked');
-        } else {
-            if (chkInteractNode) chkInteractNode.classList.remove('matrix-node-checked');
-        }
-
-        // Compute Percentages Elements Math
-        const activeRatio = Math.round((itemsCompleted / totalItems) * 100);
-        if (percentValLabelEl) percentValLabelEl.innerText = `${activeRatio}%`;
-        if (fillMeterBarEl) fillMeterBarEl.style.width = `${activeRatio}%`;
-    }
-
-    // Setup Event Interceptors on Check Nodes to Set Completion States Manually
-    if (chkInstaBtn) { chkInstaBtn.addEventListener('click', toggleInstaNode); }
-    if (linkInstaText) { linkInstaText.addEventListener('click', () => { localStorage.setItem('mm_meta_insta_linked', 'true'); recalculateProfileIntegrity(); }); }
-    
-    if (chkFormBtn) { chkFormBtn.addEventListener('click', toggleFormNode); }
-    if (linkFormText) { linkFormText.addEventListener('click', () => { localStorage.setItem('mm_meta_form_filed', 'true'); recalculateProfileIntegrity(); }); }
-
-    function toggleInstaNode() {
-        const active = localStorage.getItem('mm_meta_insta_linked') === 'true';
-        localStorage.setItem('mm_meta_insta_linked', active ? 'false' : 'true');
-        recalculateProfileIntegrity();
-    }
-
-    function toggleFormNode() {
-        const active = localStorage.getItem('mm_meta_form_filed') === 'true';
-        localStorage.setItem('mm_meta_form_filed', active ? 'false' : 'true');
-        recalculateProfileIntegrity();
-    }
-
-    // Modal Visibility Access Controls (Replaces legacy window.confirm blocks)
-    if (accountTriggerBtn) {
-        accountTriggerBtn.addEventListener('click', () => {
-            recalculateProfileIntegrity();
-            if (accountPortalModalEl) {
-                accountPortalModalEl.style.display = 'flex';
-                setTimeout(() => { accountPortalModalEl.style.opacity = '1'; }, 20);
-            }
-        });
-    }
-
-    if (closeAccountModalBtnEl) {
-        closeAccountModalBtnEl.addEventListener('click', () => {
-            if (accountPortalModalEl) {
-                accountPortalModalEl.style.opacity = '0';
-                setTimeout(() => { accountPortalModalEl.style.display = 'none'; }, 300);
-            }
-        });
-    }
-
-    if (accountDisconnectBtnEl) {
-        accountDisconnectBtnEl.addEventListener('click', () => {
-            if (confirm("Disconnect token and clear your interface setup?")) {
-                localStorage.removeItem('milk_mondays_unlocked');
-                localStorage.removeItem('milk_mondays_active_identity');
-                localStorage.removeItem('mm_meta_insta_linked');
-                localStorage.removeItem('mm_meta_form_filed');
-                localStorage.removeItem('mm_meta_feed_interacted');
-                window.location.reload();
-            }
-        });
-    }
-
-    // ==========================================================================
-    // 3. CORE EDITORIAL FEED ENGINE & INTERACTIVE SECTIONS
-    // ==========================================================================
 
     // Inject minimal micro-interaction keyframes for the heart pop
     if (!document.getElementById('mm-like-animation-styles')) {
@@ -243,18 +41,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
-     * Generates a unique, consistent dummy baseline count based on the post ID string.
+     * Generates a completely unique, consistent dummy baseline count based on the post ID string.
+     * This ensures each post has a different starting number, but never randomizes itself on page refresh.
      */
     function getPostBaselineLikes(postId) {
         let hash = 0;
         for (let i = 0; i < postId.length; i++) {
             hash = postId.charCodeAt(i) + ((hash << 5) - hash);
         }
+        // Produces a reliable, unique starting number between 32 and 96 likes per post
         return Math.abs(hash % 65) + 32;
     }
 
     /**
-     * Pulls published documents from CMS JSON outputs
+     * Initializes configuration and pulls published documents from CMS outputs
      */
     async function initMagazine() {
         try {
@@ -267,9 +67,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             allArticles = data.posts || [];
             
+            // Re-order posts descending chronologically
             allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
             renderMagazineView();
 
+            // Deep Linking Engine: Check if an article query param is present on page load
             const urlParams = new URLSearchParams(window.location.search);
             const targetArticleId = urlParams.get('article');
             
@@ -285,42 +88,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    /**
+     * Toggles empty states when collection dependencies are unresolved
+     */
     function renderInitialEmptyState() {
-        if (emptyStateEl) emptyStateEl.style.display = 'flex';
-        if (magazineContentEl) magazineContentEl.className = 'hidden-content';
+        emptyStateEl.style.display = 'flex';
+        magazineContentEl.className = 'hidden-content';
     }
 
+    /**
+     * Controls layout loops and presentation triggers
+     */
     function renderMagazineView() {
         if (!allArticles || allArticles.length === 0) {
             renderInitialEmptyState();
             return;
         }
 
-        if (emptyStateEl) emptyStateEl.style.display = 'none';
-        if (magazineContentEl) magazineContentEl.className = 'visible-content';
+        emptyStateEl.style.display = 'none';
+        magazineContentEl.className = 'visible-content';
 
         const filteredArticles = currentCategory === 'all' 
             ? allArticles 
             : allArticles.filter(art => art.category.toLowerCase() === currentCategory.toLowerCase());
 
         if (filteredArticles.length === 0) {
-            if (postsGridEl) postsGridEl.innerHTML = `<p class="empty-subtitle" style="grid-column: 1/-1; padding: 40px 0;">No edits filed under this sector yet.</p>`;
-            if (heroSectionEl) heroSectionEl.style.display = 'none';
+            postsGridEl.innerHTML = `<p class="empty-subtitle" style="grid-column: 1/-1; padding: 40px 0;">No edits filed under this sector yet.</p>`;
+            heroSectionEl.style.display = 'none';
             return;
         }
 
         if (currentCategory === 'all') {
-            if (heroSectionEl) {
-                heroSectionEl.style.display = 'grid';
-                renderHeroFeature(filteredArticles[0]);
-            }
-            if (postsGridEl) renderPostsGrid(filteredArticles.slice(1));
+            heroSectionEl.style.display = 'grid';
+            renderHeroFeature(filteredArticles[0]);
+            renderPostsGrid(filteredArticles.slice(1));
         } else {
-            if (heroSectionEl) heroSectionEl.style.display = 'none';
-            if (postsGridEl) renderPostsGrid(filteredArticles);
+            heroSectionEl.style.display = 'none';
+            renderPostsGrid(filteredArticles);
         }
     }
 
+    /**
+     * Compiles Hero Header Pane
+     */
     function renderHeroFeature(article) {
         heroSectionEl.innerHTML = `
             <div class="hero-image-pane">
@@ -339,6 +149,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /**
+     * Compiles grid loops
+     */
     function renderPostsGrid(articles) {
         postsGridEl.innerHTML = '';
         
@@ -373,10 +186,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /**
+     * Hydrates Reader Overlays dynamically with Real-Time Cloud Like and Share actions
+     */
     async function launchArticleReader(article) {
-        // Set dynamic account tracking flags on article opening actions
-        localStorage.setItem('mm_meta_feed_interacted', 'true');
-
         const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'long',
@@ -394,10 +207,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `<p>${trimmed}</p>`;
         }).join('');
 
+        // Unique Browser Identity State (Tracks if THIS browser pressed like)
         const localLikeKey = `mm_liked_${article.id}`;
         const isLiked = localStorage.getItem(localLikeKey) === 'true';
+
+        // Fetch this specific post's unique persistent baseline dummy like value
         const baselineLikes = getPostBaselineLikes(article.id);
 
+        // Render layout overlay instantly showing baseline calculation placeholder
         modalBodyEl.innerHTML = `
             <header class="reader-header">
                 <span class="tag-label pink-tag">${article.category}</span>
@@ -430,14 +247,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
 
+        // Interactive Interface Event Wireframing
         const likeBtn = document.getElementById('like-action-btn');
         const likeIcon = document.getElementById('like-icon');
         const likeCounter = document.getElementById('like-counter');
         const shareBtn = document.getElementById('share-action-btn');
         const shareBtnText = document.getElementById('share-btn-text');
 
+        // Track real-time server counter variable locally
         let serverLikesCount = 0;
 
+        // ASYNC FETCH: Get real-time values from Cloudflare KV and add them directly to the baseline
         try {
             const getRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}&_cb=${Date.now()}`);
             if (getRes.ok) {
@@ -446,17 +266,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 likeCounter.innerText = baselineLikes + serverLikesCount;
             }
         } catch (err) {
-            console.error("Database sync error.", err);
+            console.error("Database sync error. Falling back to static baseline.", err);
         }
 
+        // Like Trigger Handling Loop
         likeBtn.addEventListener('click', async () => {
             const stateActive = localStorage.getItem(localLikeKey) === 'true';
             const actionType = stateActive ? 'unlike' : 'like';
 
+            // Clean up and trigger the CSS pop animation class
             likeIcon.classList.remove('animate-pop');
-            void likeIcon.offsetWidth;
+            void likeIcon.offsetWidth; // Force CSS reflow to re-trigger the animation smoothly
             likeIcon.classList.add('animate-pop');
 
+            // Optimistic UI Update: Render changes instantly on screen for smooth visual feedback
             if (!stateActive) {
                 localStorage.setItem(localLikeKey, 'true');
                 serverLikesCount += 1;
@@ -470,6 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             likeCounter.innerText = baselineLikes + serverLikesCount;
 
+            // Sync structural modification back to database cluster instances
             try {
                 const postRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}&_cb=${Date.now()}`, {
                     method: 'POST',
@@ -486,12 +310,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        // System Share / Deep Linking Execution Strategy
         shareBtn.addEventListener('click', async () => {
             const articleUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.id)}`;
             if (navigator.share) {
                 try {
-                    await navigator.share({ title: article.title, text: article.subtitle, url: articleUrl });
-                } catch (err) { console.log('Native share panel closed.'); }
+                    await navigator.share({
+                        title: article.title,
+                        text: article.subtitle,
+                        url: articleUrl
+                    });
+                } catch (err) {
+                    console.log('Native share panel closed.');
+                }
             } else {
                 navigator.clipboard.writeText(articleUrl);
                 shareBtnText.innerText = 'Link Copied!';
@@ -499,18 +330,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        // Gently switch address parameter window history context upon opening
         const targetUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.id)}`;
         window.history.pushState({ path: targetUrl }, '', targetUrl);
 
-        if (articleModalEl) {
-            articleModalEl.classList.add('open-modal');
-            document.body.style.overflow = 'hidden';
-        }
+        articleModalEl.classList.add('open-modal');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeArticleReader() {
-        if (articleModalEl) articleModalEl.classList.remove('open-modal');
+        articleModalEl.classList.remove('open-modal');
         document.body.style.overflow = '';
+
+        // Revert browser route cleanly back to the base grid domain path upon closing
         const cleanUrl = `${window.location.origin}${window.location.pathname}`;
         window.history.pushState({ path: cleanUrl }, '', cleanUrl);
     }
@@ -518,27 +350,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================================================
     // INTERACTION RECEPTORS & REGISTERED ROUTERS
     // ==========================================================================
+    
     categoryNavButtons.forEach(button => {
         button.addEventListener('click', (e) => {
-            if (e.target.id === 'portal-trigger-btn') return;
             categoryNavButtons.forEach(btn => btn.classList.remove('active'));
             e.target.classList.add('active');
+            
             currentCategory = e.target.getAttribute('data-category');
             renderMagazineView();
         });
     });
 
-    if (homeLogoBtn) {
-        homeLogoBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            categoryNavButtons.forEach(btn => btn.classList.remove('active'));
-            if (categoryNavButtons[0]) categoryNavButtons[0].classList.add('active');
-            currentCategory = 'all';
-            renderMagazineView();
-        });
-    }
+    homeLogoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        categoryNavButtons.forEach(btn => btn.classList.remove('active'));
+        categoryNavButtons[0].classList.add('active');
+        currentCategory = 'all';
+        renderMagazineView();
+    });
 
-    if (closeModalBtn) closeModalBtn.addEventListener('click', closeArticleReader);
-    if (articleModalEl) articleModalEl.addEventListener('click', (e) => { if (e.target === articleModalEl) closeArticleReader(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && articleModalEl && articleModalEl.classList.contains('open-modal')) closeArticleReader(); });
+    closeModalBtn.addEventListener('click', closeArticleReader);
+    
+    articleModalEl.addEventListener('click', (e) => {
+        if (e.target === articleModalEl) {
+            closeArticleReader();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && articleModalEl.classList.contains('open-modal')) {
+            closeArticleReader();
+        }
+    });
+
+    initMagazine();
 });
