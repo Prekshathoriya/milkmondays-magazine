@@ -9,6 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Playball&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <style>
+        /* Simple debug styles – visible if CSS fails */
+        body { background: #FAF9F6; font-family: 'DM Sans', sans-serif; padding: 20px; }
+        .debug-error { color: red; border: 1px solid red; padding: 20px; margin: 20px; background: #fff; }
+    </style>
 </head>
 <body>
     <div class="grain-overlay"></div>
@@ -55,6 +60,9 @@
     </footer>
     <script src="app.js"></script>
     <script>
+        // Additional debug – will show if this script runs
+        console.log('Magazine HTML loaded successfully');
+        document.body.setAttribute('data-debug', 'loaded');
         if (window.netlifyIdentity) {
             window.netlifyIdentity.on("init", user => {
                 if (!user) window.netlifyIdentity.on("login", () => document.location.href = "/admin/");
