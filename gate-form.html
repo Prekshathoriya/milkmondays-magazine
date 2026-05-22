@@ -6,252 +6,338 @@
     <title>Milk Mondays — Before You Read</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital@0;1&family=Playball&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,400;1,400&family=Playball&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #FAF9F6;
-            font-family: 'DM Sans', sans-serif;
-            color: #121212;
-            line-height: 1.6;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --pink:  #F3C1C6;
+            --black: #121212;
+            --cream: #FAF9F6;
+            --grey:  #8E8E8E;
+            --red:   #c0392b;
+            --serif: 'Playfair Display', Georgia, serif;
+            --sans:  'DM Sans', sans-serif;
+            --logo:  'Playball', cursive;
         }
-        .grain-overlay {
+
+        body {
+            background: var(--cream);
+            font-family: var(--sans);
+            color: var(--black);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── GRAIN ── */
+        .grain {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            inset: 0;
             background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
             pointer-events: none;
             z-index: 9999;
         }
-        .announcement-bar {
-            background: #121212;
-            color: white;
+
+        .bar {
+            background: var(--black);
+            color: #fff;
             font-size: 10px;
             letter-spacing: 0.15em;
             text-align: center;
-            padding: 8px;
+            padding: 9px 20px;
             text-transform: uppercase;
         }
-        .main-header {
+
+        .site-header {
             text-align: center;
-            padding: 40px 20px 20px;
-            border-bottom: 1px solid #121212;
+            padding: 36px 20px 20px;
+            border-bottom: 1px solid var(--black);
         }
-        .brand-logo {
-            font-family: 'Playball', cursive;
-            font-size: 48px;
+        .brand {
+            font-family: var(--logo);
+            font-size: 46px;
+            line-height: 1;
             text-decoration: none;
+            color: inherit;
         }
-        .logo-milk { color: #F3C1C6; }
-        .logo-mondays {
-            font-family: 'Playfair Display', serif;
-            font-size: 42px;
+        .brand .m { color: var(--pink); margin-right: -4px; }
+        .brand .n {
+            font-family: var(--serif);
+            font-size: 40px;
             font-style: italic;
-            color: #121212;
+            color: var(--black);
         }
-        .container {
-            max-width: 500px;
-            margin: 60px auto;
+
+        .wrap {
+            max-width: 480px;
+            margin: 60px auto 80px;
             padding: 0 20px;
         }
+
         .card {
-            border: 1px solid #121212;
-            padding: 40px;
-            background: #FAF9F6;
+            border: 1px solid var(--black);
+            padding: 44px 40px;
+            background: var(--cream);
         }
-        h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 32px;
+
+        .card-title {
+            font-family: var(--serif);
+            font-size: 30px;
             font-weight: 400;
             font-style: italic;
-            margin-bottom: 20px;
             text-align: center;
+            margin-bottom: 14px;
         }
-        .intro {
+
+        .card-intro {
             text-align: center;
-            color: #8E8E8E;
+            color: var(--grey);
             font-size: 13px;
-            margin-bottom: 30px;
+            margin-bottom: 34px;
+            line-height: 1.7;
         }
-        .field {
-            margin-bottom: 25px;
-        }
+
+        .field { margin-bottom: 26px; }
+
         label {
             display: block;
             font-size: 10px;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             margin-bottom: 8px;
+            font-weight: 500;
         }
-        input {
+
+        input[type="text"],
+        input[type="email"] {
             width: 100%;
             border: none;
-            border-bottom: 1px solid #121212;
+            border-bottom: 1px solid var(--black);
             background: transparent;
             padding: 10px 0;
-            font-family: 'DM Sans', sans-serif;
+            font-family: var(--sans);
             font-size: 14px;
             outline: none;
+            color: var(--black);
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
         }
-        input:focus {
-            border-bottom-color: #F3C1C6;
+        input[type="text"]::placeholder,
+        input[type="email"]::placeholder { color: #bbb; }
+        input[type="text"]:focus,
+        input[type="email"]:focus { border-bottom-color: var(--pink); }
+
+        .insta-block {
+            text-align: center;
+            margin: 22px 0;
         }
-        .checkbox-row {
+        .insta-link {
+            display: inline-block;
+            color: var(--black);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: color 0.2s;
+        }
+        .insta-link:hover { color: var(--pink); }
+
+        .check-row {
             display: flex;
             gap: 12px;
-            align-items: center;
-            margin: 25px 0;
+            align-items: flex-start;
+            margin: 22px 0 28px;
             cursor: pointer;
+            user-select: none;
         }
-        .custom-checkbox {
+        .check-box {
+            flex-shrink: 0;
             width: 18px;
             height: 18px;
-            border: 1px solid #121212;
+            border: 1px solid var(--black);
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-top: 1px;
+            transition: background 0.15s;
         }
-        .custom-checkbox.checked {
-            background: #121212;
-        }
+        .check-box.ticked { background: var(--black); }
+
         .check-mark {
             width: 10px;
             height: 6px;
-            border-left: 1.5px solid white;
-            border-bottom: 1.5px solid white;
+            border-left: 1.5px solid #fff;
+            border-bottom: 1.5px solid #fff;
             transform: rotate(-45deg) scaleX(0);
-            transition: transform 0.2s;
+            transform-origin: left;
+            transition: transform 0.18s ease;
         }
-        .custom-checkbox.checked .check-mark {
-            transform: rotate(-45deg) scaleX(1);
+        .check-box.ticked .check-mark { transform: rotate(-45deg) scaleX(1); }
+
+        .check-label { font-size: 12px; line-height: 1.5; padding-top: 1px; }
+
+        .error-msg {
+            font-size: 11px;
+            color: var(--red);
+            margin-bottom: 14px;
+            display: none;
         }
-        button {
+        .error-msg.show { display: block; }
+
+        .submit-btn {
+            display: block;
             width: 100%;
             background: none;
-            border: 1px solid #121212;
+            border: 1px solid var(--black);
             padding: 14px;
-            font-family: 'DM Sans', sans-serif;
+            font-family: var(--sans);
             font-size: 11px;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: 0.2s;
+            transition: background 0.2s, color 0.2s;
+            color: var(--black);
         }
-        button:hover {
-            background: #121212;
-            color: white;
-        }
-        .error {
-            color: #c0392b;
-            font-size: 11px;
-            margin-top: 10px;
-            display: none;
-        }
-        .insta-link {
-            display: inline-block;
-            margin: 15px 0;
-            color: #121212;
-            text-decoration: underline;
-            font-weight: 500;
-        }
-        footer {
+        .submit-btn:hover { background: var(--black); color: #fff; }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .site-footer-sm {
             text-align: center;
-            padding: 40px;
+            padding: 28px 20px 40px;
             border-top: 1px solid #E5E5E5;
             font-size: 10px;
-            color: #8E8E8E;
-            margin-top: 60px;
+            color: var(--grey);
         }
     </style>
 </head>
 <body>
-<div class="grain-overlay"></div>
-<div class="announcement-bar">A collection of everyday things. If it looks good, it belongs here.</div>
-<header class="main-header">
-    <span class="brand-logo"><span class="logo-milk">Milk</span> <span class="logo-mondays">Mondays</span></span>
-</header>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="bar">A collection of everyday things. If it looks good, it belongs here.</div>
 
-<div class="container">
-    <div class="card">
-        <h1>Before you read...</h1>
-        <div class="intro">
-            Just two quick things — your name, email, and a follow on Instagram.<br>
-            No spam, ever.
-        </div>
+    <header class="site-header">
+        <a href="index.html" class="brand"><span class="m">Milk</span> <span class="n">Mondays</span></a>
+    </header>
 
-        <div class="field">
-            <label>Your name *</label>
-            <input type="text" id="name" placeholder="What should we call you?">
-        </div>
-        <div class="field">
-            <label>Email address *</label>
-            <input type="email" id="email" placeholder="your@email.com">
-        </div>
+    <div class="wrap">
+        <div class="card">
+            <h1 class="card-title">Before you read…</h1>
+            <p class="card-intro">
+                Just two quick things — your name, email,<br>
+                and a follow on Instagram. No spam, ever.
+            </p>
 
-        <div style="margin: 20px 0; text-align: center;">
-            <a href="https://www.instagram.com/milkmondayss/" target="_blank" class="insta-link">📸 Follow @milkmondayss on Instagram</a>
-        </div>
+            <div class="field">
+                <label for="input-name">Your name *</label>
+                <input type="text" id="input-name" placeholder="What should we call you?" autocomplete="given-name">
+            </div>
 
-        <div class="checkbox-row" onclick="toggleCheck()">
-            <div class="custom-checkbox" id="followCheck"><div class="check-mark"></div></div>
-            <span style="font-size: 12px;">I've followed @milkmondayss on Instagram and I'm ready to read.</span>
-        </div>
+            <div class="field">
+                <label for="input-email">Email address *</label>
+                <input type="email" id="input-email" placeholder="your@email.com" autocomplete="email">
+            </div>
 
-        <div class="error" id="errorMsg">Please fill in your name, email, and confirm you've followed.</div>
-        <button onclick="submitForm()">Unlock Content →</button>
+            <div class="insta-block">
+                <a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener" class="insta-link">
+                    📸 Follow @milkmondayss on Instagram
+                </a>
+            </div>
+
+            <div class="check-row" id="check-row" role="checkbox" aria-checked="false" tabindex="0">
+                <div class="check-box" id="check-box"><div class="check-mark"></div></div>
+                <span class="check-label">I've followed @milkmondayss on Instagram and I'm ready to read.</span>
+            </div>
+
+            <p class="error-msg" id="error-msg" role="alert">Please fill in your name, email, and confirm you've followed.</p>
+
+            <button class="submit-btn" id="submit-btn">Unlock Content →</button>
+        </div>
     </div>
-</div>
 
-<footer>© 2026 Milk Mondays. All rights reserved.</footer>
+    <footer class="site-footer-sm">&copy; 2026 Milk Mondays. All rights reserved.</footer>
 
-<script>
-    let isChecked = false;
+    <script>
+    (function () {
+        'use strict';
 
-    function toggleCheck() {
-        isChecked = !isChecked;
-        const box = document.getElementById('followCheck');
-        if (isChecked) box.classList.add('checked');
-        else box.classList.remove('checked');
-    }
+        var isChecked = false;
+        var checkRow  = document.getElementById('check-row');
+        var checkBox  = document.getElementById('check-box');
+        var errorMsg  = document.getElementById('error-msg');
+        var submitBtn = document.getElementById('submit-btn');
+        var nameEl    = document.getElementById('input-name');
+        var emailEl   = document.getElementById('input-email');
 
-    async function submitForm() {
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const errorDiv = document.getElementById('errorMsg');
-
-        if (!name || !email || !isChecked) {
-            errorDiv.style.display = 'block';
-            return;
+        function toggleCheck() {
+            isChecked = !isChecked;
+            checkBox.classList.toggle('ticked', isChecked);
+            checkRow.setAttribute('aria-checked', String(isChecked));
         }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            errorDiv.textContent = 'Please enter a valid email address.';
-            errorDiv.style.display = 'block';
-            return;
-        }
-        errorDiv.style.display = 'none';
 
-        // Save to localStorage
-        const entry = { name, email, timestamp: new Date().toISOString() };
-        const existing = JSON.parse(localStorage.getItem('mm_form_entries') || '[]');
-        existing.push(entry);
-        localStorage.setItem('mm_form_entries', JSON.stringify(existing));
-        localStorage.setItem('mm_gate_passed', 'true');
-        localStorage.setItem('mm_user_name', name);
+        checkRow.addEventListener('click', toggleCheck);
+        checkRow.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleCheck(); }
+        });
 
-        // Send to Netlify Forms (optional)
-        try {
-            const fd = new FormData();
-            fd.append('form-name', 'gate-form');
-            fd.append('name', name);
-            fd.append('email', email);
-            await fetch('/', { method: 'POST', body: fd });
-        } catch(e) { console.warn(e); }
+        submitBtn.addEventListener('click', function () {
+            var name  = nameEl.value.trim();
+            var email = emailEl.value.trim();
 
-        // Redirect to original article or magazine (was index.html)
-        const urlParams = new URLSearchParams(window.location.search);
-        let redirect = urlParams.get('redirect');
-        if (!redirect) redirect = 'magazine.html';  // CHANGE: default redirect to magazine.html
-        window.location.href = redirect;
-    }
-</script>
+            /* reset error */
+            errorMsg.classList.remove('show');
+            errorMsg.textContent = 'Please fill in your name, email, and confirm you\'ve followed.';
+
+            if (!name || !email || !isChecked) {
+                errorMsg.classList.add('show');
+                return;
+            }
+
+            var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRe.test(email)) {
+                errorMsg.textContent = 'Please enter a valid email address.';
+                errorMsg.classList.add('show');
+                return;
+            }
+
+            /* disable button while processing */
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Unlocking…';
+
+            /* persist gate */
+            try {
+                var entries = JSON.parse(localStorage.getItem('mm_entries') || '[]');
+                entries.push({ name: name, email: email, ts: new Date().toISOString() });
+                localStorage.setItem('mm_entries', JSON.stringify(entries));
+                localStorage.setItem('mm_gate_passed', 'true');
+                localStorage.setItem('mm_user_name', name);
+            } catch (e) { /* storage unavailable — still allow through */ }
+
+            /* optional Netlify Forms submission (fire-and-forget) */
+            try {
+                var fd = new FormData();
+                fd.append('form-name', 'gate-form');
+                fd.append('name', name);
+                fd.append('email', email);
+                fetch('/', { method: 'POST', body: fd }).catch(function(){});
+            } catch (e) {}
+
+            /* redirect */
+            var params = new URLSearchParams(window.location.search);
+            var dest   = params.get('redirect');
+            if (!dest || !/^(https?:\/\/|\/|[^:]+\.html)/.test(dest)) {
+                dest = 'magazine.html';
+            }
+            window.location.href = dest;
+        });
+
+        /* allow Enter key in inputs to submit */
+        [nameEl, emailEl].forEach(function(inp) {
+            inp.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') submitBtn.click();
+            });
+        });
+    })();
+    </script>
 </body>
 </html>
