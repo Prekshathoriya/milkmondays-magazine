@@ -433,7 +433,9 @@
                 var res = await fetch('/content/posts.json');
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 var data = await res.json();
-                var posts = data.posts || [];
+                var posts = (data.posts || []).sort(function(a, b) {
+    return new Date(b.date) - new Date(a.date);
+});
 
                 if (!posts.length) {
                     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--grey);">No stories yet.</div>';
