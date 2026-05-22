@@ -246,10 +246,10 @@
             await fetch('/', { method: 'POST', body: fd });
         } catch(e) { console.warn(e); }
 
-        // Redirect to original article or index
+        // Redirect to original article or magazine (was index.html)
         const urlParams = new URLSearchParams(window.location.search);
         let redirect = urlParams.get('redirect');
-        if (!redirect) redirect = 'index.html';
+        if (!redirect) redirect = 'magazine.html';  // CHANGE: default redirect to magazine.html
         window.location.href = redirect;
     }
 </script>
