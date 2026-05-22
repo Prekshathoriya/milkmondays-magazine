@@ -2,9 +2,9 @@
    DESIGN SYSTEM VARIABLE VARIABLES
    ========================================================================== */
 :root {
-    --color-milk-pink: #F3C1C6;      /* Brand authentic pastel pink */
-    --color-charcoal: #121212;       /* Deep high-fashion charcoal */
-    --color-cream-bg: #FAF9F6;       /* Editorial off-white background */
+    --color-milk-pink: #F3C1C6;
+    --color-charcoal: #121212;
+    --color-cream-bg: #FAF9F6;
     --color-pure-white: #FFFFFF;
     --color-muted-grey: #8E8E8E;
     --color-border-light: #E5E5E5;
@@ -289,7 +289,6 @@ button {
     color: var(--color-pure-white);
 }
 
-/* Separator styling */
 .section-divider {
     align-items: center;
     display: flex;
@@ -309,7 +308,6 @@ button {
     height: 1px;
 }
 
-/* Magazine Grid */
 .magazine-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -323,6 +321,11 @@ button {
     opacity: 0;
     transform: translateY(25px);
     animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.article-card:hover {
+    transform: translateY(-6px);
 }
 
 .card-image-box {
@@ -341,7 +344,7 @@ button {
 }
 
 .article-card:hover .card-image-box img {
-    opacity: 0.9;
+    opacity: 0.92;
     transform: scale(1.02);
 }
 
@@ -365,6 +368,11 @@ button {
     font-weight: 400;
     line-height: 1.25;
     margin-bottom: 10px;
+    transition: color 0.2s ease;
+}
+
+.article-card:hover .card-title {
+    color: var(--color-milk-pink);
 }
 
 .card-description {
@@ -382,10 +390,10 @@ button {
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background-color: rgba(250, 249, 246, 0.98); 
+    background-color: rgba(250, 249, 246, 0.98);
     display: flex !important;
-    justify-content: center !important; /* Forces perfect center alignment */
-    align-items: center !important;     /* Centers it up and down */
+    justify-content: center !important;
+    align-items: center !important;
     padding: 40px 20px;
     z-index: 1000;
     opacity: 0;
@@ -401,15 +409,27 @@ button {
 .modal-wrapper {
     position: relative !important;
     width: 100% !important;
-    max-width: 750px !important; /* Perfect print-magazine column size */
-    max-height: 85vh !important;  
-    overflow-y: auto !important;  /* Lets you scroll the text naturally */
+    max-width: 750px !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
     background-color: var(--color-cream-bg) !important;
-    border: 1px solid var(--color-charcoal) !important; /* Sleek raw border look */
+    border: 1px solid var(--color-charcoal) !important;
     padding: 60px 40px !important;
     margin: 0 auto !important;
     box-shadow: 0 30px 90px rgba(0, 0, 0, 0.05);
-    scrollbar-width: none; 
+    scrollbar-width: none;
+    animation: modalFadeUp 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes modalFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .modal-wrapper::-webkit-scrollbar {
@@ -418,7 +438,7 @@ button {
 
 .close-modal-btn {
     color: var(--color-charcoal) !important;
-    position: absolute !important; /* Locks it to the top-right of your white post box */
+    position: absolute !important;
     top: 25px !important;
     right: 25px !important;
     background: none !important;
@@ -461,6 +481,11 @@ button {
     max-height: 500px;
     object-fit: cover;
     width: 100%;
+    transition: transform 0.4s ease;
+}
+
+.reader-hero-img:hover {
+    transform: scale(1.01);
 }
 
 .reader-rich-text {
@@ -479,6 +504,18 @@ button {
     font-size: 18px;
     margin: 40px 0;
     padding-left: 25px;
+}
+
+.reader-rich-text a {
+    color: var(--color-charcoal);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 500;
+    transition: var(--transition-fast);
+}
+
+.reader-rich-text a:hover {
+    color: var(--color-milk-pink);
 }
 
 /* ==========================================================================
@@ -584,31 +621,45 @@ button {
     animation: fadeInContainer 0.5s ease-out forwards;
 }
 
-/* Responsiveness Configurations */
 @media (max-width: 1024px) {
-    .magazine-grid { grid-template-columns: repeat(2, 1fr); }
-    .hero-section { grid-template-columns: 1fr; }
-    .hero-image-pane { border-right: none; border-bottom: 1px solid var(--color-charcoal); }
-    .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+    .magazine-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .hero-section {
+        grid-template-columns: 1fr;
+    }
+    .hero-image-pane {
+        border-right: none;
+        border-bottom: 1px solid var(--color-charcoal);
+    }
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
 }
 
 @media (max-width: 768px) {
-    .magazine-grid { grid-template-columns: 1fr; }
-    .nav-links { gap: 15px; flex-wrap: wrap; }
-    .hero-content-pane { padding: 30px; }
-    .hero-headline { font-size: 32px; }
-    .footer-grid { grid-template-columns: 1fr; gap: 40px; }
-    .modal-wrapper { padding: 80px 20px 40px 20px; }
-    .reader-title { font-size: 30px; }
-}
-.reader-rich-text a {
-    color: var(--color-charcoal);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    font-weight: 500;
-    transition: var(--transition-fast);
-}
-
-.reader-rich-text a:hover {
-    color: var(--color-milk-pink);
+    .magazine-grid {
+        grid-template-columns: 1fr;
+    }
+    .nav-links {
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    .hero-content-pane {
+        padding: 30px;
+    }
+    .hero-headline {
+        font-size: 32px;
+    }
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    .modal-wrapper {
+        padding: 80px 20px 40px 20px;
+    }
+    .reader-title {
+        font-size: 30px;
+    }
 }

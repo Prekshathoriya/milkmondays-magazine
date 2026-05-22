@@ -2,9 +2,10 @@
  * Milk Mondays — Dynamic Editorial Routing Engine with Live Cloudflare Interactions
  */
 
-// Gate check — redirect to form if user hasn't completed it yet
+// Gate check — if user hasn't completed the flow, send them to landing page
+// (this replaces the old gate-form redirect)
 if (localStorage.getItem('mm_gate_passed') !== 'true') {
-    window.location.href = 'gate-form.html';
+    window.location.href = 'landing.html';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -163,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         articles.forEach((article, index) => {
             const card = document.createElement('div');
             card.className = 'article-card';
-            card.style.animationDelay = `${index * 0.1}s`;
+            card.style.animationDelay = `${index * 0.05}s`;
             
             const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
                 month: 'short',
