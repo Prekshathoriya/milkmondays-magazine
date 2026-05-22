@@ -2,45 +2,256 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Access Milk Mondays</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milk Mondays — Before You Read</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital@0;1&family=Playball&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #FAF9F6;
+            font-family: 'DM Sans', sans-serif;
+            color: #121212;
+            line-height: 1.6;
+        }
+        .grain-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .announcement-bar {
+            background: #121212;
+            color: white;
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            text-align: center;
+            padding: 8px;
+            text-transform: uppercase;
+        }
+        .main-header {
+            text-align: center;
+            padding: 40px 20px 20px;
+            border-bottom: 1px solid #121212;
+        }
+        .brand-logo {
+            font-family: 'Playball', cursive;
+            font-size: 48px;
+            text-decoration: none;
+        }
+        .logo-milk { color: #F3C1C6; }
+        .logo-mondays {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            font-style: italic;
+            color: #121212;
+        }
+        .container {
+            max-width: 500px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+        .card {
+            border: 1px solid #121212;
+            padding: 40px;
+            background: #FAF9F6;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 400;
+            font-style: italic;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .intro {
+            text-align: center;
+            color: #8E8E8E;
+            font-size: 13px;
+            margin-bottom: 30px;
+        }
+        .field {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #121212;
+            background: transparent;
+            padding: 10px 0;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            outline: none;
+        }
+        input:focus {
+            border-bottom-color: #F3C1C6;
+        }
+        .checkbox-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin: 25px 0;
+            cursor: pointer;
+        }
+        .custom-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 1px solid #121212;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .custom-checkbox.checked {
+            background: #121212;
+        }
+        .check-mark {
+            width: 10px;
+            height: 6px;
+            border-left: 1.5px solid white;
+            border-bottom: 1.5px solid white;
+            transform: rotate(-45deg) scaleX(0);
+            transition: transform 0.2s;
+        }
+        .custom-checkbox.checked .check-mark {
+            transform: rotate(-45deg) scaleX(1);
+        }
+        button {
+            width: 100%;
+            background: none;
+            border: 1px solid #121212;
+            padding: 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #121212;
+            color: white;
+        }
+        .error {
+            color: #c0392b;
+            font-size: 11px;
+            margin-top: 10px;
+            display: none;
+        }
+        .insta-link {
+            display: inline-block;
+            margin: 15px 0;
+            color: #121212;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid #E5E5E5;
+            font-size: 10px;
+            color: #8E8E8E;
+            margin-top: 60px;
+        }
+    </style>
 </head>
 <body>
-    <div class="grain-overlay"></div>
-    <div class="page-wrapper">
-        <div class="step-container">
-            <div id="gate-form-panel" class="step-panel active">
-                <h2 class="form-title">Before you read...</h2>
-                <div class="form-card">
-                    <form id="access-form">
-                        <div class="field-group">
-                            <input type="text" id="user-name" class="field-input" placeholder="Name" required>
-                        </div>
-                        <div class="field-group">
-                            <input type="email" id="user-email" class="field-input" placeholder="Email Address" required>
-                        </div>
-                        <button type="submit" class="primary-btn">Unlock Content</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="grain-overlay"></div>
+<div class="announcement-bar">A collection of everyday things. If it looks good, it belongs here.</div>
+<header class="main-header">
+    <span class="brand-logo"><span class="logo-milk">Milk</span> <span class="logo-mondays">Mondays</span></span>
+</header>
 
-    <script>
-        document.getElementById('access-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('user-email').value;
-            const name = document.getElementById('user-name').value;
-            
-            // Save to localStorage
-            localStorage.setItem('mm_gate_passed', 'true');
-            localStorage.setItem('mm_user_email', email);
-            localStorage.setItem('mm_user_name', name);
-            
-            // Redirect back to intended article or index
-            const redirect = localStorage.getItem('mm_redirect_path') || 'index.html';
-            window.location.href = redirect;
-        });
-    </script>
+<div class="container">
+    <div class="card">
+        <h1>Before you read...</h1>
+        <div class="intro">
+            Just two quick things — your name, email, and a follow on Instagram.<br>
+            No spam, ever.
+        </div>
+
+        <div class="field">
+            <label>Your name *</label>
+            <input type="text" id="name" placeholder="What should we call you?">
+        </div>
+        <div class="field">
+            <label>Email address *</label>
+            <input type="email" id="email" placeholder="your@email.com">
+        </div>
+
+        <div style="margin: 20px 0; text-align: center;">
+            <a href="https://www.instagram.com/milkmondayss/" target="_blank" class="insta-link">📸 Follow @milkmondayss on Instagram</a>
+        </div>
+
+        <div class="checkbox-row" onclick="toggleCheck()">
+            <div class="custom-checkbox" id="followCheck"><div class="check-mark"></div></div>
+            <span style="font-size: 12px;">I've followed @milkmondayss on Instagram and I'm ready to read.</span>
+        </div>
+
+        <div class="error" id="errorMsg">Please fill in your name, email, and confirm you've followed.</div>
+        <button onclick="submitForm()">Unlock Content →</button>
+    </div>
+</div>
+
+<footer>© 2026 Milk Mondays. All rights reserved.</footer>
+
+<script>
+    let isChecked = false;
+
+    function toggleCheck() {
+        isChecked = !isChecked;
+        const box = document.getElementById('followCheck');
+        if (isChecked) box.classList.add('checked');
+        else box.classList.remove('checked');
+    }
+
+    async function submitForm() {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const errorDiv = document.getElementById('errorMsg');
+
+        if (!name || !email || !isChecked) {
+            errorDiv.style.display = 'block';
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errorDiv.textContent = 'Please enter a valid email address.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        errorDiv.style.display = 'none';
+
+        // Save to localStorage
+        const entry = { name, email, timestamp: new Date().toISOString() };
+        const existing = JSON.parse(localStorage.getItem('mm_form_entries') || '[]');
+        existing.push(entry);
+        localStorage.setItem('mm_form_entries', JSON.stringify(existing));
+        localStorage.setItem('mm_gate_passed', 'true');
+        localStorage.setItem('mm_user_name', name);
+
+        // Send to Netlify Forms (optional)
+        try {
+            const fd = new FormData();
+            fd.append('form-name', 'gate-form');
+            fd.append('name', name);
+            fd.append('email', email);
+            await fetch('/', { method: 'POST', body: fd });
+        } catch(e) { console.warn(e); }
+
+        // Redirect to original article or index
+        const urlParams = new URLSearchParams(window.location.search);
+        let redirect = urlParams.get('redirect');
+        if (!redirect) redirect = 'index.html';
+        window.location.href = redirect;
+    }
+</script>
 </body>
 </html>
