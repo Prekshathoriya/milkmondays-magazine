@@ -1,8 +1,11 @@
 /**
- * Milk Mondays — Dynamic Editorial Routing Engine with Live Cloudflare Interactions
+ * Milk Mondays — Dynamic Editorial Routing Engine
+ * Improved error handling and fallback rendering
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Milk Mondays: DOM ready');
+
     // Application States
     let allArticles = [];
     let currentCategory = 'all';
@@ -20,6 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.querySelector('.close-modal-btn');
     const categoryNavButtons = document.querySelectorAll('.nav-btn');
     const homeLogoBtn = document.getElementById('home-logo-btn');
+
+    // Safety check: if critical elements missing, log error
+    if (!emptyStateEl || !magazineContentEl) {
+        console.error('Milk Mondays: Critical DOM elements missing');
+        return;
+    }
 
     // Inject animation styles
     if (!document.getElementById('mm-like-animation-styles')) {
@@ -49,45 +58,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initMagazine() {
+        console.log('Milk Mondays: Initializing magazine');
         try {
             const response = await fetch('/content/posts.json');
-            if (!response.ok) throw new Error('Storage index endpoint empty.');
+            if (!response.ok) throw new Error('posts.json not found - status: ' + response.status);
             const data = await response.json();
             allArticles = data.posts || [];
+            console.log(`Milk Mondays: Loaded ${allArticles.length} articles`);
             allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
             renderMagazineView();
 
-            // Deep linking: if article param present, open it (but only if gate passed? No, we'll check inside open function)
+            // Deep linking: if article param present, open it
             const urlParams = new URLSearchParams(window.location.search);
             const targetArticleId = urlParams.get('article');
             if (targetArticleId) {
+                console.log('Milk Mondays: Deep link article:', targetArticleId);
                 const targetArticle = allArticles.find(art => art.id === targetArticleId);
                 if (targetArticle) {
-                    // Check gate before opening
                     checkGateAndOpenArticle(targetArticle);
+                } else {
+                    console.warn('Article not found:', targetArticleId);
                 }
             }
         } catch (error) {
-            console.warn("Milk Mondays Content Pipe: Dynamic collection empty.");
+            console.error('Milk Mondays: Failed to load posts.json', error);
             renderInitialEmptyState();
+            // Show error message in empty state
+            if (emptyStateEl) {
+                const errorMsg = document.createElement('p');
+                errorMsg.className = 'empty-subtitle';
+                errorMsg.style.color = '#c0392b';
+                errorMsg.innerText = 'Error loading content. Please refresh or check back later.';
+                emptyStateEl.querySelector('.empty-state-content')?.appendChild(errorMsg);
+            }
         }
     }
 
-    // NEW: Gate check wrapper
     function checkGateAndOpenArticle(article) {
         if (localStorage.getItem('mm_gate_passed') === 'true') {
-            // Gate passed, open article directly
             launchArticleReader(article);
         } else {
-            // Gate not passed, redirect to gate form with return URL
             const returnUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.id)}`;
             window.location.href = `gate-form.html?redirect=${encodeURIComponent(returnUrl)}`;
         }
     }
 
     function renderInitialEmptyState() {
-        emptyStateEl.style.display = 'flex';
-        magazineContentEl.className = 'hidden-content';
+        if (emptyStateEl) emptyStateEl.style.display = 'flex';
+        if (magazineContentEl) magazineContentEl.className = 'hidden-content';
     }
 
     function renderMagazineView() {
@@ -96,107 +114,120 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        emptyStateEl.style.display = 'none';
-        magazineContentEl.className = 'visible-content';
+        if (emptyStateEl) emptyStateEl.style.display = 'none';
+        if (magazineContentEl) magazineContentEl.className = 'visible-content';
 
         const filteredArticles = currentCategory === 'all' 
             ? allArticles 
             : allArticles.filter(art => art.category.toLowerCase() === currentCategory.toLowerCase());
 
         if (filteredArticles.length === 0) {
-            postsGridEl.innerHTML = `<p class="empty-subtitle" style="grid-column: 1/-1; padding: 40px 0;">No edits filed under this sector yet.</p>`;
-            heroSectionEl.style.display = 'none';
+            if (postsGridEl) {
+                postsGridEl.innerHTML = `<p class="empty-subtitle" style="grid-column: 1/-1; padding: 40px 0;">No edits filed under this sector yet.</p>`;
+            }
+            if (heroSectionEl) heroSectionEl.style.display = 'none';
             return;
         }
 
         if (currentCategory === 'all') {
-            heroSectionEl.style.display = 'grid';
+            if (heroSectionEl) heroSectionEl.style.display = 'grid';
             renderHeroFeature(filteredArticles[0]);
             renderPostsGrid(filteredArticles.slice(1));
         } else {
-            heroSectionEl.style.display = 'none';
+            if (heroSectionEl) heroSectionEl.style.display = 'none';
             renderPostsGrid(filteredArticles);
         }
     }
 
     function renderHeroFeature(article) {
+        if (!heroSectionEl) return;
         heroSectionEl.innerHTML = `
             <div class="hero-image-pane">
                 <img src="${article.coverImage || 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000'}" alt="${article.title}">
             </div>
             <div class="hero-content-pane">
-                <span class="tag-label pink-tag">${article.category}</span>
-                <h2 class="hero-headline">${article.title}</h2>
-                <p class="hero-hook">${article.subtitle || ''}</p>
+                <span class="tag-label pink-tag">${escapeHtml(article.category)}</span>
+                <h2 class="hero-headline">${escapeHtml(article.title)}</h2>
+                <p class="hero-hook">${escapeHtml(article.subtitle || '')}</p>
                 <button class="editorial-btn read-more-trigger" data-id="${article.id}">Read Article</button>
             </div>
         `;
-        heroSectionEl.querySelector('.read-more-trigger').addEventListener('click', () => {
-            checkGateAndOpenArticle(article);
-        });
+        const btn = heroSectionEl.querySelector('.read-more-trigger');
+        if (btn) btn.addEventListener('click', () => checkGateAndOpenArticle(article));
     }
 
     function renderPostsGrid(articles) {
+        if (!postsGridEl) return;
         postsGridEl.innerHTML = '';
         articles.forEach((article, index) => {
             const card = document.createElement('div');
             card.className = 'article-card';
             card.style.animationDelay = `${index * 0.05}s`;
-            
             const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
+                month: 'short', day: 'numeric', year: 'numeric'
             });
-
             card.innerHTML = `
                 <div class="card-image-box">
-                    <img src="${article.coverImage || 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000'}" alt="${article.title}">
+                    <img src="${article.coverImage || 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000'}" alt="${escapeHtml(article.title)}">
                 </div>
                 <div class="card-meta">
-                    <span class="tag-label">${article.category}</span>
+                    <span class="tag-label">${escapeHtml(article.category)}</span>
                     <span class="card-date">${formattedDate}</span>
                 </div>
-                <h3 class="card-title">${article.title}</h3>
-                <p class="card-description">${article.subtitle || ''}</p>
+                <h3 class="card-title">${escapeHtml(article.title)}</h3>
+                <p class="card-description">${escapeHtml(article.subtitle || '')}</p>
             `;
-
-            card.addEventListener('click', () => {
-                checkGateAndOpenArticle(article);
-            });
-
+            card.addEventListener('click', () => checkGateAndOpenArticle(article));
             postsGridEl.appendChild(card);
         });
     }
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
     async function launchArticleReader(article) {
+        console.log('Launching article:', article.id);
         const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
+            weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
         });
 
-        const htmlBodyContent = article.body.split('\n').map(para => {
-            const trimmed = para.trim();
-            if (!trimmed) return '';
-            if (trimmed.startsWith('>')) {
-                return `<blockquote>${trimmed.replace('>', '').trim()}</blockquote>`;
-            }
-            return `<p>${trimmed}</p>`;
-        }).join('');
+        let htmlBodyContent = '';
+        if (article.body) {
+            htmlBodyContent = article.body.split('\n').map(para => {
+                const trimmed = para.trim();
+                if (!trimmed) return '';
+                if (trimmed.startsWith('>')) {
+                    return `<blockquote>${escapeHtml(trimmed.replace('>', '').trim())}</blockquote>`;
+                }
+                return `<p>${escapeHtml(trimmed)}</p>`;
+            }).join('');
+        } else {
+            htmlBodyContent = '<p>Content not available.</p>';
+        }
 
         const localLikeKey = `mm_liked_${article.id}`;
         const isLiked = localStorage.getItem(localLikeKey) === 'true';
         const baselineLikes = getPostBaselineLikes(article.id);
 
+        if (!modalBodyEl) {
+            console.error('Modal body element not found');
+            return;
+        }
+
         modalBodyEl.innerHTML = `
             <header class="reader-header">
-                <span class="tag-label pink-tag">${article.category}</span>
-                <h1 class="reader-title">${article.title}</h1>
+                <span class="tag-label pink-tag">${escapeHtml(article.category)}</span>
+                <h1 class="reader-title">${escapeHtml(article.title)}</h1>
                 <span class="reader-date">${formattedDate}</span>
             </header>
-            <img class="reader-hero-img" src="${article.coverImage}" alt="${article.title}">
+            <img class="reader-hero-img" src="${article.coverImage || ''}" alt="${escapeHtml(article.title)}" onerror="this.src='https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000'">
             <div class="reader-rich-text">
                 ${htmlBodyContent}
             </div>
@@ -232,73 +263,79 @@ document.addEventListener('DOMContentLoaded', () => {
             if (getRes.ok) {
                 const data = await getRes.json();
                 serverLikesCount = parseInt(data.likes, 10) || 0;
-                likeCounter.innerText = baselineLikes + serverLikesCount;
+                if (likeCounter) likeCounter.innerText = baselineLikes + serverLikesCount;
             }
         } catch (err) {
-            console.error("Database sync error.", err);
+            console.error("Like fetch error:", err);
         }
 
-        likeBtn.addEventListener('click', async () => {
-            const stateActive = localStorage.getItem(localLikeKey) === 'true';
-            const actionType = stateActive ? 'unlike' : 'like';
-            likeIcon.classList.remove('animate-pop');
-            void likeIcon.offsetWidth;
-            likeIcon.classList.add('animate-pop');
-
-            if (!stateActive) {
-                localStorage.setItem(localLikeKey, 'true');
-                serverLikesCount += 1;
-                likeIcon.setAttribute('fill', '#F3C1C6');
-                likeIcon.setAttribute('stroke', '#F3C1C6');
-            } else {
-                localStorage.setItem(localLikeKey, 'false');
-                serverLikesCount = Math.max(0, serverLikesCount - 1);
-                likeIcon.setAttribute('fill', 'none');
-                likeIcon.setAttribute('stroke', '#121212');
-            }
-            likeCounter.innerText = baselineLikes + serverLikesCount;
-
-            try {
-                const postRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}&_cb=${Date.now()}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: actionType })
-                });
-                if (postRes.ok) {
-                    const data = await postRes.json();
-                    const updatedServerLikes = parseInt(data.likes, 10) || 0;
-                    likeCounter.innerText = baselineLikes + updatedServerLikes;
+        if (likeBtn) {
+            likeBtn.addEventListener('click', async () => {
+                const stateActive = localStorage.getItem(localLikeKey) === 'true';
+                const actionType = stateActive ? 'unlike' : 'like';
+                if (likeIcon) {
+                    likeIcon.classList.remove('animate-pop');
+                    void likeIcon.offsetWidth;
+                    likeIcon.classList.add('animate-pop');
                 }
-            } catch (err) {
-                console.error("Cloud sync failed.");
-            }
-        });
-
-        shareBtn.addEventListener('click', async () => {
-            const articleUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.id)}`;
-            if (navigator.share) {
+                if (!stateActive) {
+                    localStorage.setItem(localLikeKey, 'true');
+                    serverLikesCount += 1;
+                    if (likeIcon) {
+                        likeIcon.setAttribute('fill', '#F3C1C6');
+                        likeIcon.setAttribute('stroke', '#F3C1C6');
+                    }
+                } else {
+                    localStorage.setItem(localLikeKey, 'false');
+                    serverLikesCount = Math.max(0, serverLikesCount - 1);
+                    if (likeIcon) {
+                        likeIcon.setAttribute('fill', 'none');
+                        likeIcon.setAttribute('stroke', '#121212');
+                    }
+                }
+                if (likeCounter) likeCounter.innerText = baselineLikes + serverLikesCount;
                 try {
-                    await navigator.share({
-                        title: article.title,
-                        text: article.subtitle,
-                        url: articleUrl
+                    const postRes = await fetch(`${LIKES_API_BASE}?postId=${encodeURIComponent(article.id)}&_cb=${Date.now()}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: actionType })
                     });
-                } catch (err) {}
-            } else {
-                navigator.clipboard.writeText(articleUrl);
-                shareBtnText.innerText = 'Link Copied!';
-                setTimeout(() => { shareBtnText.innerText = 'Share Entry'; }, 2000);
-            }
-        });
+                    if (postRes.ok) {
+                        const data = await postRes.json();
+                        const updated = parseInt(data.likes, 10) || 0;
+                        if (likeCounter) likeCounter.innerText = baselineLikes + updated;
+                    }
+                } catch (err) { console.error("Like sync error:", err); }
+            });
+        }
+
+        if (shareBtn) {
+            shareBtn.addEventListener('click', async () => {
+                const articleUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.id)}`;
+                if (navigator.share) {
+                    try {
+                        await navigator.share({ title: article.title, text: article.subtitle, url: articleUrl });
+                    } catch (err) {}
+                } else {
+                    navigator.clipboard.writeText(articleUrl);
+                    if (shareBtnText) {
+                        shareBtnText.innerText = 'Copied!';
+                        setTimeout(() => { if (shareBtnText) shareBtnText.innerText = 'Share Entry'; }, 2000);
+                    }
+                }
+            });
+        }
 
         const targetUrl = `${window.location.origin}${window.location.pathname}?article=${encodeURIComponent(article.id)}`;
         window.history.pushState({ path: targetUrl }, '', targetUrl);
-        articleModalEl.classList.add('open-modal');
-        document.body.style.overflow = 'hidden';
+        if (articleModalEl) {
+            articleModalEl.classList.add('open-modal');
+            document.body.style.overflow = 'hidden';
+        }
     }
 
     function closeArticleReader() {
-        articleModalEl.classList.remove('open-modal');
+        if (articleModalEl) articleModalEl.classList.remove('open-modal');
         document.body.style.overflow = '';
         const cleanUrl = `${window.location.origin}${window.location.pathname}`;
         window.history.pushState({ path: cleanUrl }, '', cleanUrl);
@@ -314,21 +351,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    homeLogoBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        categoryNavButtons.forEach(btn => btn.classList.remove('active'));
-        categoryNavButtons[0].classList.add('active');
-        currentCategory = 'all';
-        renderMagazineView();
-    });
+    if (homeLogoBtn) {
+        homeLogoBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            categoryNavButtons.forEach(btn => btn.classList.remove('active'));
+            if (categoryNavButtons[0]) categoryNavButtons[0].classList.add('active');
+            currentCategory = 'all';
+            renderMagazineView();
+        });
+    }
 
-    closeModalBtn.addEventListener('click', closeArticleReader);
-    articleModalEl.addEventListener('click', (e) => {
-        if (e.target === articleModalEl) closeArticleReader();
-    });
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeArticleReader);
+    if (articleModalEl) {
+        articleModalEl.addEventListener('click', (e) => {
+            if (e.target === articleModalEl) closeArticleReader();
+        });
+    }
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && articleModalEl.classList.contains('open-modal')) closeArticleReader();
+        if (e.key === 'Escape' && articleModalEl && articleModalEl.classList.contains('open-modal')) {
+            closeArticleReader();
+        }
     });
 
+    // Start
     initMagazine();
 });
