@@ -433,7 +433,7 @@
                 var res = await fetch('/content/posts.json');
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 var data = await res.json();
-                var posts = (data.posts || []).slice(0, 6);
+                var posts = data.posts || [];
 
                 if (!posts.length) {
                     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--grey);">No stories yet.</div>';
