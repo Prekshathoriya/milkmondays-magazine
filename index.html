@@ -431,7 +431,7 @@
         async function loadPosts() {
             var grid = document.getElementById('cards-grid');
             try {
-                var res = await fetch('https://milkmondays-magazine.pages.dev/content/posts.json');
+                var res = await fetch('https://milkmondays-magazine.pages.dev/posts.json');
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 var data = await res.json();
                 var posts = (data.posts || []).sort(function(a, b) {
