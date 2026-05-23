@@ -30,7 +30,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ── GRAIN ── */
         .grain {
             position: fixed;
             inset: 0;
@@ -261,6 +260,11 @@
     (function () {
         'use strict';
 
+        /* ── Google Form config ── */
+        var GF_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse';
+        var GF_NAME  = 'entry.1112062655';
+        var GF_EMAIL = 'entry.71996981';
+
         var isChecked = false;
         var checkRow  = document.getElementById('check-row');
         var checkBox  = document.getElementById('check-box');
@@ -284,9 +288,8 @@
             var name  = nameEl.value.trim();
             var email = emailEl.value.trim();
 
-            /* reset error */
             errorMsg.classList.remove('show');
-            errorMsg.textContent = 'Please fill in your name, email, and confirm you\'ve followed.';
+            errorMsg.textContent = "Please fill in your name, email, and confirm you've followed.";
 
             if (!name || !email || !isChecked) {
                 errorMsg.classList.add('show');
@@ -300,38 +303,57 @@
                 return;
             }
 
-            /* disable button while processing */
             submitBtn.disabled = true;
             submitBtn.textContent = 'Unlocking…';
 
-            /* persist gate */
+            /* save locally */
             try {
                 var entries = JSON.parse(localStorage.getItem('mm_entries') || '[]');
                 entries.push({ name: name, email: email, ts: new Date().toISOString() });
                 localStorage.setItem('mm_entries', JSON.stringify(entries));
                 localStorage.setItem('mm_gate_passed', 'true');
                 localStorage.setItem('mm_user_name', name);
-            } catch (e) { /* storage unavailable — still allow through */ }
-
-            /* optional Netlify Forms submission (fire-and-forget) */
-            try {
-                var fd = new FormData();
-                fd.append('form-name', 'gate-form');
-                fd.append('name', name);
-                fd.append('email', email);
-                fetch('/', { method: 'POST', body: fd }).catch(function(){});
             } catch (e) {}
 
-            /* redirect */
-            var params = new URLSearchParams(window.location.search);
-            var dest   = params.get('redirect');
-            if (!dest || !/^(https?:\/\/|\/|[^:]+\.html)/.test(dest)) {
-                dest = 'magazine.html';
-            }
-            window.location.href = dest;
+            /* send to Google Forms silently via hidden iframe trick */
+            try {
+                var iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.name = 'hidden_iframe';
+                document.body.appendChild(iframe);
+
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = GF_URL;
+                form.target = 'hidden_iframe';
+
+                var f1 = document.createElement('input');
+                f1.type = 'hidden';
+                f1.name = GF_NAME;
+                f1.value = name;
+                form.appendChild(f1);
+
+                var f2 = document.createElement('input');
+                f2.type = 'hidden';
+                f2.name = GF_EMAIL;
+                f2.value = email;
+                form.appendChild(f2);
+
+                document.body.appendChild(form);
+                form.submit();
+            } catch(e) {}
+
+            /* redirect after short delay to let form submit */
+            setTimeout(function() {
+                var params = new URLSearchParams(window.location.search);
+                var dest = params.get('redirect');
+                if (!dest || !/^(https?:\/\/|\/|[^:]+\.html)/.test(dest)) {
+                    dest = 'magazine.html';
+                }
+                window.location.href = dest;
+            }, 500);
         });
 
-        /* allow Enter key in inputs to submit */
         [nameEl, emailEl].forEach(function(inp) {
             inp.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') submitBtn.click();
