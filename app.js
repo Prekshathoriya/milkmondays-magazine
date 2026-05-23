@@ -9,7 +9,7 @@
 
     /* ── CONFIG ── */
     var LIKES_API = 'https://muddy-shadow-6c19.milkmondaysbiz.workers.dev';
-    var POSTS_URL = 'https://milkmondays-magazine.pages.dev/posts.json';
+    var POSTS_URL = 'https://milkmondays-magazine.pages.dev/content/posts.json';
 
     /* ── STATE ── */
     var allPosts      = [];
