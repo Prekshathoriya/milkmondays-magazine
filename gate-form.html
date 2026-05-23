@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,400;1,400&family=Playball&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
             --pink:  #F3C1C6;
             --black: #121212;
@@ -20,7 +19,6 @@
             --sans:  'DM Sans', sans-serif;
             --logo:  'Playball', cursive;
         }
-
         body {
             background: var(--cream);
             font-family: var(--sans);
@@ -29,7 +27,6 @@
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
-
         .grain {
             position: fixed;
             inset: 0;
@@ -37,7 +34,6 @@
             pointer-events: none;
             z-index: 9999;
         }
-
         .bar {
             background: var(--black);
             color: #fff;
@@ -47,7 +43,6 @@
             padding: 9px 20px;
             text-transform: uppercase;
         }
-
         .site-header {
             text-align: center;
             padding: 36px 20px 20px;
@@ -67,19 +62,16 @@
             font-style: italic;
             color: var(--black);
         }
-
         .wrap {
             max-width: 480px;
             margin: 60px auto 80px;
             padding: 0 20px;
         }
-
         .card {
             border: 1px solid var(--black);
             padding: 44px 40px;
             background: var(--cream);
         }
-
         .card-title {
             font-family: var(--serif);
             font-size: 30px;
@@ -88,7 +80,6 @@
             text-align: center;
             margin-bottom: 14px;
         }
-
         .card-intro {
             text-align: center;
             color: var(--grey);
@@ -96,9 +87,7 @@
             margin-bottom: 34px;
             line-height: 1.7;
         }
-
         .field { margin-bottom: 26px; }
-
         label {
             display: block;
             font-size: 10px;
@@ -107,7 +96,6 @@
             margin-bottom: 8px;
             font-weight: 500;
         }
-
         input[type="text"],
         input[type="email"] {
             width: 100%;
@@ -126,7 +114,6 @@
         input[type="email"]::placeholder { color: #bbb; }
         input[type="text"]:focus,
         input[type="email"]:focus { border-bottom-color: var(--pink); }
-
         .insta-block {
             text-align: center;
             margin: 22px 0;
@@ -141,7 +128,6 @@
             transition: color 0.2s;
         }
         .insta-link:hover { color: var(--pink); }
-
         .check-row {
             display: flex;
             gap: 12px;
@@ -163,7 +149,6 @@
             transition: background 0.15s;
         }
         .check-box.ticked { background: var(--black); }
-
         .check-mark {
             width: 10px;
             height: 6px;
@@ -174,9 +159,7 @@
             transition: transform 0.18s ease;
         }
         .check-box.ticked .check-mark { transform: rotate(-45deg) scaleX(1); }
-
         .check-label { font-size: 12px; line-height: 1.5; padding-top: 1px; }
-
         .error-msg {
             font-size: 11px;
             color: var(--red);
@@ -184,7 +167,6 @@
             display: none;
         }
         .error-msg.show { display: block; }
-
         .submit-btn {
             display: block;
             width: 100%;
@@ -201,7 +183,6 @@
         }
         .submit-btn:hover { background: var(--black); color: #fff; }
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
         .site-footer-sm {
             text-align: center;
             padding: 28px 20px 40px;
@@ -260,8 +241,7 @@
     (function () {
         'use strict';
 
-        /* ── Google Form config ── */
-        var GF_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse';
+        var GF_URL   = 'https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse';
         var GF_NAME  = 'entry.1112062655';
         var GF_EMAIL = 'entry.71996981';
 
@@ -280,9 +260,18 @@
         }
 
         checkRow.addEventListener('click', toggleCheck);
-        checkRow.addEventListener('keydown', function(e) {
+        checkRow.addEventListener('keydown', function (e) {
             if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleCheck(); }
         });
+
+        function getRedirectDest() {
+            var params = new URLSearchParams(window.location.search);
+            var dest = params.get('redirect');
+            if (!dest || !/^(https?:\/\/|\/|[^:]+\.html)/.test(dest)) {
+                dest = 'magazine.html';
+            }
+            return dest;
+        }
 
         submitBtn.addEventListener('click', function () {
             var name  = nameEl.value.trim();
@@ -296,8 +285,7 @@
                 return;
             }
 
-            var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRe.test(email)) {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 errorMsg.textContent = 'Please enter a valid email address.';
                 errorMsg.classList.add('show');
                 return;
@@ -306,7 +294,7 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Unlocking…';
 
-            /* save locally */
+            /* 1. Save locally */
             try {
                 var entries = JSON.parse(localStorage.getItem('mm_entries') || '[]');
                 entries.push({ name: name, email: email, ts: new Date().toISOString() });
@@ -315,47 +303,24 @@
                 localStorage.setItem('mm_user_name', name);
             } catch (e) {}
 
-            /* send to Google Forms silently via hidden iframe trick */
+            /* 2. Send to Google Forms using fetch no-cors (fire and forget) */
             try {
-                var iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.name = 'hidden_iframe';
-                document.body.appendChild(iframe);
+                var body = encodeURIComponent(GF_NAME) + '=' + encodeURIComponent(name) +
+                           '&' + encodeURIComponent(GF_EMAIL) + '=' + encodeURIComponent(email);
+                fetch(GF_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body
+                }).catch(function () {});
+            } catch (e) {}
 
-                var form = document.createElement('form');
-                form.method = 'POST';
-                form.action = GF_URL;
-                form.target = 'hidden_iframe';
-
-                var f1 = document.createElement('input');
-                f1.type = 'hidden';
-                f1.name = GF_NAME;
-                f1.value = name;
-                form.appendChild(f1);
-
-                var f2 = document.createElement('input');
-                f2.type = 'hidden';
-                f2.name = GF_EMAIL;
-                f2.value = email;
-                form.appendChild(f2);
-
-                document.body.appendChild(form);
-                form.submit();
-            } catch(e) {}
-
-            /* redirect after short delay to let form submit */
-            setTimeout(function() {
-                var params = new URLSearchParams(window.location.search);
-                var dest = params.get('redirect');
-                if (!dest || !/^(https?:\/\/|\/|[^:]+\.html)/.test(dest)) {
-                    dest = 'magazine.html';
-                }
-                window.location.href = dest;
-            }, 500);
+            /* 3. Redirect immediately — don't wait for Google */
+            window.location.href = getRedirectDest();
         });
 
-        [nameEl, emailEl].forEach(function(inp) {
-            inp.addEventListener('keydown', function(e) {
+        [nameEl, emailEl].forEach(function (inp) {
+            inp.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') submitBtn.click();
             });
         });
