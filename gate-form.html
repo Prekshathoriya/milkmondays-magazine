@@ -163,36 +163,40 @@
                 a little hello before the good part.
             </p>
 
-            <div class="field">
-                <label for="input-name">Your name *</label>
-                <input type="text" id="input-name" placeholder="What should we call you?" autocomplete="given-name">
-            </div>
+            <form id="mm-gate-form" method="POST" action="https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse" target="hidden-iframe">
+                <div class="field">
+                    <label for="input-name">Your name *</label>
+                    <input type="text" id="input-name" name="entry.1112062655" placeholder="What should we call you?" autocomplete="given-name" required>
+                </div>
 
-            <div class="field">
-                <label for="input-email">Email address *</label>
-                <input type="email" id="input-email" placeholder="your@email.com" autocomplete="email">
-            </div>
+                <div class="field">
+                    <label for="input-email">Email address *</label>
+                    <input type="email" id="input-email" name="entry.71996981" placeholder="your@email.com" autocomplete="email" required>
+                </div>
 
-            <p class="error-msg" id="error-msg" role="alert">Please fill in your name and email address.</p>
+                <p class="error-msg" id="error-msg" role="alert">Please fill in your name and email address.</p>
 
-            <button class="submit-btn" id="submit-btn">Unlock Content →</button>
+                <button type="submit" class="submit-btn" id="submit-btn">Unlock Content →</button>
+            </form>
+
+            <iframe id="hidden-iframe" name="hidden-iframe" style="display:none;"></iframe>
         </div>
     </div>
 
     <footer class="site-footer-sm">&copy; 2026 Milk Mondays. All rights reserved.</footer>
 
     <script>
-    (function () {
+    (function() {
         'use strict';
 
-        var GF_URL   = 'https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse';
-        var GF_NAME  = 'entry.1112062655';
-        var GF_EMAIL = 'entry.71996981';
-
-        var errorMsg  = document.getElementById('error-msg');
+        var form = document.getElementById('mm-gate-form');
+        var nameInput = document.getElementById('input-name');
+        var emailInput = document.getElementById('input-email');
+        var errorMsg = document.getElementById('error-msg');
         var submitBtn = document.getElementById('submit-btn');
-        var nameEl    = document.getElementById('input-name');
-        var emailEl   = document.getElementById('input-email');
+        var iframe = document.getElementById('hidden-iframe');
+        
+        var isSubmitting = false;
 
         function getRedirectDest() {
             var params = new URLSearchParams(window.location.search);
@@ -203,54 +207,51 @@
             return dest;
         }
 
-        submitBtn.addEventListener('click', function () {
-            var name  = nameEl.value.trim();
-            var email = emailEl.value.trim();
+        // Fired after data reaches Google Forms
+        iframe.addEventListener('load', function() {
+            if (!isSubmitting) return; 
+
+            try {
+                localStorage.setItem('mm_gate_passed', 'true');
+                localStorage.setItem('mm_user_name', nameInput.value.trim());
+                localStorage.setItem('mm_user_email', emailInput.value.trim());
+            } catch(e) {}
+
+            window.location.href = getRedirectDest();
+        });
+
+        form.addEventListener('submit', function(e) {
+            var name = nameInput.value.trim();
+            var email = emailInput.value.trim();
 
             errorMsg.classList.remove('show');
-            errorMsg.textContent = 'Please fill in your name and email address.';
 
             if (!name || !email) {
+                e.preventDefault();
+                errorMsg.textContent = 'Please fill in your name and email address.';
                 errorMsg.classList.add('show');
                 return;
             }
 
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                e.preventDefault();
                 errorMsg.textContent = 'Please enter a valid email address.';
                 errorMsg.classList.add('show');
                 return;
             }
 
+            isSubmitting = true;
             submitBtn.disabled = true;
             submitBtn.textContent = 'Unlocking…';
-
-            /* 1. Save gate state locally */
-            try {
-                localStorage.setItem('mm_gate_passed', 'true');
-                localStorage.setItem('mm_user_name', name);
-                localStorage.setItem('mm_user_email', email);
-            } catch (e) {}
-
-            /* 2. Send to Google Forms silently in background */
-            try {
-                var body = encodeURIComponent(GF_NAME)  + '=' + encodeURIComponent(name) +
-                           '&' + encodeURIComponent(GF_EMAIL) + '=' + encodeURIComponent(email);
-                fetch(GF_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: body
-                }).catch(function () {});
-            } catch (e) {}
-
-            /* 3. Redirect immediately */
-            window.location.href = getRedirectDest();
         });
 
-        /* Allow Enter key to submit */
-        [nameEl, emailEl].forEach(function (inp) {
-            inp.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') submitBtn.click();
+        [nameInput, emailInput].forEach(function(inp) {
+            inp.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    if(form.reportValidity ? form.reportValidity() : true) {
+                        form.requestSubmit ? form.requestSubmit() : form.submit();
+                    }
+                }
             });
         });
     })();
