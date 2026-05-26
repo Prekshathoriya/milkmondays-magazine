@@ -109,57 +109,12 @@
             color: var(--black);
             transition: border-color 0.2s;
             -webkit-appearance: none;
+            appearance: none;
         }
         input[type="text"]::placeholder,
         input[type="email"]::placeholder { color: #bbb; }
         input[type="text"]:focus,
         input[type="email"]:focus { border-bottom-color: var(--pink); }
-        .insta-block {
-            text-align: center;
-            margin: 22px 0;
-        }
-        .insta-link {
-            display: inline-block;
-            color: var(--black);
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: underline;
-            text-underline-offset: 3px;
-            transition: color 0.2s;
-        }
-        .insta-link:hover { color: var(--pink); }
-        .check-row {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            margin: 22px 0 28px;
-            cursor: pointer;
-            user-select: none;
-        }
-        .check-box {
-            flex-shrink: 0;
-            width: 18px;
-            height: 18px;
-            border: 1px solid var(--black);
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 1px;
-            transition: background 0.15s;
-        }
-        .check-box.ticked { background: var(--black); }
-        .check-mark {
-            width: 10px;
-            height: 6px;
-            border-left: 1.5px solid #fff;
-            border-bottom: 1.5px solid #fff;
-            transform: rotate(-45deg) scaleX(0);
-            transform-origin: left;
-            transition: transform 0.18s ease;
-        }
-        .check-box.ticked .check-mark { transform: rotate(-45deg) scaleX(1); }
-        .check-label { font-size: 12px; line-height: 1.5; padding-top: 1px; }
         .error-msg {
             font-size: 11px;
             color: var(--red);
@@ -197,15 +152,15 @@
     <div class="bar">A collection of everyday things. If it looks good, it belongs here.</div>
 
     <header class="site-header">
-        <a href="index.html" class="brand"><span class="m">Milk</span> <span class="n">Mondays</span></a>
+        <a href="magazine.html" class="brand"><span class="m">Milk</span> <span class="n">Mondays</span></a>
     </header>
 
     <div class="wrap">
         <div class="card">
             <h1 class="card-title">Before you read…</h1>
             <p class="card-intro">
-                Just two quick things — your name, email,<br>
-                and a follow on Instagram. No spam, ever.
+                Just your name and email — so we know<br>
+                who's reading. No spam, ever.
             </p>
 
             <div class="field">
@@ -218,18 +173,7 @@
                 <input type="email" id="input-email" placeholder="your@email.com" autocomplete="email">
             </div>
 
-            <div class="insta-block">
-                <a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener" class="insta-link">
-                    📸 Follow @milkmondayss on Instagram
-                </a>
-            </div>
-
-            <div class="check-row" id="check-row" role="checkbox" aria-checked="false" tabindex="0">
-                <div class="check-box" id="check-box"><div class="check-mark"></div></div>
-                <span class="check-label">I've followed @milkmondayss on Instagram and I'm ready to read.</span>
-            </div>
-
-            <p class="error-msg" id="error-msg" role="alert">Please fill in your name, email, and confirm you've followed.</p>
+            <p class="error-msg" id="error-msg" role="alert">Please fill in your name and email address.</p>
 
             <button class="submit-btn" id="submit-btn">Unlock Content →</button>
         </div>
@@ -241,28 +185,13 @@
     (function () {
         'use strict';
 
-        var GF_URL   = 'https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse';
-        var GF_NAME  = 'entry.1112062655';
-        var GF_EMAIL = 'entry.71996981';
+        /* ── PASTE YOUR APPS SCRIPT WEB APP URL HERE ── */
+        var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyvI6asTeAvySapRc8kN2MQUJCFUS3RBV7hG0ScM_ZdOa3CVOG0j_FPPcLzjRRDzSTZ/exec';
 
-        var isChecked = false;
-        var checkRow  = document.getElementById('check-row');
-        var checkBox  = document.getElementById('check-box');
         var errorMsg  = document.getElementById('error-msg');
         var submitBtn = document.getElementById('submit-btn');
         var nameEl    = document.getElementById('input-name');
         var emailEl   = document.getElementById('input-email');
-
-        function toggleCheck() {
-            isChecked = !isChecked;
-            checkBox.classList.toggle('ticked', isChecked);
-            checkRow.setAttribute('aria-checked', String(isChecked));
-        }
-
-        checkRow.addEventListener('click', toggleCheck);
-        checkRow.addEventListener('keydown', function (e) {
-            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleCheck(); }
-        });
 
         function getRedirectDest() {
             var params = new URLSearchParams(window.location.search);
@@ -273,14 +202,18 @@
             return dest;
         }
 
+        function doRedirect() {
+            window.location.href = getRedirectDest();
+        }
+
         submitBtn.addEventListener('click', function () {
             var name  = nameEl.value.trim();
             var email = emailEl.value.trim();
 
             errorMsg.classList.remove('show');
-            errorMsg.textContent = "Please fill in your name, email, and confirm you've followed.";
+            errorMsg.textContent = 'Please fill in your name and email address.';
 
-            if (!name || !email || !isChecked) {
+            if (!name || !email) {
                 errorMsg.classList.add('show');
                 return;
             }
@@ -294,31 +227,32 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Unlocking…';
 
-            /* 1. Save locally */
+            /* 1. Save gate state locally — this is what controls the gate */
             try {
-                var entries = JSON.parse(localStorage.getItem('mm_entries') || '[]');
-                entries.push({ name: name, email: email, ts: new Date().toISOString() });
-                localStorage.setItem('mm_entries', JSON.stringify(entries));
                 localStorage.setItem('mm_gate_passed', 'true');
                 localStorage.setItem('mm_user_name', name);
+                localStorage.setItem('mm_user_email', email);
             } catch (e) {}
 
-            /* 2. Send to Google Forms using fetch no-cors (fire and forget) */
+            /* 2. Send to Google Sheets via Apps Script (fire and forget) */
             try {
-                var body = encodeURIComponent(GF_NAME) + '=' + encodeURIComponent(name) +
-                           '&' + encodeURIComponent(GF_EMAIL) + '=' + encodeURIComponent(email);
-                fetch(GF_URL, {
+                fetch(SHEET_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: body
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name:  name,
+                        email: email,
+                        ts:    new Date().toISOString()
+                    })
                 }).catch(function () {});
             } catch (e) {}
 
-            /* 3. Redirect immediately — don't wait for Google */
-            window.location.href = getRedirectDest();
+            /* 3. Redirect immediately — don't wait for the sheet */
+            doRedirect();
         });
 
+        /* Allow Enter key to submit */
         [nameEl, emailEl].forEach(function (inp) {
             inp.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') submitBtn.click();
