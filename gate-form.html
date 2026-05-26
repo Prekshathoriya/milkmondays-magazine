@@ -185,8 +185,7 @@
     (function () {
         'use strict';
 
-        /* ── PASTE YOUR APPS SCRIPT WEB APP URL HERE ── */
-        var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyvI6asTeAvySapRc8kN2MQUJCFUS3RBV7hG0ScM_ZdOa3CVOG0j_FPPcLzjRRDzSTZ/exec';
+        var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyl_vDjJDl5btDkKR7bGErGotxr3PD6mXNbW_D0fuh3DRwEaelK2CEEA3gNvqpwKbr-/exec';
 
         var errorMsg  = document.getElementById('error-msg');
         var submitBtn = document.getElementById('submit-btn');
@@ -200,10 +199,6 @@
                 dest = 'magazine.html';
             }
             return dest;
-        }
-
-        function doRedirect() {
-            window.location.href = getRedirectDest();
         }
 
         submitBtn.addEventListener('click', function () {
@@ -227,29 +222,28 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Unlocking…';
 
-            /* 1. Save gate state locally — this is what controls the gate */
+            /* 1. Save gate state locally */
             try {
                 localStorage.setItem('mm_gate_passed', 'true');
                 localStorage.setItem('mm_user_name', name);
                 localStorage.setItem('mm_user_email', email);
             } catch (e) {}
 
-            /* 2. Send to Google Sheets via Apps Script (fire and forget) */
+            /* 2. Send to Google Sheets via Apps Script */
             try {
+                var formBody = 'name='  + encodeURIComponent(name) +
+                               '&email=' + encodeURIComponent(email) +
+                               '&ts='    + encodeURIComponent(new Date().toISOString());
                 fetch(SHEET_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name:  name,
-                        email: email,
-                        ts:    new Date().toISOString()
-                    })
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formBody
                 }).catch(function () {});
             } catch (e) {}
 
-            /* 3. Redirect immediately — don't wait for the sheet */
-            doRedirect();
+            /* 3. Redirect immediately */
+            window.location.href = getRedirectDest();
         });
 
         /* Allow Enter key to submit */
