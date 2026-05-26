@@ -185,7 +185,9 @@
     (function () {
         'use strict';
 
-        var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyl_vDjJDl5btDkKR7bGErGotxr3PD6mXNbW_D0fuh3DRwEaelK2CEEA3gNvqpwKbr-/exec';
+        var GF_URL   = 'https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse';
+        var GF_NAME  = 'entry.1112062655';
+        var GF_EMAIL = 'entry.71996981';
 
         var errorMsg  = document.getElementById('error-msg');
         var submitBtn = document.getElementById('submit-btn');
@@ -229,16 +231,15 @@
                 localStorage.setItem('mm_user_email', email);
             } catch (e) {}
 
-            /* 2. Send to Google Sheets via Apps Script */
+            /* 2. Send to Google Forms silently in background */
             try {
-                var formBody = 'name='  + encodeURIComponent(name) +
-                               '&email=' + encodeURIComponent(email) +
-                               '&ts='    + encodeURIComponent(new Date().toISOString());
-                fetch(SHEET_URL, {
+                var body = encodeURIComponent(GF_NAME)  + '=' + encodeURIComponent(name) +
+                           '&' + encodeURIComponent(GF_EMAIL) + '=' + encodeURIComponent(email);
+                fetch(GF_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formBody
+                    body: body
                 }).catch(function () {});
             } catch (e) {}
 
