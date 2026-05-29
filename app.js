@@ -23,7 +23,7 @@
     /* ──────────────────────────────────────────
        INIT
     ────────────────────────────────────────── */
-    document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function () {
         stateView   = document.getElementById('state-view');
         magContent  = document.getElementById('mag-content');
         heroSection = document.getElementById('hero-section');
@@ -38,6 +38,21 @@
         bindNav();
         bindModal();
         loadPosts();
+
+        // ── BACK TO TOP BUTTON ──
+        var backToTopBtn = document.getElementById('back-to-top');
+        if (backToTopBtn) {
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 400) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+            backToTopBtn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
     });
 
     /* ──────────────────────────────────────────
