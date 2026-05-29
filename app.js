@@ -183,6 +183,16 @@
                 return p.category && p.category.toLowerCase() === activeCategory.toLowerCase();
               });
 
+        // update active page indicator
+        var indicatorSpan = document.getElementById('active-category-name');
+        if (indicatorSpan) {
+            if (activeCategory === 'all') {
+                indicatorSpan.textContent = 'All posts';
+            } else {
+                indicatorSpan.textContent = activeCategory;
+            }
+        }
+
         if (!filtered.length) {
             if (heroSection) heroSection.style.display = 'none';
             if (postsGrid)   postsGrid.innerHTML = '<p style="grid-column:1/-1;padding:40px 0;color:var(--grey);text-align:center;">No posts in this category yet.</p>';

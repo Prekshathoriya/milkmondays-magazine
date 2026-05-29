@@ -569,3 +569,26 @@ ul { list-style: none; }
     .mag-wrap { padding: 40px 18px 60px; }
     .actions-bar { gap: 20px; }
 }
+/* Active page indicator */
+.active-indicator {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 12px 0 24px;
+    padding: 4px 12px;
+    background: var(--cream);
+    border-left: 2px solid var(--pink);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--grey);
+}
+.active-category-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 500;
+    color: var(--black);
+    text-transform: lowercase;
+}
+.active-category-name::first-letter {
+    text-transform: uppercase;
+}
