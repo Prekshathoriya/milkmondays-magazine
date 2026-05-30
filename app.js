@@ -371,7 +371,7 @@
     /* ──────────────────────────────────────────
        ARTICLE READER
     ────────────────────────────────────────── */
-    function launchReader(post) {
+        function launchReader(post) {
         if (!modalBody) return;
 
         var fullDate = fmtDate(post.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -381,6 +381,7 @@
         var base     = baselineLikes(post.id);
         var heartFill   = liked ? '#F3C1C6' : 'none';
         var heartStroke = liked ? '#F3C1C6' : '#121212';
+        var savedInitial = isSaved(post.id);
 
         modalBody.innerHTML =
             '<header class="reader-header">' +
@@ -404,6 +405,12 @@
                     '</svg>' +
                     '<span id="share-label">Share Entry</span>' +
                 '</button>' +
+                '<button class="action-btn" id="modal-save-btn" data-id="' + esc(post.id) + '">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="' + (savedInitial ? '#F3C1C6' : 'none') + '" stroke="currentColor" stroke-width="1.5">' +
+                        '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>' +
+                    '</svg>' +
+                    '<span id="modal-save-label">' + (savedInitial ? 'Saved' : 'Save for later') + '</span>' +
+                '</button>' +
             '</div>';
 
         /* update URL */
@@ -418,6 +425,9 @@
         var likeBtn     = document.getElementById('like-btn');
         var shareBtn    = document.getElementById('share-btn');
         var shareLabel  = document.getElementById('share-label');
+        var modalSaveBtn = document.getElementById('modal-save-btn');
+        var modalSaveLabel = document.getElementById('modal-save-label');
+        var modalSaveIcon = modalSaveBtn ? modalSaveBtn.querySelector('svg') : null;
 
         fetch(LIKES_API + '?postId=' + encodeURIComponent(post.id) + '&_=' + Date.now())
             .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
@@ -469,6 +479,32 @@
                         }
                     }).catch(function () {});
                 }
+            });
+        }
+
+        // Modal save button logic
+        if (modalSaveBtn) {
+            function updateModalSaveButton() {
+                var saved = isSaved(post.id);
+                if (modalSaveIcon) {
+                    modalSaveIcon.setAttribute('fill', saved ? '#F3C1C6' : 'none');
+                }
+                if (modalSaveLabel) {
+                    modalSaveLabel.textContent = saved ? 'Saved' : 'Save for later';
+                }
+                // Sync with any visible save button on the grid (optional)
+                var gridSaveBtn = document.querySelector('.save-btn[data-id="' + post.id + '"]');
+                if (gridSaveBtn) {
+                    if (saved) gridSaveBtn.classList.add('saved');
+                    else gridSaveBtn.classList.remove('saved');
+                }
+            }
+            updateModalSaveButton();
+
+            modalSaveBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleSave(post.id, null);
+                updateModalSaveButton();
             });
         }
     }
