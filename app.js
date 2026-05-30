@@ -87,11 +87,49 @@
         opts = opts || { month: 'short', day: 'numeric', year: 'numeric' };
         try { return new Date(iso).toLocaleDateString('en-US', opts); } catch (e) { return iso; }
     }
+        /* ── SAVE FOR LATER HELPERS ── */
+    function getSavedIds() {
+        try {
+            var saved = localStorage.getItem('mm_saved_posts');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) { return []; }
+    }
+
+    function savePost(id) {
+        var saved = getSavedIds();
+        if (!saved.includes(id)) {
+            saved.push(id);
+            localStorage.setItem('mm_saved_posts', JSON.stringify(saved));
+        }
+    }
+
+    function unsavePost(id) {
+        var saved = getSavedIds();
+        var newSaved = saved.filter(function(s) { return s !== id; });
+        localStorage.setItem('mm_saved_posts', JSON.stringify(newSaved));
+    }
+
+    function isSaved(id) {
+        return getSavedIds().includes(id);
+    }
+
+    function toggleSave(id, btnElement) {
+        if (isSaved(id)) {
+            unsavePost(id);
+            if (btnElement) btnElement.classList.remove('saved');
+        } else {
+            savePost(id);
+            if (btnElement) btnElement.classList.add('saved');
+        }
+        if (activeCategory === 'saved') {
+            renderMag();
+        }
+    }
 
     /* ──────────────────────────────────────────
        NAV BINDING
     ────────────────────────────────────────── */
-    function bindNav() {
+        function bindNav() {
         navButtons.forEach(function (btn) {
             btn.addEventListener('click', function () {
                 navButtons.forEach(function (b) { b.classList.remove('active'); });
@@ -105,7 +143,8 @@
             logoBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 navButtons.forEach(function (b) { b.classList.remove('active'); });
-                if (navButtons[0]) navButtons[0].classList.add('active');
+                var homeBtn = document.querySelector('.nav-btn[data-category="all"]');
+                if (homeBtn) homeBtn.classList.add('active');
                 activeCategory = 'all';
                 renderMag();
             });
@@ -185,24 +224,32 @@
         if (magContent) magContent.style.display = 'block';
     }
 
-    function renderMag() {
+        function renderMag() {
         if (!allPosts.length) {
             showState('Check back soon — new content is on its way.');
             return;
         }
         hideState();
 
-        var filtered = activeCategory === 'all'
-            ? allPosts
-            : allPosts.filter(function (p) {
-                return p.category && p.category.toLowerCase() === activeCategory.toLowerCase();
-              });
+        var filtered;
+        if (activeCategory === 'saved') {
+            var savedIds = getSavedIds();
+            filtered = allPosts.filter(function(p) { return savedIds.includes(p.id); });
+        } else {
+            filtered = activeCategory === 'all'
+                ? allPosts
+                : allPosts.filter(function (p) {
+                    return p.category && p.category.toLowerCase() === activeCategory.toLowerCase();
+                  });
+        }
 
         // update active page indicator
         var indicatorSpan = document.getElementById('active-category-name');
         if (indicatorSpan) {
             if (activeCategory === 'all') {
                 indicatorSpan.textContent = 'All posts';
+            } else if (activeCategory === 'saved') {
+                indicatorSpan.textContent = 'Saved posts';
             } else {
                 indicatorSpan.textContent = activeCategory;
             }
@@ -224,31 +271,53 @@
         }
     }
 
-    function renderHero(post) {
+        function renderHero(post) {
         if (!heroSection) return;
         var img = post.coverImage || 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000';
+        var savedClass = isSaved(post.id) ? 'saved' : '';
         heroSection.innerHTML =
             '<div class="hero-img-pane">' +
                 '<img src="' + esc(img) + '" alt="' + esc(post.title) + '" loading="lazy">' +
             '</div>' +
             '<div class="hero-body">' +
-                '<span class="tag pink">' + esc(post.category) + '</span>' +
+                '<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">' +
+                    '<span class="tag pink">' + esc(post.category) + '</span>' +
+                    '<button class="save-btn ' + savedClass + '" data-id="' + esc(post.id) + '" aria-label="Save for later">' +
+                        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+                            '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>' +
+                        '</svg>' +
+                    '</button>' +
+                '</div>' +
                 '<h2 class="hero-headline">' + esc(post.title) + '</h2>' +
                 '<p class="hero-hook">' + esc(post.subtitle || '') + '</p>' +
-                '<button class="read-btn" id="hero-read-btn">Read Article</button>' +
+                '<button class="read-btn" data-id="' + esc(post.id) + '">Read Article</button>' +
             '</div>';
 
-        var btn = document.getElementById('hero-read-btn');
-        if (btn) btn.addEventListener('click', function () { checkGateAndOpen(post); });
+        var readBtn = heroSection.querySelector('.read-btn');
+        if (readBtn) readBtn.addEventListener('click', function () {
+            var id = readBtn.dataset.id;
+            var p = allPosts.find(function(post) { return post.id === id; });
+            if (p) checkGateAndOpen(p);
+        });
+
+        var saveBtnHero = heroSection.querySelector('.save-btn');
+        if (saveBtnHero) {
+            saveBtnHero.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var id = saveBtnHero.dataset.id;
+                toggleSave(id, saveBtnHero);
+            });
+        }
     }
 
-    function renderGrid(posts) {
+        function renderGrid(posts) {
         if (!postsGrid) return;
         postsGrid.innerHTML = '';
 
         posts.forEach(function (post, i) {
             var img  = post.coverImage || 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=800';
             var date = fmtDate(post.date);
+            var savedClass = isSaved(post.id) ? 'saved' : '';
 
             var card = document.createElement('div');
             card.className = 'article-card';
@@ -259,12 +328,29 @@
                 '</div>' +
                 '<div class="card-meta">' +
                     '<span class="tag">' + esc(post.category) + '</span>' +
-                    '<span class="card-date">' + date + '</span>' +
+                    '<button class="save-btn ' + savedClass + '" data-id="' + esc(post.id) + '" aria-label="Save for later">' +
+                        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+                            '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>' +
+                        '</svg>' +
+                    '</button>' +
                 '</div>' +
                 '<h3 class="card-h">' + esc(post.title) + '</h3>' +
                 '<p class="card-sub">' + esc(post.subtitle || '') + '</p>';
 
-            card.addEventListener('click', function () { checkGateAndOpen(post); });
+            card.addEventListener('click', function (e) {
+                if (e.target.closest('.save-btn')) return;
+                checkGateAndOpen(post);
+            });
+
+            var saveBtn = card.querySelector('.save-btn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var id = saveBtn.dataset.id;
+                    toggleSave(id, saveBtn);
+                });
+            }
+
             postsGrid.appendChild(card);
         });
     }

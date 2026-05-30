@@ -650,3 +650,32 @@ ul { list-style: none; }
         display: inline; /* keep text visible on mobile */
     }
 }
+/* Save for Later bookmark button */
+.save-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+    color: var(--grey);
+}
+.save-btn:hover {
+    transform: scale(1.1);
+}
+.save-btn svg {
+    display: block;
+}
+.save-btn.saved svg {
+    fill: var(--pink);
+    stroke: var(--pink);
+}
+.card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
