@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Lookbook — Milk Mondays</title>
+    <!-- Ensure your Google Fonts links from magazine.html are here too -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Playball&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css"> 
     <style>
-        /* Pinterest-style Masonry Grid Integration */
+        /* Pinterest-style Masonry Grid */
         .lookbook-grid {
             column-count: 3;
             column-gap: 28px;
@@ -14,7 +18,7 @@
         }
 
         @media (max-width: 1024px) { .lookbook-grid { column-count: 2; } }
-        @media (max-width: 600px) { .lookbook-grid { column-count: 1; } }
+        @media (max-width: 768px) { .lookbook-grid { column-count: 1; } }
 
         .look-item {
             break-inside: avoid;
@@ -23,25 +27,25 @@
             border: 1px solid var(--border);
             padding: 8px;
             transition: transform 0.3s var(--ease);
+            display: flex;
+            flex-direction: column;
         }
         
         .look-item:hover { transform: translateY(-4px); }
         
         .look-img-wrap {
-    overflow: hidden;
-    background: var(--white); /* Changed to white to match your theme */
-    margin-bottom: 12px;
-    line-height: 0; /* Removes extra space under images */
-}
+            overflow: hidden;
+            background: #eee;
+            aspect-ratio: 4/5; 
+            margin-bottom: 12px;
+        }
 
-.look-img-wrap img {
-    width: 100%;
-    display: block;
-    /* 'contain' will show the whole image without stretching */
-    /* 'cover' will fill the space but may crop; 'contain' ensures no stretching */
-    object-fit: contain; 
-    transition: transform 0.5s var(--ease);
-}
+        .look-img-wrap img {
+            width: 100%; 
+            height: 100%;
+            object-fit: cover; 
+            transition: transform 0.5s var(--ease);
+        }
 
         .look-item:hover img { transform: scale(1.03); }
 
@@ -53,11 +57,13 @@
         }
         
         .look-link {
+            font-family: var(--sans);
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--black);
             border-bottom: 1px solid var(--black);
+            padding-bottom: 2px;
         }
     </style>
 </head>
@@ -65,7 +71,10 @@
 
     <header class="site-header">
         <div class="logo-wrap">
-            <a href="index.html" class="brand"><span class="m">M</span>ilk <span class="n">Mondays</span></a>
+            <!-- Corrected logo structure to match brand typography -->
+            <a href="index.html" class="brand">
+                <span class="m">Milk</span> <span class="n">Mondays</span>
+            </a>
         </div>
         <nav class="nav">
             <a href="magazine.html" class="nav-btn">Magazine</a>
@@ -75,17 +84,17 @@
 
     <main class="mag-wrap">
         <div class="divider">
-    <div class="divider-label">Curated Selects</div>
-    <div class="divider-line"></div>
-</div>
+            <div class="divider-label">Curated Selects</div>
+            <div class="divider-line"></div>
+        </div>
 
         <div class="lookbook-grid" id="lookbookGrid">
-            </div>
+            <!-- Items injected by JS -->
+        </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Check auth gate
             if (localStorage.getItem('mm_gate_passed') !== 'true') {
                 window.location.href = 'gate-form.html?redirect=lookbook.html';
                 return;
@@ -101,7 +110,7 @@
                         card.className = 'look-item';
                         card.innerHTML = `
                             <div class="look-img-wrap">
-                                <img src="${item.imageUrl}" alt="Look">
+                                <img src="${item.imageUrl}" alt="Look" loading="lazy">
                             </div>
                             <div class="look-footer">
                                 <a href="${item.links[0].url}" class="look-link" target="_blank">Shop Item</a>
