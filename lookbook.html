@@ -3,442 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Archive — Lookbook</title>
+    <title>The Lookbook — Milk Mondays</title>
+    <link rel="stylesheet" href="styles.css"> 
     <style>
-        :root {
-            --bg-color:    #0a0a0a;
-            --text-main:   #f5f5f7;
-            --text-muted:  #86868b;
-            --border-color:#262626;
-            --font-mono:   ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ── Minimal Header Section ── */
-        header {
-            width: 100%;
-            padding: 40px 4% 20px 4%;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .brand-meta {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            color: var(--text-muted);
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            text-transform: lowercase;
-        }
-
-        /* ── Ultra Chic Masonry Grid Layout ── */
-        .lookbook-container {
-            padding: 40px 4%;
-            width: 100%;
-        }
-
-        .masonry-grid {
+        /* Pinterest-style Masonry Grid Integration */
+        .lookbook-grid {
             column-count: 3;
-            column-gap: 24px;
-            width: 100%;
+            column-gap: 28px;
+            margin-top: 40px;
         }
 
-        @media (max-width: 900px) {
-            .masonry-grid {
-                column-count: 2;
-                column-gap: 16px;
-            }
-        }
+        @media (max-width: 1024px) { .lookbook-grid { column-count: 2; } }
+        @media (max-width: 600px) { .lookbook-grid { column-count: 1; } }
 
-        @media (max-width: 600px) {
-            .masonry-grid {
-                column-count: 1;
-                column-gap: 0;
-            }
-        }
-
-        /* ── Individual Aesthetic Cards ── */
-        .look-card {
+        .look-item {
             break-inside: avoid;
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
-            background-color: #121212;
-            cursor: pointer;
+            margin-bottom: 28px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 8px;
+            transition: transform 0.3s var(--ease);
         }
+        
+        .look-item:hover { transform: translateY(-4px); }
+        
+        .look-img-wrap {
+    overflow: hidden;
+    background: var(--white); /* Changed to white to match your theme */
+    margin-bottom: 12px;
+    line-height: 0; /* Removes extra space under images */
+}
 
-        @media (max-width: 600px) {
-            .look-card {
-                margin-bottom: 16px;
-            }
-        }
+.look-img-wrap img {
+    width: 100%;
+    display: block;
+    /* 'contain' will show the whole image without stretching */
+    /* 'cover' will fill the space but may crop; 'contain' ensures no stretching */
+    object-fit: contain; 
+    transition: transform 0.5s var(--ease);
+}
 
-        .look-image-wrapper {
-            width: 100%;
-            overflow: hidden;
-            position: relative;
-        }
+        .look-item:hover img { transform: scale(1.03); }
 
-        .look-image {
-            width: 100%;
-            height: auto;
-            display: block;
-            object-fit: cover;
-            filter: grayscale(10%) contrast(105%);
-            transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        /* ── Addictive Fluid Interaction Layers ── */
-        .look-card:hover .look-image {
-            transform: scale(1.03);
-        }
-
-        .look-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(10,10,10,0) 40%, rgba(10,10,10,0.85) 100%);
+        .look-footer {
+            padding: 4px;
             display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 24px;
-            opacity: 0;
-            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .look-card:hover .look-overlay {
-            opacity: 1;
-        }
-
-        /* ── Mobile specific touch alternative ── */
-        @media (hover: none) {
-            .look-overlay {
-                opacity: 1;
-                background: linear-gradient(to bottom, rgba(10,10,10,0) 60%, rgba(10,10,10,0.7) 100%);
-                padding: 16px;
-            }
-        }
-
-        /* ── Shopping Interaction Links ── */
-        .shop-links-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            transform: translateY(10px);
-            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .look-card:hover .shop-links-container {
-            transform: translateY(0);
-        }
-
-        @media (hover: none) {
-            .shop-links-container {
-                transform: translateY(0);
-            }
-        }
-
-        .shop-link {
-            display: inline-flex;
-            align-items: center;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-main);
-            text-decoration: none;
-            padding: 12px 16px;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            transition: background 0.2s ease, border-color 0.2s ease;
-        }
-
-        .shop-link:hover {
-            background: rgba(255, 255, 255, 0.98);
-            color: #000;
-            border-color: rgba(255, 255, 255, 1);
-        }
-
-        .shop-link svg {
-            width: 12px;
-            height: 12px;
-            fill: currentColor;
-        }
-
-        /* ── Minimal Loading Visual State ── */
-        .loading-state {
-            text-align: center;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            padding: 40px 0;
-            text-transform: lowercase;
-        }
-
-        /* ── Skeleton loader cards ── */
-        .skeleton-masonry {
-            column-count: 3;
-            column-gap: 24px;
-            width: 100%;
-        }
-        @media (max-width: 900px) { .skeleton-masonry { column-count: 2; column-gap: 16px; } }
-        @media (max-width: 600px) { .skeleton-masonry { column-count: 1; } }
-
-        .skeleton-look-card {
-            break-inside: avoid;
-            margin-bottom: 24px;
-            background: #161616;
-            position: relative;
-            overflow: hidden;
-        }
-        .skeleton-look-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
-            animation: lb-shimmer 1.9s infinite;
-        }
-        @keyframes lb-shimmer {
-            0%   { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        .skeleton-look-img {
-            width: 100%;
-            background: #1e1e1e;
-        }
-
-        /* ── Graceful error / coming-soon state ── */
-        .lb-error-wrap {
-            display: none;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 60vh;
-            text-align: center;
-            padding: 60px 20px;
         }
-        .lb-error-wrap.visible { display: flex; }
-        .lb-error-eyebrow {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
+        
+        .look-link {
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-        .lb-error-title {
-            font-size: 2rem;
-            font-weight: 300;
-            letter-spacing: -0.02em;
-            text-transform: lowercase;
-            margin-bottom: 16px;
-            line-height: 1.2;
-        }
-        .lb-error-sub {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.75;
-            max-width: 380px;
-            margin-bottom: 36px;
-        }
-        .lb-error-divider {
-            width: 40px;
-            height: 1px;
-            background: #333;
-            margin: 0 auto 36px;
-        }
-        .lb-back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: none;
-            border: 1px solid #333;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            padding: 12px 22px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: border-color 0.2s ease, color 0.2s ease;
-        }
-        .lb-back-btn:hover {
-            border-color: var(--text-main);
-            color: var(--text-main);
+            letter-spacing: 0.1em;
+            color: var(--black);
+            border-bottom: 1px solid var(--black);
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
-    <header>
-        <div class="brand-meta">// editorial index shoppable feed</div>
-        <h1>the lookbook</h1>
+    <header class="site-header">
+        <div class="logo-wrap">
+            <a href="index.html" class="brand"><span class="m">M</span>ilk <span class="n">Mondays</span></a>
+        </div>
+        <nav class="nav">
+            <a href="magazine.html" class="nav-btn">Magazine</a>
+            <a href="lookbook.html" class="nav-btn active">Lookbook</a>
+        </nav>
     </header>
 
-    <!-- Main Content Grid Component -->
-    <main class="lookbook-container">
+    <main class="mag-wrap">
+        <div class="divider">
+    <div class="divider-label">Curated Selects</div>
+    <div class="divider-line"></div>
+</div>
 
-        <!-- Skeleton shown while fetching -->
-        <div class="skeleton-masonry" id="skeletonGrid" aria-hidden="true">
-            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 320px;"></div></div>
-            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 440px;"></div></div>
-            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 280px;"></div></div>
-            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 380px;"></div></div>
-            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 300px;"></div></div>
-            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 420px;"></div></div>
-        </div>
-
-        <!-- Actual masonry grid (hidden until data loads) -->
-        <div class="masonry-grid" id="lookbookGrid" style="display:none;"></div>
-
-        <!-- Graceful error / coming-soon state (hidden until needed) -->
-        <div class="lb-error-wrap" id="lbError">
-            <p class="lb-error-eyebrow">// archive status</p>
-            <h2 class="lb-error-title">the lookbook is<br>being curated.</h2>
-            <p class="lb-error-sub">
-                The editorial image archive is currently being assembled.<br>
-                Check back soon — everything is being picked with intention.
-            </p>
-            <div class="lb-error-divider"></div>
-            <a href="magazine.html" class="lb-back-btn">
-                ← return to the archive
-            </a>
-        </div>
-
+        <div class="lookbook-grid" id="lookbookGrid">
+            </div>
     </main>
 
-    <!-- App Engine Logic Core -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- STRICT GATE-FORM CHECK INTEGRATION ---
-            // Validates footprint matches master site registration state tokens
+            // Check auth gate
             if (localStorage.getItem('mm_gate_passed') !== 'true') {
-                window.location.href = 'gate-form.html?redirect=' + encodeURIComponent('lookbook.html');
+                window.location.href = 'gate-form.html?redirect=lookbook.html';
                 return;
             }
 
-            // --- DATA EXTRACTION & DOM RENDERING ---
-            var skeletonGrid  = document.getElementById('skeletonGrid');
-            var gridContainer = document.getElementById('lookbookGrid');
-            var lbError       = document.getElementById('lbError');
+            const grid = document.getElementById('lookbookGrid');
 
-            function hideSkeleton() {
-                if (skeletonGrid) skeletonGrid.style.display = 'none';
-            }
-
-            function showGrid() {
-                if (gridContainer) gridContainer.style.display = '';
-            }
-
-            function showError() {
-                hideSkeleton();
-                if (lbError) lbError.classList.add('visible');
-            }
-
-            // Fetches curated definitions strictly from your clean exterior lookbook.json schema
             fetch('lookbook.json')
-                .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error('Network structure failure reading database — status ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(function(data) {
-                    hideSkeleton();
-
-                    if (!data || data.length === 0) {
-                        showError();
-                        return;
-                    }
-
-                    showGrid();
-
-                    // Loop through clean dataset array to map structural HTML
-                    data.forEach(function(item) {
-                        var card = document.createElement('div');
-                        card.className = 'look-card';
-
-                        // Build image segment element
-                        var imgWrapper = document.createElement('div');
-                        imgWrapper.className = 'look-image-wrapper';
-
-                        var img = document.createElement('img');
-                        img.className = 'look-image';
-                        img.src = item.imageUrl;
-                        img.alt = 'Editorial Curation Asset Element';
-                        img.loading = 'lazy'; // Dynamic image paint management
-
-                        imgWrapper.appendChild(img);
-                        card.appendChild(imgWrapper);
-
-                        // Build overlay context layer holding direct links mapping array
-                        var overlay = document.createElement('div');
-                        overlay.className = 'look-overlay';
-
-                        var linksContainer = document.createElement('div');
-                        linksContainer.className = 'shop-links-container';
-
-                        // Dynamically loop through the items array mapping link interfaces (Supports 1-3 buttons beautifully)
-                        item.links.forEach(function(linkObj) {
-                            var linkElement = document.createElement('a');
-                            linkElement.className = 'shop-link';
-                            linkElement.href = linkObj.url;
-                            linkElement.target = '_blank';
-                            linkElement.rel = 'noopener noreferrer';
-
-                            // Explicitly isolate click event propagation to ensure clean routing
-                            linkElement.addEventListener('click', function(e) {
-                                e.stopPropagation();
-                            });
-
-                            linkElement.innerHTML =
-                                '<span>' + linkObj.text + '</span>' +
-                                '<svg viewBox="0 0 24 24">' +
-                                    '<path d="M5 21h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM5 5h14v14H5V5z"/>' +
-                                    '<path d="M15.586 10H10v2h3.586l-4.293 4.293 1.414 1.414L15 13.414V19h2v-7.414z"/>' +
-                                '</svg>';
-
-                            linksContainer.appendChild(linkElement);
-                        });
-
-                        overlay.appendChild(linksContainer);
-                        card.appendChild(overlay);
-                        gridContainer.appendChild(card);
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'look-item';
+                        card.innerHTML = `
+                            <div class="look-img-wrap">
+                                <img src="${item.imageUrl}" alt="Look">
+                            </div>
+                            <div class="look-footer">
+                                <a href="${item.links[0].url}" class="look-link" target="_blank">Shop Item</a>
+                                <button class="save-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>
+                            </div>
+                        `;
+                        grid.appendChild(card);
                     });
                 })
-                .catch(function(err) {
-                    console.error('Lookbook initial construction error:', err);
-                    showError();
-                });
+                .catch(err => console.error('Error loading lookbook:', err));
         });
     </script>
 </body>
