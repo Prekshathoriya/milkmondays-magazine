@@ -351,8 +351,11 @@
         <div class="bar">A collection of everyday things. If it looks good, it belongs here.</div>
 
         <header class="site-header">
-            <a href="index.html" class="brand"><span class="m">Milk</span> <span class="n">Mondays</span></a>
-        </header>
+    <a href="index.html" class="brand"><span class="m">Milk</span> <span class="n">Mondays</span></a>
+    <div style="margin-top: 15px;">
+        <a href="lookbook.html" onclick="window.handleLookbookAccess(event)" class="footer-link" style="margin-top:0; font-family:var(--sans); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; font-weight:500; color:#ff5a5a; border-bottom:1px solid #ff5a5a;">[ Enter The Lookbook Archive ]</a>
+    </div>
+</header>
 
         <section class="hero">
             <p class="hero-eye">Tastefully Yours</p>
@@ -375,21 +378,21 @@
                 </div>
                 <div>
                     <div>
-            <h4 class="footer-heading">About The Founder</h4>
-            <p class="footer-text">
-                Hi, I’m Preksha Thoriya a digital creator with a strong inclination toward aesthetics, media, and contemporary internet culture.
-                My work often revolves around visual storytelling, trend curation, and building thoughtfully designed online spaces.
-                I’m drawn to thoughtful aesthetics, strong visual identities, and the way digital culture shapes what people connect with.
-                <br><br>
-                Currently overanalyzing fonts, layouts, and whether a shade of beige feels emotionally correct.
-                Thanks for accidentally ending up here.
-            </p>
-        </div>
+                    <h4 class="footer-heading">About The Founder</h4>
+                    <p class="footer-text">
+                        Hi, I’m Preksha Thoriya a digital creator with a strong inclination toward aesthetics, media, and contemporary internet culture.
+                        My work often revolves around visual storytelling, trend curation, and building thoughtfully designed online spaces.
+                        I’m drawn to thoughtful aesthetics, strong visual identities, and the way digital culture shapes what people connect with.
+                        <br><br>
+                        Currently overanalyzing fonts, layouts, and whether a shade of beige feels emotionally correct.
+                        Thanks for accidentally ending up here.
+                    </p>
+                </div>
+                <div>
                     <h4 class="footer-heading">Join The Club</h4>
                     <p class="footer-text">Drop your thoughts or apply to collaborate below.</p>
                     <a href="https://forms.gle/xEZQGAnCKHLkUvFTA" target="_blank" rel="noopener" class="footer-link">Open Application Form ↗</a>
                 </div>
-                <div>
                     <h4 class="footer-heading">Digital Indexes</h4>
                     <ul class="footer-links-list">
                         <li><a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener">Instagram ↗</a></li>
@@ -425,6 +428,14 @@
                 location.href = 'gate-form.html?redirect=' + encodeURIComponent(target);
             }
         }
+
+        // Intercept lookbook clicks to check the gate footprint
+        window.handleLookbookAccess = function(e) {
+            if (!gatePassed()) {
+                if (e) e.preventDefault();
+                location.href = 'gate-form.html?redirect=' + encodeURIComponent('lookbook.html');
+            }
+        };
 
         /* ── opening splash ── */
         var opening = document.getElementById('opening');
