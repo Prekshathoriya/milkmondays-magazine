@@ -6,11 +6,11 @@
     <title>The Archive — Lookbook</title>
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --text-main: #f5f5f7;
-            --text-muted: #86868b;
-            --border-color: #262626;
-            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            --bg-color:    #0a0a0a;
+            --text-main:   #f5f5f7;
+            --text-muted:  #86868b;
+            --border-color:#262626;
+            --font-mono:   ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
         * {
@@ -27,7 +27,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Minimal Header Section */
+        /* ── Minimal Header Section ── */
         header {
             width: 100%;
             padding: 40px 4% 20px 4%;
@@ -52,7 +52,7 @@
             text-transform: lowercase;
         }
 
-        /* Ultra Chic Masonry Grid Layout */
+        /* ── Ultra Chic Masonry Grid Layout ── */
         .lookbook-container {
             padding: 40px 4%;
             width: 100%;
@@ -78,7 +78,7 @@
             }
         }
 
-        /* Individual Aesthetic Cards */
+        /* ── Individual Aesthetic Cards ── */
         .look-card {
             break-inside: avoid;
             margin-bottom: 24px;
@@ -109,7 +109,7 @@
             transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* Addictive Fluid Interaction Layers */
+        /* ── Addictive Fluid Interaction Layers ── */
         .look-card:hover .look-image {
             transform: scale(1.03);
         }
@@ -133,7 +133,7 @@
             opacity: 1;
         }
 
-        /* Mobile specific touch alternative */
+        /* ── Mobile specific touch alternative ── */
         @media (hover: none) {
             .look-overlay {
                 opacity: 1;
@@ -142,7 +142,7 @@
             }
         }
 
-        /* Shopping Interaction Links */
+        /* ── Shopping Interaction Links ── */
         .shop-links-container {
             display: flex;
             flex-direction: column;
@@ -191,7 +191,7 @@
             fill: currentColor;
         }
 
-        /* Minimal Loading Visual State */
+        /* ── Minimal Loading Visual State ── */
         .loading-state {
             text-align: center;
             font-family: var(--font-mono);
@@ -199,6 +199,100 @@
             color: var(--text-muted);
             padding: 40px 0;
             text-transform: lowercase;
+        }
+
+        /* ── Skeleton loader cards ── */
+        .skeleton-masonry {
+            column-count: 3;
+            column-gap: 24px;
+            width: 100%;
+        }
+        @media (max-width: 900px) { .skeleton-masonry { column-count: 2; column-gap: 16px; } }
+        @media (max-width: 600px) { .skeleton-masonry { column-count: 1; } }
+
+        .skeleton-look-card {
+            break-inside: avoid;
+            margin-bottom: 24px;
+            background: #161616;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-look-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+            animation: lb-shimmer 1.9s infinite;
+        }
+        @keyframes lb-shimmer {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .skeleton-look-img {
+            width: 100%;
+            background: #1e1e1e;
+        }
+
+        /* ── Graceful error / coming-soon state ── */
+        .lb-error-wrap {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .lb-error-wrap.visible { display: flex; }
+        .lb-error-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .lb-error-title {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            text-transform: lowercase;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+        .lb-error-sub {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.75;
+            max-width: 380px;
+            margin-bottom: 36px;
+        }
+        .lb-error-divider {
+            width: 40px;
+            height: 1px;
+            background: #333;
+            margin: 0 auto 36px;
+        }
+        .lb-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: none;
+            border: 1px solid #333;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 12px 22px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: border-color 0.2s ease, color 0.2s ease;
+        }
+        .lb-back-btn:hover {
+            border-color: var(--text-main);
+            color: var(--text-main);
         }
     </style>
 </head>
@@ -212,14 +306,39 @@
 
     <!-- Main Content Grid Component -->
     <main class="lookbook-container">
-        <div class="masonry-grid" id="lookbookGrid">
-            <div class="loading-state" id="loadingState">fetching raw archive assets...</div>
+
+        <!-- Skeleton shown while fetching -->
+        <div class="skeleton-masonry" id="skeletonGrid" aria-hidden="true">
+            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 320px;"></div></div>
+            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 440px;"></div></div>
+            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 280px;"></div></div>
+            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 380px;"></div></div>
+            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 300px;"></div></div>
+            <div class="skeleton-look-card"><div class="skeleton-look-img" style="height: 420px;"></div></div>
         </div>
+
+        <!-- Actual masonry grid (hidden until data loads) -->
+        <div class="masonry-grid" id="lookbookGrid" style="display:none;"></div>
+
+        <!-- Graceful error / coming-soon state (hidden until needed) -->
+        <div class="lb-error-wrap" id="lbError">
+            <p class="lb-error-eyebrow">// archive status</p>
+            <h2 class="lb-error-title">the lookbook is<br>being curated.</h2>
+            <p class="lb-error-sub">
+                The editorial image archive is currently being assembled.<br>
+                Check back soon — everything is being picked with intention.
+            </p>
+            <div class="lb-error-divider"></div>
+            <a href="magazine.html" class="lb-back-btn">
+                ← return to the archive
+            </a>
+        </div>
+
     </main>
 
     <!-- App Engine Logic Core -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             // --- STRICT GATE-FORM CHECK INTEGRATION ---
             // Validates footprint matches master site registration state tokens
             if (localStorage.getItem('mm_gate_passed') !== 'true') {
@@ -228,36 +347,51 @@
             }
 
             // --- DATA EXTRACTION & DOM RENDERING ---
-            const gridContainer = document.getElementById('lookbookGrid');
-            const loadingIndicator = document.getElementById('loadingState');
+            var skeletonGrid  = document.getElementById('skeletonGrid');
+            var gridContainer = document.getElementById('lookbookGrid');
+            var lbError       = document.getElementById('lbError');
+
+            function hideSkeleton() {
+                if (skeletonGrid) skeletonGrid.style.display = 'none';
+            }
+
+            function showGrid() {
+                if (gridContainer) gridContainer.style.display = '';
+            }
+
+            function showError() {
+                hideSkeleton();
+                if (lbError) lbError.classList.add('visible');
+            }
 
             // Fetches curated definitions strictly from your clean exterior lookbook.json schema
             fetch('lookbook.json')
-                .then(response => {
+                .then(function(response) {
                     if (!response.ok) {
-                        throw new Error('Network structure failure reading database');
+                        throw new Error('Network structure failure reading database — status ' + response.status);
                     }
                     return response.json();
                 })
-                .then(data => {
-                    // Flush loading placeholder cleanly
-                    gridContainer.innerHTML = '';
+                .then(function(data) {
+                    hideSkeleton();
 
-                    if(data.length === 0) {
-                        gridContainer.innerHTML = '<div class="loading-state">archive feed currently blank.</div>';
+                    if (!data || data.length === 0) {
+                        showError();
                         return;
                     }
 
+                    showGrid();
+
                     // Loop through clean dataset array to map structural HTML
-                    data.forEach(item => {
-                        const card = document.createElement('div');
+                    data.forEach(function(item) {
+                        var card = document.createElement('div');
                         card.className = 'look-card';
 
                         // Build image segment element
-                        const imgWrapper = document.createElement('div');
+                        var imgWrapper = document.createElement('div');
                         imgWrapper.className = 'look-image-wrapper';
-                        
-                        const img = document.createElement('img');
+
+                        var img = document.createElement('img');
                         img.className = 'look-image';
                         img.src = item.imageUrl;
                         img.alt = 'Editorial Curation Asset Element';
@@ -267,43 +401,43 @@
                         card.appendChild(imgWrapper);
 
                         // Build overlay context layer holding direct links mapping array
-                        const overlay = document.createElement('div');
+                        var overlay = document.createElement('div');
                         overlay.className = 'look-overlay';
 
-                        const linksContainer = document.createElement('div');
+                        var linksContainer = document.createElement('div');
                         linksContainer.className = 'shop-links-container';
 
-                        // Dynamically loop through the items array array mapping link interfaces (Supports 1-3 buttons beautifully)
-item.links.forEach(linkObj => {
-    const linkElement = document.createElement('a');
-    linkElement.className = 'shop-link';
-    linkElement.href = linkObj.url;
-    linkElement.target = '_blank';
-    linkElement.rel = 'noopener noreferrer';
-    
-    // Explicitly isolate click event propagation to ensure clean routing
-    linkElement.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-    });
+                        // Dynamically loop through the items array mapping link interfaces (Supports 1-3 buttons beautifully)
+                        item.links.forEach(function(linkObj) {
+                            var linkElement = document.createElement('a');
+                            linkElement.className = 'shop-link';
+                            linkElement.href = linkObj.url;
+                            linkElement.target = '_blank';
+                            linkElement.rel = 'noopener noreferrer';
 
-    linkElement.innerHTML = `
-        <span>${linkObj.text}</span>
-        <svg viewBox="0 0 24 24">
-            <path d="M5 21h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM5 5h14v14H5V5z"/>
-            <path d="M15.586 10H10v2h3.586l-4.293 4.293 1.414 1.414L15 13.414V19h2v-7.414z"/>
-        </svg>
-    `;
-    linksContainer.appendChild(linkElement);
-});
+                            // Explicitly isolate click event propagation to ensure clean routing
+                            linkElement.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                            });
+
+                            linkElement.innerHTML =
+                                '<span>' + linkObj.text + '</span>' +
+                                '<svg viewBox="0 0 24 24">' +
+                                    '<path d="M5 21h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM5 5h14v14H5V5z"/>' +
+                                    '<path d="M15.586 10H10v2h3.586l-4.293 4.293 1.414 1.414L15 13.414V19h2v-7.414z"/>' +
+                                '</svg>';
+
+                            linksContainer.appendChild(linkElement);
+                        });
 
                         overlay.appendChild(linksContainer);
                         card.appendChild(overlay);
                         gridContainer.appendChild(card);
                     });
                 })
-                .catch(err => {
+                .catch(function(err) {
                     console.error('Lookbook initial construction error:', err);
-                    gridContainer.innerHTML = '<div class="loading-state">error fetching archive data feed setup.</div>';
+                    showError();
                 });
         });
     </script>

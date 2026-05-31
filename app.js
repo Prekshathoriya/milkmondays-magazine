@@ -23,7 +23,7 @@
     /* ──────────────────────────────────────────
        INIT
     ────────────────────────────────────────── */
-        document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
         stateView   = document.getElementById('state-view');
         magContent  = document.getElementById('mag-content');
         heroSection = document.getElementById('hero-section');
@@ -39,7 +39,7 @@
         bindModal();
         loadPosts();
 
-        // ── BACK TO TOP BUTTON ──
+        /* ── BACK TO TOP BUTTON ── */
         var backToTopBtn = document.getElementById('back-to-top');
         if (backToTopBtn) {
             window.addEventListener('scroll', function () {
@@ -87,7 +87,8 @@
         opts = opts || { month: 'short', day: 'numeric', year: 'numeric' };
         try { return new Date(iso).toLocaleDateString('en-US', opts); } catch (e) { return iso; }
     }
-        /* ── SAVE FOR LATER HELPERS ── */
+
+    /* ── SAVE FOR LATER HELPERS ── */
     function getSavedIds() {
         try {
             var saved = localStorage.getItem('mm_saved_posts');
@@ -129,7 +130,7 @@
     /* ──────────────────────────────────────────
        NAV BINDING
     ────────────────────────────────────────── */
-        function bindNav() {
+    function bindNav() {
         navButtons.forEach(function (btn) {
             btn.addEventListener('click', function () {
                 navButtons.forEach(function (b) { b.classList.remove('active'); });
@@ -192,6 +193,9 @@
                 return r.json();
             })
             .then(function (data) {
+                /* Hide skeleton on successful load */
+                if (typeof window.mm_hideSkeleton === 'function') window.mm_hideSkeleton();
+
                 allPosts = (data.posts || []).sort(function (a, b) {
                     return new Date(b.date) - new Date(a.date);
                 });
@@ -207,7 +211,12 @@
             })
             .catch(function (err) {
                 console.error('Failed to load posts:', err);
-                showState('Error loading content — please refresh the page.');
+                /* Show graceful error UI instead of raw error text */
+                if (typeof window.mm_showFetchError === 'function') {
+                    window.mm_showFetchError();
+                } else {
+                    showState('Something went wrong loading the archive — please refresh and try again.');
+                }
             });
     }
 
@@ -215,7 +224,11 @@
        RENDER
     ────────────────────────────────────────── */
     function showState(msg) {
-        if (stateView)  { stateView.style.display = 'flex'; stateView.querySelector('.state-sub').textContent = msg || ''; }
+        if (stateView)  {
+            stateView.style.display = 'flex';
+            var subEl = stateView.querySelector('.state-sub');
+            if (subEl) subEl.textContent = msg || '';
+        }
         if (magContent) magContent.style.display = 'none';
     }
 
@@ -224,7 +237,7 @@
         if (magContent) magContent.style.display = 'block';
     }
 
-        function renderMag() {
+    function renderMag() {
         if (!allPosts.length) {
             showState('Check back soon — new content is on its way.');
             return;
@@ -243,7 +256,7 @@
                   });
         }
 
-        // update active page indicator
+        /* update active page indicator */
         var indicatorSpan = document.getElementById('active-category-name');
         if (indicatorSpan) {
             if (activeCategory === 'all') {
@@ -271,7 +284,7 @@
         }
     }
 
-        function renderHero(post) {
+    function renderHero(post) {
         if (!heroSection) return;
         var img = post.coverImage || 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1000';
         var savedClass = isSaved(post.id) ? 'saved' : '';
@@ -310,7 +323,7 @@
         }
     }
 
-        function renderGrid(posts) {
+    function renderGrid(posts) {
         if (!postsGrid) return;
         postsGrid.innerHTML = '';
 
@@ -371,7 +384,7 @@
     /* ──────────────────────────────────────────
        ARTICLE READER
     ────────────────────────────────────────── */
-        function launchReader(post) {
+    function launchReader(post) {
         if (!modalBody) return;
 
         var fullDate = fmtDate(post.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -482,7 +495,7 @@
             });
         }
 
-        // Modal save button logic
+        /* Modal save button logic */
         if (modalSaveBtn) {
             function updateModalSaveButton() {
                 var saved = isSaved(post.id);
@@ -492,7 +505,7 @@
                 if (modalSaveLabel) {
                     modalSaveLabel.textContent = saved ? 'Saved' : 'Save for later';
                 }
-                // Sync with any visible save button on the grid (optional)
+                /* Sync with any visible save button on the grid */
                 var gridSaveBtn = document.querySelector('.save-btn[data-id="' + post.id + '"]');
                 if (gridSaveBtn) {
                     if (saved) gridSaveBtn.classList.add('saved');

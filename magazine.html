@@ -13,6 +13,132 @@
 
     <link rel="stylesheet" href="styles.css">
 
+    <style>
+        /* ── SKELETON LOADER STYLES ── */
+        .skeleton-hero {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            border: 1px solid var(--black);
+            margin-bottom: 80px;
+            min-height: 460px;
+            overflow: hidden;
+        }
+        .skeleton-hero-img {
+            background: #EFEDE9;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-hero-body {
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 16px;
+        }
+        .skeleton-block {
+            background: #EFEDE9;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-block::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%);
+            animation: shimmer 1.7s infinite;
+        }
+        @keyframes shimmer {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .skeleton-tag   { height: 20px; width: 80px; }
+        .skeleton-h1    { height: 36px; width: 85%; margin-top: 8px; }
+        .skeleton-h1b   { height: 36px; width: 65%; }
+        .skeleton-sub   { height: 14px; width: 90%; margin-top: 8px; }
+        .skeleton-subb  { height: 14px; width: 75%; }
+        .skeleton-btn   { height: 40px; width: 140px; margin-top: 16px; }
+
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 44px 28px;
+            margin-top: 40px;
+        }
+        .skeleton-card  { display: flex; flex-direction: column; gap: 12px; }
+        .skeleton-img   { aspect-ratio: 4/5; width: 100%; border: 1px solid var(--black); }
+        .skeleton-line  { height: 13px; }
+        .skeleton-line.w60 { width: 60%; }
+        .skeleton-line.w80 { width: 80%; }
+        .skeleton-line.w50 { width: 50%; }
+
+        @media (max-width: 1024px) {
+            .skeleton-hero { grid-template-columns: 1fr; }
+            .skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .skeleton-grid { grid-template-columns: 1fr; }
+            .skeleton-hero-body { padding: 30px; }
+        }
+
+        /* ── FETCH ERROR BANNER ── */
+        .fetch-error-wrap {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 55vh;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .fetch-error-wrap.visible { display: flex; }
+        .fetch-error-eyebrow {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--grey);
+            margin-bottom: 20px;
+        }
+        .fetch-error-title {
+            font-family: var(--serif);
+            font-size: clamp(24px, 4vw, 36px);
+            font-style: italic;
+            font-weight: 400;
+            margin-bottom: 16px;
+        }
+        .fetch-error-sub {
+            color: var(--grey);
+            font-size: 13px;
+            line-height: 1.75;
+            max-width: 400px;
+            margin-bottom: 32px;
+        }
+        .fetch-error-line {
+            background: var(--pink);
+            height: 1px;
+            width: 56px;
+            margin: 0 auto 32px;
+        }
+        .fetch-error-retry {
+            border: 1px solid var(--black);
+            color: var(--black);
+            font-family: var(--sans);
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            padding: 12px 28px;
+            text-transform: uppercase;
+            background: none;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .fetch-error-retry:hover { background: var(--black); color: var(--white); }
+
+        /* skeleton visibility toggles */
+        #skeleton-loader { display: block; }
+        #skeleton-loader.hidden { display: none; }
+    </style>
+
     <!-- Netlify Identity (only needed for /admin) -->
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
 </head>
@@ -30,7 +156,7 @@
                 <span class="m">Milk</span><span class="n">Mondays</span>
             </a>
         </div>
-                <nav class="nav" aria-label="Categories">
+        <nav class="nav" aria-label="Categories">
             <button class="nav-btn active" data-category="all">Home</button>
             <button class="nav-btn" data-category="skincare">Skincare</button>
             <button class="nav-btn" data-category="fashion">Fashion</button>
@@ -44,8 +170,52 @@
     <!-- ── MAGAZINE AREA ── -->
     <main class="mag-wrap">
 
+        <!-- Skeleton loader (shown while fetching) -->
+        <div id="skeleton-loader" aria-hidden="true">
+            <div class="skeleton-hero">
+                <div class="skeleton-hero-img skeleton-block"></div>
+                <div class="skeleton-hero-body">
+                    <div class="skeleton-block skeleton-tag"></div>
+                    <div class="skeleton-block skeleton-h1"></div>
+                    <div class="skeleton-block skeleton-h1b"></div>
+                    <div class="skeleton-block skeleton-sub"></div>
+                    <div class="skeleton-block skeleton-subb"></div>
+                    <div class="skeleton-block skeleton-btn"></div>
+                </div>
+            </div>
+            <div class="skeleton-grid">
+                <div class="skeleton-card">
+                    <div class="skeleton-block skeleton-img"></div>
+                    <div class="skeleton-block skeleton-line w60"></div>
+                    <div class="skeleton-block skeleton-line w80"></div>
+                    <div class="skeleton-block skeleton-line w50"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-block skeleton-img"></div>
+                    <div class="skeleton-block skeleton-line w60"></div>
+                    <div class="skeleton-block skeleton-line w80"></div>
+                    <div class="skeleton-block skeleton-line w50"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-block skeleton-img"></div>
+                    <div class="skeleton-block skeleton-line w60"></div>
+                    <div class="skeleton-block skeleton-line w80"></div>
+                    <div class="skeleton-block skeleton-line w50"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graceful fetch error state (hidden until needed) -->
+        <div id="fetch-error" class="fetch-error-wrap" role="alert" aria-live="polite">
+            <p class="fetch-error-eyebrow">Connection interrupted</p>
+            <h2 class="fetch-error-title">The archive is taking a moment.</h2>
+            <p class="fetch-error-sub">Something interrupted the connection to our content servers. This usually resolves with a quick refresh — we promise it's worth the wait.</p>
+            <div class="fetch-error-line"></div>
+            <button class="fetch-error-retry" id="fetch-retry-btn">Refresh &amp; Try Again</button>
+        </div>
+
         <!-- Empty / loading state -->
-        <div id="state-view" class="state-view">
+        <div id="state-view" class="state-view" style="display:none;">
             <div class="state-inner">
                 <p class="state-title">Mondays loading…</p>
                 <p class="state-sub">Check back soon for archives, skincare routines, and pop culture commentary.</p>
@@ -61,10 +231,11 @@
                 <span class="divider-label">The Feed</span>
                 <div class="divider-line"></div>
             </div>
+
             <div class="active-indicator" id="active-indicator">
-    <span class="active-label">Currently viewing:</span>
-    <span class="active-category-name" id="active-category-name">All posts</span>
-</div>
+                <span class="active-label">Currently viewing:</span>
+                <span class="active-category-name" id="active-category-name">All posts</span>
+            </div>
 
             <section id="posts-grid" class="posts-grid"></section>
         </div>
@@ -99,14 +270,14 @@
             <div>
                 <h4 class="footer-heading">About The Founder</h4>
                 <p class="footer-text">
-                    Hi, I’m Preksha Thoriya a digital creator with a strong inclination toward aesthetics, media, and contemporary internet culture.
+                    Hi, I'm Preksha Thoriya a digital creator with a strong inclination toward aesthetics, media, and contemporary internet culture.
                     My work often revolves around visual storytelling, trend curation, and building thoughtfully designed online spaces.
-                    I’m drawn to thoughtful aesthetics, strong visual identities, and the way digital culture shapes what people connect with.
+                    I'm drawn to thoughtful aesthetics, strong visual identities, and the way digital culture shapes what people connect with.
                     <br><br>
                     Currently overanalyzing fonts, layouts, and whether a shade of beige feels emotionally correct.
                     Thanks for accidentally ending up here.
                 </p>
-                
+
                 <h4 class="footer-heading" style="margin-top: 20px;">Digital Indexes</h4>
                 <ul class="footer-social-list">
                     <li><a href="lookbook.html" style="font-weight: 500; color: var(--grey); transition: color var(--fast) var(--ease);" onmouseover="this.style.color='var(--black)'" onmouseout="this.style.color='var(--grey)'">The Lookbook Archive ↗</a></li>
@@ -120,7 +291,8 @@
 
     <!-- ── APP SCRIPT ── -->
     <script src="app.js"></script>
-        <!-- Back to top button -->
+
+    <!-- Back to top button -->
     <button id="back-to-top" class="back-to-top" aria-label="Back to top">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="19" x2="12" y2="5"></line>
@@ -130,6 +302,33 @@
     </button>
 
     <script>
+        /* ── SKELETON HIDE / ERROR SHOW HOOKS ──
+           app.js calls window.mm_hideSkeleton() on success
+           and window.mm_showFetchError() on failure.
+           These are defined here so they exist before app.js runs. */
+
+        window.mm_hideSkeleton = function () {
+            var sk = document.getElementById('skeleton-loader');
+            if (sk) sk.classList.add('hidden');
+        };
+
+        window.mm_showFetchError = function () {
+            var sk = document.getElementById('skeleton-loader');
+            if (sk) sk.classList.add('hidden');
+            var err = document.getElementById('fetch-error');
+            if (err) err.classList.add('visible');
+        };
+
+        /* Retry button wires a hard page reload */
+        document.addEventListener('DOMContentLoaded', function () {
+            var retryBtn = document.getElementById('fetch-retry-btn');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', function () {
+                    window.location.reload();
+                });
+            }
+        });
+
         /* Netlify Identity redirect for /admin */
         if (window.netlifyIdentity) {
             window.netlifyIdentity.on('init', function (user) {
