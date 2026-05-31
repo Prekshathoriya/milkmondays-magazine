@@ -65,13 +65,66 @@
             border-bottom: 1px solid var(--black);
             padding-bottom: 2px;
         }
+
+        .action-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .share-btn, .save-btn, .page-share-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s var(--ease);
+        }
+
+        .share-btn:hover, .save-btn:hover, .page-share-btn:hover {
+            opacity: 0.6;
+        }
+
+        .page-share-btn {
+            font-family: var(--sans);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-left: 8px;
+        }
+
+        /* Minimal Toast Notification */
+        .share-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(40px);
+            background: var(--black);
+            color: var(--white);
+            font-family: var(--sans);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 10px 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+            z-index: 1000;
+        }
+
+        .share-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
 
     <header class="site-header">
         <div class="logo-wrap">
-            <!-- Corrected logo structure to match brand typography -->
             <a href="index.html" class="brand">
                 <span class="m">Milk</span> <span class="n">Mondays</span>
             </a>
@@ -79,6 +132,10 @@
         <nav class="nav">
             <a href="magazine.html" class="nav-btn">Magazine</a>
             <a href="lookbook.html" class="nav-btn active">The Collection</a>
+            <button class="page-share-btn" id="pageShareBtn" title="Share Collection">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                Share
+            </button>
         </nav>
     </header>
 
@@ -93,6 +150,8 @@
         </div>
     </main>
 
+    <div class="share-toast" id="shareToast">Link copied to clipboard</div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (localStorage.getItem('mm_gate_passed') !== 'true') {
@@ -101,6 +160,27 @@
             }
 
             const grid = document.getElementById('lookbookGrid');
+            const toast = document.getElementById('shareToast');
+
+            // Global helper to show minimal notification
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            }
+
+            // Entire Page Share Logic
+            document.getElementById('pageShareBtn').addEventListener('click', function() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'The Collection — Milk Mondays',
+                        url: window.location.href
+                    }).catch(err => console.log(err));
+                } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    showToast('Collection link copied');
+                }
+            });
 
             fetch('lookbook.json')
                 .then(res => res.json())
@@ -114,10 +194,32 @@
                             </div>
                             <div class="look-footer">
                                 <a href="${item.links[0].url}" class="look-link" target="_blank">Shop Item</a>
-                                <button class="save-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>
+                                <div class="action-group">
+                                    <button class="share-btn" data-shop-url="${item.links[0].url}" title="Share Item">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                                    </button>
+                                    <button class="save-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>
+                                </div>
                             </div>
                         `;
                         grid.appendChild(card);
+                    });
+
+                    // Event Delegation for Individual Item Share Button
+                    grid.addEventListener('click', function(e) {
+                        const shareBtn = e.target.closest('.share-btn');
+                        if (shareBtn) {
+                            const targetUrl = shareBtn.getAttribute('data-shop-url');
+                            if (navigator.share) {
+                                navigator.share({
+                                    title: 'Shop this look on Milk Mondays',
+                                    url: targetUrl
+                                }).catch(err => console.log(err));
+                            } else {
+                                navigator.clipboard.writeText(targetUrl);
+                                showToast('Item link copied');
+                            }
+                        }
                     });
                 })
                 .catch(err => console.error('Error loading lookbook:', err));
