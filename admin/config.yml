@@ -22,6 +22,6 @@ collections:
           label: "Category Tag Selection", 
           name: "category", 
           widget: "select", 
-          options: ["Skincare", "Fashion", "Pop Culture", "Archives"] 
+          options: ["Skincare", "Fashion", "Pop Culture", "Archives", "Story Time"] 
         }
       - { label: "Body Copy Editorial Entry", name: "body", widget: "markdown" }

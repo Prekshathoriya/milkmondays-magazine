@@ -162,7 +162,7 @@
             <button class="nav-btn" data-category="fashion">Fashion</button>
             <button class="nav-btn" data-category="pop-culture">Pop Culture</button>
             <button class="nav-btn" data-category="archives">Archives</button>
-            <a href="lookbook.html" class="nav-btn" style="text-decoration: none; display: inline-flex; align-items: center; font-weight: 500; color: var(--grey); letter-spacing: 0.05em; transition: color var(--fast) var(--ease);" onmouseover="this.style.color='var(--black)'" onmouseout="this.style.color='var(--grey)'"> The Collection </a>
+            <button class="nav-btn" data-category="story-time">Story Time</button>
             <button class="nav-btn" data-category="saved">Saved</button>
         </nav>
     </header>
@@ -280,9 +280,10 @@
 
                 <h4 class="footer-heading" style="margin-top: 20px;">Digital Indexes</h4>
                 <ul class="footer-social-list">
-                    <li><a href="lookbook.html" style="font-weight: 500; color: var(--grey); transition: color var(--fast) var(--ease);" onmouseover="this.style.color='var(--black)'" onmouseout="this.style.color='var(--grey)'">The Lookbook Archive ↗</a></li>
                     <li><a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener">Instagram ↗</a></li>
                     <li><a href="mailto:milkmondaysbiz@gmail.com">Email Editorial ↗</a></li>
+                    <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeJXuNUvNWlvlJMZzQz0Re5Kmu2Ew5G_2smDMUnfhYkmn0gTw/viewform?usp=publish-editor" target="_blank" rel="noopener" id="footer-storytime-link">Submit a Story Time Entry ↗</a></li>
+                    <li class="footer-fallback-link"><a href="https://forms.gle/ag7ZiZ99ivKEaoqaA" target="_blank" rel="noopener">Form not loading? Use backup link ↗</a></li>
                 </ul>
             </div>
         </div>
@@ -300,6 +301,23 @@
         </svg>
         <span>Back to top</span>
     </button>
+
+    <!-- Persistent Story Time submission CTA -->
+    <a id="share-story-btn"
+       class="share-story-btn"
+       href="https://docs.google.com/forms/d/e/1FAIpQLSeJXuNUvNWlvlJMZzQz0Re5Kmu2Ew5G_2smDMUnfhYkmn0gTw/viewform?usp=publish-editor"
+       data-fallback-href="https://forms.gle/ag7ZiZ99ivKEaoqaA"
+       target="_blank"
+       rel="noopener"
+       aria-label="Share your Story Time entry">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+            <path d="M2 2l7.586 7.586"></path>
+            <circle cx="11" cy="11" r="2"></circle>
+        </svg>
+        <span>✨ Share Your Story</span>
+    </a>
 
     <script>
         /* ── SKELETON HIDE / ERROR SHOW HOOKS ──

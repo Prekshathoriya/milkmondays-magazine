@@ -19,6 +19,7 @@
     var stateView, magContent, heroSection, postsGrid;
     var modalBg, modalPanel, modalBody, closeBtn;
     var navButtons, logoBtn;
+    var shareStoryBtn;
 
     /* ──────────────────────────────────────────
        INIT
@@ -34,9 +35,11 @@
         closeBtn    = document.getElementById('modal-close');
         navButtons  = document.querySelectorAll('.nav-btn');
         logoBtn     = document.getElementById('logo-btn');
+        shareStoryBtn = document.getElementById('share-story-btn');
 
         bindNav();
         bindModal();
+        bindShareStory();
         loadPosts();
 
         /* ── BACK TO TOP BUTTON ── */
@@ -125,6 +128,27 @@
         if (activeCategory === 'saved') {
             renderMag();
         }
+    }
+
+    /* ──────────────────────────────────────────
+       STORY TIME SUBMISSION CTA
+    ────────────────────────────────────────── */
+    function bindShareStory() {
+        if (!shareStoryBtn) return;
+
+        shareStoryBtn.addEventListener('click', function () {
+            /* Track that the visitor engaged with the submission CTA
+               (does not gate or block navigation in any way). */
+            try { localStorage.setItem('mm_story_submit_clicked', 'true'); } catch (e) {}
+        });
+
+        /* If the primary Google Form link ever fails to resolve (e.g. the
+           form is deleted or unpublished), fall back to the short link
+           on the next click instead of leaving the button dead. */
+        shareStoryBtn.addEventListener('error', function () {
+            var fallback = shareStoryBtn.getAttribute('data-fallback-href');
+            if (fallback) shareStoryBtn.setAttribute('href', fallback);
+        }, true);
     }
 
     /* ──────────────────────────────────────────
