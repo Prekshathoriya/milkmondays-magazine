@@ -18,7 +18,8 @@
         .skeleton-hero {
             display: grid;
             grid-template-columns: 1.2fr 1fr;
-            border: 1px solid var(--black);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             margin-bottom: 80px;
             min-height: 460px;
             overflow: hidden;
@@ -37,7 +38,7 @@
         }
         .skeleton-block {
             background: #EFEDE9;
-            border-radius: 2px;
+            border-radius: 6px;
             position: relative;
             overflow: hidden;
         }
@@ -52,12 +53,12 @@
             0%   { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
-        .skeleton-tag   { height: 20px; width: 80px; }
+        .skeleton-tag   { height: 20px; width: 80px; border-radius: 20px; }
         .skeleton-h1    { height: 36px; width: 85%; margin-top: 8px; }
         .skeleton-h1b   { height: 36px; width: 65%; }
         .skeleton-sub   { height: 14px; width: 90%; margin-top: 8px; }
         .skeleton-subb  { height: 14px; width: 75%; }
-        .skeleton-btn   { height: 40px; width: 140px; margin-top: 16px; }
+        .skeleton-btn   { height: 40px; width: 140px; margin-top: 16px; border-radius: 40px; }
 
         .skeleton-grid {
             display: grid;
@@ -66,8 +67,8 @@
             margin-top: 40px;
         }
         .skeleton-card  { display: flex; flex-direction: column; gap: 12px; }
-        .skeleton-img   { aspect-ratio: 4/5; width: 100%; border: 1px solid var(--black); }
-        .skeleton-line  { height: 13px; }
+        .skeleton-img   { aspect-ratio: 4/5; width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md); }
+        .skeleton-line  { height: 13px; border-radius: 4px; }
         .skeleton-line.w60 { width: 60%; }
         .skeleton-line.w80 { width: 80%; }
         .skeleton-line.w50 { width: 50%; }
@@ -127,6 +128,7 @@
             font-weight: 500;
             letter-spacing: 0.15em;
             padding: 12px 28px;
+            border-radius: 40px;
             text-transform: uppercase;
             background: none;
             cursor: pointer;
