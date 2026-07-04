@@ -1,492 +1,608 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milk Mondays — enter the archive</title>
-    <meta name="p:domain_verify" content="85725db9aaf55872674a6ff2af76f9c3"/>
-    <meta name="google-site-verification" content="1c-pw16Ug5870x3nF2QnmcY7I1MjOEZmkGqGF7hsBu8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Playball&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milk Mondays — A Collection of Everyday Things</title>
+<meta name="description" content="A collection of everyday things. Skincare, fashion, and pop culture — curated for the modern archive. New editions every Monday.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Playball&display=swap" rel="stylesheet">
+<style>
 
-        :root {
-            --pink:    #F3C1C6;
-            --black:   #121212;
-            --cream:   #FAF9F6;
-            --grey:    #8E8E8E;
-            --border:  #E5E5E5;
-            --serif:   'Playfair Display', Georgia, serif;
-            --sans:    'DM Sans', sans-serif;
-            --logo:    'Playball', cursive;
-        }
+/* ==========================================================================
+   TOKENS — identical to styles.css, nothing new invented here
+   ========================================================================== */
+:root{
+    --pink:      #F3C1C6;
+    --pink-deep: #E39CA4;
+    --black:     #121212;
+    --ink:       #1B1B1B;
+    --cream:     #FAF9F6;
+    --white:     #FFFFFF;
+    --grey:      #8E8E8E;
+    --grey-light:#B9B7B2;
+    --border:    #E9E6E0;
+    --hairline:  #DEDAD2;
 
-        html { scroll-behavior: smooth; }
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans:  'DM Sans', sans-serif;
+    --logo:  'Playball', cursive;
 
-        body {
-            background: var(--cream);
-            color: var(--black);
-            font-family: var(--sans);
-            font-size: 13px;
-            line-height: 1.6;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
+    --ease: cubic-bezier(0.25, 1, 0.5, 1);
+    --fast: 0.22s;
+}
 
-        /* ── GRAIN ── */
-        .grain {
-            position: fixed;
-            inset: -50%;
-            width: 200%; height: 200%;
-            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 9999;
-        }
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:13px;
+    letter-spacing:0.03em;
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+}
+a{ color:inherit; text-decoration:none; }
+button{ background:none; border:none; cursor:pointer; font-family:inherit; }
+img{ display:block; max-width:100%; }
+ul{ list-style:none; }
+:focus-visible{ outline:2px solid var(--pink-deep); outline-offset:3px; }
 
-        /* ── OPENING SCREEN ── */
-        #opening {
-            position: fixed;
-            inset: 0;
-            background: var(--cream);
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 18px;
-            transition: opacity 1s ease;
-        }
-        #opening.out { opacity: 0; pointer-events: none; }
+.grain{
+    position:fixed; inset:-50%; width:200%; height:200%;
+    background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:9999;
+}
 
-        .open-logo {
-            font-family: var(--logo);
-            font-size: clamp(3rem, 8vw, 5.5rem);
-            line-height: 1;
-            opacity: 0;
-            animation: reveal 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s forwards;
-        }
-        .open-logo .m { color: var(--pink); }
-        .open-logo .n {
-            font-family: var(--serif);
-            font-style: italic;
-            font-size: 0.7em;
-            color: var(--black);
-        }
-        .open-tag {
-            font-size: 10px;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: var(--grey);
-            opacity: 0;
-            animation: fadeup 0.6s ease 1s forwards;
-        }
+@media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+}
 
-        @keyframes reveal {
-            from { opacity: 0; transform: translateY(14px) scale(0.97); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes fadeup {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
+@keyframes riseIn{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+.rise{ opacity:0; animation:riseIn 0.7s var(--ease) forwards; }
+.rise-1{ animation-delay:.05s; } .rise-2{ animation-delay:.16s; }
+.rise-3{ animation-delay:.27s; } .rise-4{ animation-delay:.38s; }
 
-        /* ── MAIN CONTENT ── */
-        #main {
-            opacity: 0;
-            transition: opacity 0.9s ease;
-        }
-        #main.visible { opacity: 1; }
+/* ==========================================================================
+   ANNOUNCEMENT BAR — same as rest of site
+   ========================================================================== */
+.bar{
+    background:var(--black); color:var(--white);
+    font-size:10px; font-weight:400; letter-spacing:0.18em;
+    padding:9px 20px; text-align:center; text-transform:uppercase;
+}
 
-        /* ── ANNOUNCEMENT BAR ── */
-        .bar {
-            background: var(--black);
-            color: #fff;
-            font-size: 10px;
-            letter-spacing: 0.15em;
-            text-align: center;
-            padding: 9px 20px;
-            text-transform: uppercase;
-        }
+/* ==========================================================================
+   MASTHEAD UTILITY ROW — quiet, top of cover
+   ========================================================================== */
+.util-row{
+    max-width:1300px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 28px 0;
+}
+.util-date{
+    font-size:10px; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--grey);
+}
+.util-enter{
+    font-size:10px; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--black); border-bottom:1px solid var(--black);
+    padding-bottom:3px; transition:color var(--fast) var(--ease), border-color var(--fast) var(--ease), letter-spacing var(--fast) var(--ease);
+    white-space:nowrap;
+}
+.util-enter:hover{ color:var(--pink-deep); border-color:var(--pink-deep); letter-spacing:0.2em; }
 
-        /* ── HEADER ── */
-        .site-header {
-            border-bottom: 1px solid var(--black);
-            padding: 40px 20px 24px;
-            text-align: center;
-        }
-        .brand {
-            font-family: var(--logo);
-            font-size: 48px;
-            line-height: 1;
-            text-decoration: none;
-            color: inherit;
-            display: inline-block;
-        }
-        .brand .m { color: var(--pink); margin-right: -4px; }
-        .brand .n {
-            font-family: var(--serif);
-            font-size: 42px;
-            font-style: italic;
-            color: var(--black);
-        }
+/* ==========================================================================
+   COVER — the signature: a typographic magazine cover, not a photo hero
+   ========================================================================== */
+.cover{
+    max-width:1300px; margin:0 auto;
+    padding:56px 28px 70px;
+    text-align:center;
+}
+.cover-eyebrow{
+    font-size:11px; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--pink-deep); margin-bottom:26px;
+}
+.cover-eyebrow span{ color:var(--grey); }
 
-        /* ── HERO SECTION ── */
-        .hero {
-            text-align: center;
-            padding: 80px 20px 60px;
-            max-width: 780px;
-            margin: 0 auto;
-        }
-        .hero-eye {
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--grey);
-            margin-bottom: 18px;
-        }
-        .hero-title {
-            font-family: var(--serif);
-            font-size: clamp(36px, 6vw, 54px);
-            font-style: italic;
-            font-weight: 400;
-            line-height: 1.15;
-            margin-bottom: 20px;
-        }
-        .hero-title .pk { color: var(--pink); }
-        .hero-sub {
-            color: var(--grey);
-            font-size: 14px;
-            max-width: 480px;
-            margin: 0 auto;
-        }
+.cover-brand{
+    display:inline-block;
+    font-family:var(--logo);
+    font-size:clamp(64px, 12vw, 138px);
+    line-height:0.9;
+    color:inherit;
+}
+.cover-brand .m{ color:var(--pink-deep); margin-right:-10px; }
+.cover-brand .n{
+    display:block;
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:300;
+    font-size:clamp(30px, 4.8vw, 54px);
+    letter-spacing:-0.01em;
+    color:var(--black);
+    margin-top:2px;
+}
 
-        /* ── FEATURED GRID ── */
-        .featured-section {
-            max-width: 1300px;
-            margin: 0 auto 90px;
-            padding: 0 24px;
-        }
-        .section-label {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            margin-bottom: 40px;
-        }
-        .section-label span {
-            font-family: var(--serif);
-            font-size: 17px;
-            font-style: italic;
-            white-space: nowrap;
-        }
-        .section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--black);
-        }
+.cover-rule{
+    width:64px; height:1px; background:var(--black);
+    margin:34px auto 30px;
+}
 
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 40px 28px;
-        }
+.cover-tagline{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    font-size:clamp(17px, 2.1vw, 23px);
+    max-width:36ch;
+    margin:0 auto 46px;
+    color:var(--ink);
+}
 
-        .card {
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            transform: translateY(22px);
-        }
-        .card.in {
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.55s ease, transform 0.55s ease;
-        }
-        .card-img {
-            width: 100%;
-            aspect-ratio: 4/3;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-        .card-img img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s ease;
-        }
-        .card:hover .card-img img { transform: scale(1.04); }
-        .card-cat {
-            font-size: 9px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--grey);
-            margin-bottom: 8px;
-        }
-        .card-title {
-            font-family: var(--serif);
-            font-size: 20px;
-            font-weight: 400;
-            line-height: 1.25;
-            margin-bottom: 8px;
-        }
-        .card-sub {
-            color: var(--grey);
-            font-size: 12px;
-            line-height: 1.6;
-            flex: 1;
-            margin-bottom: 16px;
-        }
-        .card-cta {
-            align-self: flex-start;
-            background: none;
-            border: none;
-            font-family: var(--sans);
-            font-size: 10px;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            cursor: pointer;
-            color: var(--black);
-            padding: 0;
-            border-bottom: 1px solid var(--black);
-            transition: color 0.2s, border-color 0.2s;
-        }
-        .card-cta:hover { color: var(--grey); border-color: var(--grey); }
+.cover-cta{
+    display:inline-flex; align-items:center; gap:10px;
+    border:1px solid var(--black);
+    color:var(--black);
+    font-size:11px; font-weight:500; letter-spacing:0.18em;
+    text-transform:uppercase;
+    padding:16px 34px;
+    border-radius:999px;
+    transition:background var(--fast) var(--ease), color var(--fast) var(--ease), letter-spacing var(--fast) var(--ease);
+}
+.cover-cta:hover{ background:var(--black); color:var(--cream); letter-spacing:0.22em; }
+.cover-cta svg{ transition:transform var(--fast) var(--ease); }
+.cover-cta:hover svg{ transform:translateX(3px); }
 
-        /* ── FOOTER ── */
-        .site-footer {
-            border-top: 1px solid var(--black);
-            padding: 70px 40px 40px;
-        }
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 1.4fr 1fr 1fr;
-            gap: 60px;
-            max-width: 1200px;
-            margin: 0 auto 50px;
-        }
-        .footer-heading {
-            font-family: var(--serif);
-            font-size: 14px;
-            font-weight: 400;
-            font-style: italic;
-            margin-bottom: 14px;
-        }
-        .footer-text {
-            color: var(--grey);
-            font-size: 12px;
-            line-height: 1.75;
-            margin-bottom: 16px;
-        }
-        .footer-link {
-            font-size: 11px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--grey);
-            text-decoration: none;
-            border-bottom: 1px solid var(--border);
-            transition: color 0.2s, border-color 0.2s;
-        }
-        .footer-link:hover { color: var(--black); border-color: var(--black); }
-        .footer-links-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .footer-links-list a {
-            color: var(--grey);
-            font-size: 12px;
-            text-decoration: none;
-            transition: color 0.2s, padding-left 0.2s;
-        }
-        .footer-links-list a:hover { color: var(--black); padding-left: 4px; }
-        .footer-bar {
-            border-top: 1px solid var(--border);
-            padding-top: 28px;
-            text-align: center;
-            font-size: 10px;
-            color: var(--grey);
-            letter-spacing: 0.05em;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+.cover-microcopy{
+    margin-top:16px;
+    font-size:10.5px;
+    color:var(--grey-light);
+    letter-spacing:0.05em;
+}
 
-        /* ── RESPONSIVE ── */
-        @media (max-width: 1024px) {
-            .cards-grid { grid-template-columns: repeat(2, 1fr); }
-            .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
-        }
-        @media (max-width: 680px) {
-            .cards-grid { grid-template-columns: 1fr; }
-            .footer-grid { grid-template-columns: 1fr; gap: 36px; }
-            .site-footer { padding: 50px 24px 32px; }
-            .hero { padding: 60px 20px 40px; }
-        }
-    </style>
+/* ==========================================================================
+   CONTENTS — dot-leader index, like the coverlines on a print issue
+   ========================================================================== */
+.contents{
+    max-width:760px; margin:0 auto;
+    padding:0 28px 100px;
+}
+.contents-label{
+    text-align:center;
+    font-size:10px; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--grey);
+    margin-bottom:28px;
+}
+.contents-list{ border-top:1px solid var(--black); }
+.contents-row{
+    display:flex; align-items:baseline; gap:10px;
+    padding:19px 2px;
+    border-bottom:1px solid var(--hairline);
+    transition:padding-left var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.contents-row:hover{ padding-left:8px; color:var(--pink-deep); }
+.contents-num{
+    font-family:var(--serif); font-style:italic; font-size:13px;
+    color:var(--grey-light); flex-shrink:0; width:22px;
+}
+.contents-name{
+    font-family:var(--serif);
+    font-size:clamp(18px,2.4vw,23px);
+    font-weight:400;
+    flex-shrink:0;
+    white-space:nowrap;
+}
+.contents-leader{
+    flex:1; height:0;
+    border-bottom:1px dotted var(--grey-light);
+    transform:translateY(-5px);
+}
+.contents-hook{
+    color:var(--grey);
+    font-size:12px;
+    flex-shrink:0;
+    max-width:34ch;
+    text-align:right;
+}
+.contents-row:hover .contents-hook,
+.contents-row:hover .contents-num{ color:var(--pink-deep); }
+
+@media (max-width:640px){
+    .contents-hook{ display:none; }
+    .contents-leader{ display:none; }
+}
+
+/* ==========================================================================
+   MANIFESTO — two-column editorial spread
+   ========================================================================== */
+.manifesto{
+    border-top:1px solid var(--black);
+    border-bottom:1px solid var(--black);
+    padding:80px 28px;
+}
+.manifesto-inner{
+    max-width:1200px; margin:0 auto;
+    display:grid; grid-template-columns:1fr 1px 1fr;
+    gap:64px;
+}
+.manifesto-gutter{ background:var(--hairline); }
+.manifesto-quote{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    font-size:clamp(24px,3vw,36px);
+    line-height:1.35;
+    color:var(--black);
+}
+.manifesto-quote::before{ content:'\201C'; color:var(--pink-deep); }
+.manifesto-quote::after{ content:'\201D'; color:var(--pink-deep); }
+.manifesto-body{ display:flex; flex-direction:column; justify-content:center; }
+.manifesto-eyebrow{
+    font-size:10px; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--pink-deep); margin-bottom:16px;
+}
+.manifesto-text{
+    color:var(--grey);
+    font-size:13px; line-height:1.9;
+    max-width:46ch;
+}
+.manifesto-text + .manifesto-text{ margin-top:16px; }
+.manifesto-signoff{
+    margin-top:22px;
+    font-family:var(--serif); font-style:italic;
+    font-size:14px; color:var(--black);
+}
+
+@media (max-width:860px){
+    .manifesto-inner{ grid-template-columns:1fr; gap:36px; }
+    .manifesto-gutter{ display:none; }
+}
+
+/* ==========================================================================
+   LATEST EDITION — one real, live-fetched feature, not a full grid
+   ========================================================================== */
+.latest{
+    max-width:1200px; margin:0 auto;
+    padding:90px 28px;
+    display:none; /* revealed by JS only once real content is ready */
+}
+.latest.ready{ display:block; }
+.latest-label{
+    display:flex; align-items:center; gap:18px;
+    margin-bottom:44px;
+}
+.latest-label-text{
+    font-family:var(--serif); font-style:italic; font-size:18px; white-space:nowrap;
+}
+.latest-label-line{ flex:1; height:1px; background:var(--black); }
+
+.latest-card{
+    display:grid; grid-template-columns:1fr 1.15fr;
+    border:1px solid var(--black);
+}
+.latest-img-pane{
+    background:#eee; min-height:380px; overflow:hidden; position:relative;
+}
+.latest-img-pane img{ width:100%; height:100%; object-fit:cover; transition:transform 0.8s var(--ease); }
+.latest-card:hover .latest-img-pane img{ transform:scale(1.03); }
+
+.latest-body{
+    padding:56px 56px 56px 52px;
+    display:flex; flex-direction:column; justify-content:center;
+    border-left:1px solid var(--hairline);
+}
+.latest-tag{
+    font-size:10px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--pink-deep); border-bottom:1px solid var(--pink-deep);
+    display:inline-block; padding-bottom:4px; margin-bottom:20px; width:fit-content;
+}
+.latest-title{
+    font-family:var(--serif); font-size:clamp(24px,2.8vw,32px);
+    font-weight:400; line-height:1.15; margin-bottom:16px;
+}
+.latest-sub{ color:var(--grey); font-size:13px; line-height:1.8; margin-bottom:28px; max-width:44ch; }
+.latest-read{
+    border:none; border-bottom:1px solid var(--black);
+    font-size:11px; font-weight:500; letter-spacing:0.16em; text-transform:uppercase;
+    padding:0 0 5px; width:fit-content;
+    transition:color var(--fast) var(--ease), border-color var(--fast) var(--ease), letter-spacing var(--fast) var(--ease);
+}
+.latest-read:hover{ color:var(--pink-deep); border-color:var(--pink-deep); letter-spacing:0.22em; }
+
+@media (max-width:860px){
+    .latest-card{ grid-template-columns:1fr; }
+    .latest-body{ border-left:none; border-top:1px solid var(--hairline); padding:40px 30px; }
+}
+
+/* ==========================================================================
+   FINAL CTA BAND
+   ========================================================================== */
+.final-cta{
+    text-align:center;
+    padding:96px 28px;
+    border-top:1px solid var(--black);
+}
+.final-cta-kicker{
+    font-family:var(--serif); font-style:italic; font-size:15px;
+    color:var(--grey); margin-bottom:8px;
+}
+.final-cta-title{
+    font-family:var(--serif); font-size:clamp(26px,3.6vw,40px);
+    font-weight:400; margin-bottom:36px;
+}
+.final-cta-btn{
+    display:inline-flex; align-items:center; gap:10px;
+    background:var(--black); color:var(--cream);
+    font-size:11px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase;
+    padding:18px 40px; border-radius:999px;
+    transition:background var(--fast) var(--ease), letter-spacing var(--fast) var(--ease);
+}
+.final-cta-btn:hover{ background:var(--pink-deep); color:var(--black); letter-spacing:0.22em; }
+.final-cta-note{ margin-top:18px; font-size:10.5px; color:var(--grey-light); letter-spacing:0.05em; }
+
+/* ==========================================================================
+   FOOTER — mirrors magazine.html footer content, matching brand voice
+   ========================================================================== */
+.site-footer{ border-top:1px solid var(--black); padding:76px 40px 40px; }
+.footer-grid{
+    display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:60px;
+    max-width:1220px; margin:0 auto 60px;
+}
+.footer-heading{ font-family:var(--serif); font-size:18px; font-style:italic; font-weight:400; margin-bottom:18px; }
+.footer-blurb{ color:var(--grey); font-size:12px; line-height:1.8; max-width:360px; }
+.footer-sub{ color:var(--grey); font-size:11px; margin-bottom:14px; }
+.footer-cta{
+    display:inline-block; font-size:11px; font-weight:500; letter-spacing:0.05em;
+    border-bottom:1px solid var(--black); padding-bottom:3px; color:var(--black);
+    transition:letter-spacing var(--fast);
+}
+.footer-cta:hover{ letter-spacing:0.08em; }
+.footer-social-list li{ margin-bottom:10px; }
+.footer-social-list a{ color:var(--grey); font-size:12px; transition:color var(--fast), padding-left var(--fast); }
+.footer-social-list a:hover{ color:var(--black); padding-left:4px; }
+.footer-bar{
+    border-top:1px solid var(--border); padding-top:28px; text-align:center;
+    font-size:10px; color:var(--grey); letter-spacing:0.05em;
+    max-width:1220px; margin:0 auto;
+}
+
+@media (max-width:860px){
+    .footer-grid{ grid-template-columns:1fr; gap:36px; }
+    .site-footer{ padding:56px 24px 36px; }
+}
+@media (max-width:640px){
+    .util-row{ padding:18px 20px 0; }
+    .cover{ padding:44px 20px 54px; }
+    .contents{ padding:0 20px 70px; }
+    .manifesto{ padding:56px 20px; }
+    .latest{ padding:60px 20px; }
+    .final-cta{ padding:70px 20px; }
+}
+
+</style>
 </head>
 <body>
-    <div class="grain" aria-hidden="true"></div>
 
-    <!-- Opening splash -->
-    <div id="opening" aria-label="Loading">
-        <div class="open-logo"><span class="m">Milk</span> <span class="n">Mondays</span></div>
-        <div class="open-tag">enter the archive</div>
-    </div>
+<div class="grain" aria-hidden="true"></div>
 
-    <!-- Main content -->
-    <div id="main">
-        <div class="bar">A collection of everyday things. If it looks good, it belongs here.</div>
+<div class="bar">A collection of everyday things. If it looks good, it belongs here.</div>
 
-        <header class="site-header">
-            <a href="index.html" class="brand"><span class="m">Milk</span> <span class="n">Mondays</span></a>
-        </header>
+<div class="util-row">
+    <span class="util-date" id="util-date">&nbsp;</span>
+    <a href="magazine.html" class="util-enter" id="util-enter-link">Enter The Magazine →</a>
+</div>
 
-        <section class="hero">
-            <p class="hero-eye">Tastefully Yours</p>
-            <h1 class="hero-title">Skincare, fashion &<br><span class="pk">beautifully put-together things.</span></h1>
-            <p class="hero-sub">For girls drawn to good taste, polished rituals,and beautifully curated reads.</p>
-        </section>
+<!-- ── COVER ── -->
+<main>
+    <section class="cover">
+        <p class="cover-eyebrow rise rise-1" id="cover-eyebrow">EVERY MONDAY <span>— NEW ARRIVALS</span></p>
 
-        <section class="featured-section">
-            <div class="section-label"><span>The Archive</span></div>
-            <div class="cards-grid" id="cards-grid">
-                <div style="grid-column:1/-1; text-align:center; padding:60px 0; color:var(--grey);">Loading stories…</div>
+        <a href="magazine.html" class="cover-brand rise rise-2" id="cover-brand-link" aria-label="Milk Mondays — enter the magazine">
+            <span class="m">Milk</span><span class="n">Mondays</span>
+        </a>
+
+        <div class="cover-rule rise rise-2"></div>
+
+        <p class="cover-tagline rise rise-3">Skincare, fashion, and pop culture — curated for the modern archive.</p>
+
+        <a href="magazine.html" class="cover-cta rise rise-4" id="cover-cta-link">
+            <span>Step Into The Archive</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <p class="cover-microcopy rise rise-4">No ads. No pop-ups. Just Mondays.</p>
+    </section>
+
+    <!-- ── CONTENTS / COVERLINES ── -->
+    <section class="contents">
+        <p class="contents-label">In This Edition</p>
+        <div class="contents-list">
+            <a href="magazine.html" class="contents-row" data-gate-dest="magazine.html">
+                <span class="contents-num">01</span>
+                <span class="contents-name">Skincare</span>
+                <span class="contents-leader"></span>
+                <span class="contents-hook">Routines actually worth the hype</span>
+            </a>
+            <a href="magazine.html" class="contents-row" data-gate-dest="magazine.html">
+                <span class="contents-num">02</span>
+                <span class="contents-name">Fashion</span>
+                <span class="contents-leader"></span>
+                <span class="contents-hook">What's actually being worn right now</span>
+            </a>
+            <a href="magazine.html" class="contents-row" data-gate-dest="magazine.html">
+                <span class="contents-num">03</span>
+                <span class="contents-name">Pop Culture</span>
+                <span class="contents-leader"></span>
+                <span class="contents-hook">The discourse, decoded</span>
+            </a>
+            <a href="magazine.html" class="contents-row" data-gate-dest="magazine.html">
+                <span class="contents-num">04</span>
+                <span class="contents-name">Archives</span>
+                <span class="contents-leader"></span>
+                <span class="contents-hook">Everything we've ever run, forever</span>
+            </a>
+            <a href="magazine.html" class="contents-row" data-gate-dest="magazine.html">
+                <span class="contents-num">05</span>
+                <span class="contents-name">Story Time</span>
+                <span class="contents-leader"></span>
+                <span class="contents-hook">Reader-submitted, unedited, real</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ── MANIFESTO SPREAD ── -->
+    <section class="manifesto">
+        <div class="manifesto-inner">
+            <p class="manifesto-quote">If it looks good, it belongs here.</p>
+            <div class="manifesto-gutter" aria-hidden="true"></div>
+            <div class="manifesto-body">
+                <p class="manifesto-eyebrow">About The Founder</p>
+                <p class="manifesto-text">Hi, I'm Preksha Thoriya — a digital creator with a strong inclination toward aesthetics, media, and contemporary internet culture. My work revolves around visual storytelling, trend curation, and building thoughtfully designed online spaces.</p>
+                <p class="manifesto-text">Currently overanalyzing fonts, layouts, and whether a shade of beige feels emotionally correct.</p>
+                <p class="manifesto-signoff">Thanks for accidentally ending up here.</p>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <footer class="site-footer">
-            <div class="footer-grid">
-                <div>
-                    <h4 class="footer-heading">Milk Mondays</h4>
-                    <p class="footer-text">From internet obsessions to timeless finds, this page holds all the things we keep coming back to.Centered around standout finds, current obsessions, and things with undeniable appeal.Always evolving, always aesthetically aligned.</p>
-                </div>
-                <div>
-                    <div>
-                    <h4 class="footer-heading">About The Founder</h4>
-                    <p class="footer-text">
-                        Hi, I'm Preksha Thoriya a digital creator with a strong inclination toward aesthetics, media, and contemporary internet culture.
-                        My work often revolves around visual storytelling, trend curation, and building thoughtfully designed online spaces.
-                        I'm drawn to thoughtful aesthetics, strong visual identities, and the way digital culture shapes what people connect with.
-                        <br><br>
-                        Currently overanalyzing fonts, layouts, and whether a shade of beige feels emotionally correct.
-                        Thanks for accidentally ending up here.
-                    </p>
-                </div>
-                <div>
-                    <h4 class="footer-heading">Join The Club</h4>
-                    <p class="footer-text">Drop your thoughts or apply to collaborate below.</p>
-                    <a href="https://forms.gle/xEZQGAnCKHLkUvFTA" target="_blank" rel="noopener" class="footer-link">Open Application Form ↗</a>
-                </div>
-                    <h4 class="footer-heading">Digital Indexes</h4>
-                    <ul class="footer-links-list">
-                        <li><a href="lookbook.html" onclick="window.handleLookbookAccess(event)">The Collection ↗</a></li>
-                        <li><a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener">Instagram ↗</a></li>
-                        <li><a href="mailto:milkmondaysbiz@gmail.com">Email Editorial ↗</a></li>
-                    </ul>
-                </div>
+    <!-- ── LATEST EDITION (populated by JS, hidden gracefully if it fails) ── -->
+    <section class="latest" id="latest-section">
+        <div class="latest-label">
+            <span class="latest-label-text">This Week's Feature</span>
+            <div class="latest-label-line"></div>
+        </div>
+        <a class="latest-card" id="latest-card-link" href="magazine.html">
+            <div class="latest-img-pane">
+                <img id="latest-img" src="" alt="">
             </div>
-            <div class="footer-bar">&copy; 2026 Milk Mondays. All rights reserved. Curated for the modern archive.</div>
-        </footer>
+            <div class="latest-body">
+                <span class="latest-tag" id="latest-tag">&nbsp;</span>
+                <h3 class="latest-title" id="latest-title">&nbsp;</h3>
+                <p class="latest-sub" id="latest-sub">&nbsp;</p>
+                <span class="latest-read">Read The Feature →</span>
+            </div>
+        </a>
+    </section>
+
+    <!-- ── FINAL CTA ── -->
+    <section class="final-cta">
+        <p class="final-cta-kicker">That's the cover.</p>
+        <h2 class="final-cta-title">The rest is in the archive.</h2>
+        <a href="magazine.html" class="final-cta-btn" id="final-cta-link">
+            <span>Open The Magazine</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <p class="final-cta-note">Takes about ten seconds. We only ask once.</p>
+    </section>
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="site-footer">
+    <div class="footer-grid">
+        <div>
+            <h4 class="footer-heading">Milk Mondays</h4>
+            <p class="footer-blurb">A collection of everyday things. Built around skincare, makeup, and fashion. If it looks good, it belongs here. Everything is picked with some thought.</p>
+        </div>
+        <div>
+            <h4 class="footer-heading">Join The Club</h4>
+            <p class="footer-sub">Drop your thoughts or apply to collaborate below.</p>
+            <a href="https://forms.gle/xEZQGAnCKHLkUvFTA" target="_blank" rel="noopener" class="footer-cta">Open Digital Application Form ↗</a>
+        </div>
+        <div>
+            <h4 class="footer-heading">Digital Indexes</h4>
+            <ul class="footer-social-list">
+                <li><a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener">Instagram ↗</a></li>
+                <li><a href="mailto:milkmondaysbiz@gmail.com">Email Editorial ↗</a></li>
+                <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeJXuNUvNWlvlJMZzQz0Re5Kmu2Ew5G_2smDMUnfhYkmn0gTw/viewform?usp=publish-editor" target="_blank" rel="noopener">Submit a Story Time Entry ↗</a></li>
+            </ul>
+        </div>
     </div>
+    <div class="footer-bar">&copy; 2026 Milk Mondays. All rights reserved. Curated for the modern archive.</div>
+</footer>
 
-    <script>
-    (function () {
-        'use strict';
+<script>
+(function(){
+    'use strict';
 
-        /* ── helpers ── */
-        function esc(s) {
-            if (!s) return '';
-            return s.replace(/[&<>"']/g, function(c) {
-                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-            });
-        }
+    var POSTS_URL = 'https://milkmondays-magazine.pages.dev/content/posts.json';
 
-        function gatePassed() {
-            return localStorage.getItem('mm_gate_passed') === 'true';
-        }
+    /* ── Gate-aware links: reuses the exact same flag app.js already sets/reads ── */
+    function gatePassed() {
+        try { return localStorage.getItem('mm_gate_passed') === 'true'; } catch (e) { return false; }
+    }
+    function gateHref(dest) {
+        return gatePassed() ? dest : ('gate-form.html?redirect=' + encodeURIComponent(dest));
+    }
+    function wireGatedLinks() {
+        var nodes = document.querySelectorAll('[data-gate-dest], #util-enter-link, #cover-brand-link, #cover-cta-link, #final-cta-link');
+        nodes.forEach(function (el) {
+            var dest = el.getAttribute('data-gate-dest') || el.getAttribute('href') || 'magazine.html';
+            el.setAttribute('href', gateHref(dest));
+        });
+    }
+    wireGatedLinks();
 
-        function goToArticle(id) {
-            var target = 'magazine.html?article=' + encodeURIComponent(id);
-            if (gatePassed()) {
-                location.href = target;
+    /* ── Live date line: ties the cover to the site's actual weekly-Monday concept ── */
+    (function setDateLine() {
+        var el = document.getElementById('util-date');
+        var eyebrow = document.getElementById('cover-eyebrow');
+        if (!el) return;
+        var d = new Date();
+        var weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+        var dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        el.textContent = weekday.toUpperCase() + ' — ' + dateStr.toUpperCase();
+
+        if (eyebrow) {
+            if (weekday === 'Monday') {
+                eyebrow.innerHTML = "IT'S MONDAY <span>— THE ARCHIVE JUST UPDATED</span>";
             } else {
-                location.href = 'gate-form.html?redirect=' + encodeURIComponent(target);
+                eyebrow.innerHTML = "TODAY IS " + weekday.toUpperCase() + " <span>— WE PUBLISH ON MONDAYS</span>";
             }
         }
-
-        // Intercept lookbook clicks to check the gate footprint
-        window.handleLookbookAccess = function(e) {
-            if (!gatePassed()) {
-                if (e) e.preventDefault();
-                location.href = 'gate-form.html?redirect=' + encodeURIComponent('lookbook.html');
-            }
-        };
-
-        /* ── opening splash ── */
-        var opening = document.getElementById('opening');
-        var mainEl  = document.getElementById('main');
-
-        setTimeout(function () {
-            opening.classList.add('out');
-            setTimeout(function () {
-                opening.style.display = 'none';
-                mainEl.classList.add('visible');
-            }, 1000);
-        }, 2800);
-
-        /* ── load posts ── */
-        async function loadPosts() {
-            var grid = document.getElementById('cards-grid');
-            try {
-                var res = await fetch('https://milkmondays-magazine.pages.dev/content/posts.json');
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                var data = await res.json();
-                var posts = (data.posts || []).sort(function(a, b) {
-    return new Date(b.date) - new Date(a.date);
-});
-
-                if (!posts.length) {
-                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--grey);">No stories yet.</div>';
-                    return;
-                }
-
-                grid.innerHTML = posts.map(function(p) {
-                    var img = p.coverImage || 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=800';
-                    return [
-                        '<div class="card" data-id="' + esc(p.id) + '">',
-                          '<div class="card-img">',
-                            '<img src="' + esc(img) + '" alt="' + esc(p.title) + '" loading="lazy">',
-                          '</div>',
-                          '<div class="card-cat">' + esc(p.category) + '</div>',
-                          '<h3 class="card-title">' + esc(p.title) + '</h3>',
-                          '<p class="card-sub">' + esc(p.subtitle || '') + '</p>',
-                          '<button class="card-cta" data-id="' + esc(p.id) + '">Read story →</button>',
-                        '</div>'
-                    ].join('');
-                }).join('');
-
-                /* animate cards in */
-                var cards = grid.querySelectorAll('.card');
-                cards.forEach(function(card, i) {
-                    setTimeout(function() { card.classList.add('in'); }, i * 70);
-                });
-
-                /* click handlers */
-                grid.addEventListener('click', function(e) {
-                    var el = e.target.closest('[data-id]');
-                    if (el) goToArticle(el.dataset.id);
-                });
-
-            } catch (err) {
-                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--grey);">Unable to load archive. Please refresh.</div>';
-                console.error('Posts load error:', err);
-            }
-        }
-
-        loadPosts();
     })();
-    </script>
+
+    /* ── Latest edition teaser: one real post, fetched live; hides gracefully on failure ── */
+    fetch(POSTS_URL)
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) {
+            var posts = (data.posts || []).slice().sort(function (a, b) {
+                return new Date(b.date) - new Date(a.date);
+            });
+            var latest = posts[0];
+            if (!latest) return;
+
+            var section = document.getElementById('latest-section');
+            var img     = document.getElementById('latest-img');
+            var tag     = document.getElementById('latest-tag');
+            var title   = document.getElementById('latest-title');
+            var sub     = document.getElementById('latest-sub');
+            var link    = document.getElementById('latest-card-link');
+
+            if (latest.coverImage) {
+                img.src = latest.coverImage;
+                img.alt = latest.title || '';
+            } else {
+                var pane = document.querySelector('.latest-img-pane');
+                if (pane) pane.style.display = 'none';
+            }
+
+            tag.textContent   = (latest.category || 'Feature').replace(/-/g, ' ');
+            title.textContent = latest.title || '';
+            sub.textContent   = latest.subtitle || '';
+
+            var dest = 'magazine.html?article=' + encodeURIComponent(latest.id || '');
+            link.setAttribute('href', gateHref(dest));
+
+            if (section) section.classList.add('ready');
+        })
+        .catch(function () {
+            /* Fails silently — the cover CTA and final CTA still work independently */
+        });
+
+})();
+</script>
+
 </body>
 </html>
