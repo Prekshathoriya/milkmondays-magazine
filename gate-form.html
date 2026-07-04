@@ -7,89 +7,91 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,400;1,400&family=Playball&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --pink:  #F3C1C6;
-            --pink-deep: #E39CA4;
-            --black: #121212;
-            --cream: #FAF9F6;
-            --grey:  #8E8E8E;
-            --red:   #c0392b;
-            --serif: 'Playfair Display', Georgia, serif;
-            --sans:  'DM Sans', sans-serif;
-            --logo:  'Playball', cursive;
-        }
-        body {
-            background: var(--cream);
-            font-family: var(--sans);
-            color: var(--black);
-            line-height: 1.6;
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-        .grain {
-            position: fixed;
-            inset: 0;
-            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 9999;
-        }
-        .bar {
-            background: var(--black);
-            color: #fff;
-            font-size: 10px;
-            letter-spacing: 0.15em;
-            text-align: center;
-            padding: 9px 20px;
-            text-transform: uppercase;
-            border-bottom: 3px solid var(--pink-deep);
-        }
-        .site-header {
-            text-align: center;
-            padding: 36px 20px 20px;
-            border-bottom: 1px solid var(--black);
-        }
-        .brand {
-            font-family: var(--logo);
-            font-size: 46px;
-            line-height: 1;
-            text-decoration: none;
-            color: inherit;
-        }
-        .brand .m { color: var(--pink); margin-right: -4px; }
-        .brand .n {
-            font-family: var(--serif);
-            font-size: 40px;
-            font-style: italic;
-            color: var(--black);
-        }
-        .wrap {
-            max-width: 480px;
-            margin: 60px auto 80px;
+        /* ── GATE-SPECIFIC LAYOUT (palette/type all come from styles.css) ── */
+        .gate-wrap {
+            max-width: 920px;
+            margin: 56px auto 90px;
             padding: 0 20px;
+            display: grid;
+            grid-template-columns: 0.85fr 1fr;
+            gap: 44px;
+            align-items: start;
         }
+
+        .gate-art {
+            position: relative;
+            border: 6px solid var(--white);
+            border-radius: 50% 50% 18px 18px / 60% 60% 18px 18px;
+            overflow: hidden;
+            aspect-ratio: 4/5;
+            box-shadow: var(--shadow-lift);
+            transform: rotate(-2deg);
+            animation: gateArtIn 0.7s var(--ease) both;
+        }
+        .gate-art img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            object-position: top center;
+        }
+        .gate-art-pin {
+            position: absolute;
+            top: -18px; left: 40%;
+            width: 20px; height: 58px;
+            background: linear-gradient(180deg, var(--ribbon) 0%, var(--ribbon-deep) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 84%, 50% 100%, 0 84%);
+            transform: rotate(6deg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            animation: ribbonFlutter 4.5s ease-in-out infinite;
+        }
+        .gate-art-credit {
+            display: block;
+            text-align: center;
+            font-size: var(--fs-xxs);
+            color: var(--grey);
+            margin-top: 14px;
+        }
+        .gate-art-credit a { text-decoration: underline; text-decoration-color: var(--pink-deep); }
+
         .card {
             border: 2px solid var(--black);
             padding: 44px 40px;
-            background: #fff;
+            background: var(--white);
             box-shadow: 6px 6px 0 rgba(18,18,18,0.1);
+            border-radius: var(--radius-md);
+            animation: gateCardIn 0.7s var(--ease) 0.1s both;
+        }
+        .card-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: var(--fs-xxs);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--grey);
+            margin-bottom: 14px;
+        }
+        .card-eyebrow::before {
+            content: '';
+            width: 20px; height: 1px;
+            background: var(--grey);
         }
         .card-title {
             font-family: var(--serif);
             font-size: 30px;
             font-weight: 400;
             font-style: italic;
-            text-align: center;
             margin-bottom: 14px;
         }
         .card-intro {
-            text-align: center;
             color: var(--grey);
             font-size: 13px;
-            margin-bottom: 34px;
-            line-height: 1.7;
+            margin-bottom: 30px;
+            line-height: 1.75;
         }
+        .card-intro strong { color: var(--black); font-weight: 500; }
+
         .field { margin-bottom: 26px; }
         label {
             display: block;
@@ -118,13 +120,15 @@
         input[type="email"]::placeholder { color: #bbb; }
         input[type="text"]:focus,
         input[type="email"]:focus { border-bottom-color: var(--pink); }
+
         .error-msg {
             font-size: 11px;
             color: var(--red);
             margin-bottom: 14px;
             display: none;
         }
-        .error-msg.show { display: block; }
+        .error-msg.show { display: block; animation: shakeX 0.4s var(--ease); }
+
         .submit-btn {
             display: block;
             width: 100%;
@@ -138,15 +142,37 @@
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
             color: var(--black);
+            border-radius: var(--radius-full);
         }
         .submit-btn:hover { background: var(--black); color: #fff; }
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .gate-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: 22px;
+            font-size: 11px;
+            color: var(--grey);
+            line-height: 1.6;
+        }
+        .gate-note svg { flex-shrink: 0; margin-top: 2px; }
+
         .site-footer-sm {
             text-align: center;
             padding: 28px 20px 40px;
             border-top: 1px solid #E5E5E5;
             font-size: 10px;
             color: var(--grey);
+        }
+
+        @keyframes gateArtIn  { from { opacity: 0; transform: translateY(16px) rotate(-2deg); } to { opacity: 1; transform: translateY(0) rotate(-2deg); } }
+        @keyframes gateCardIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shakeX { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+        @media (max-width: 760px) {
+            .gate-wrap { grid-template-columns: 1fr; gap: 30px; }
+            .gate-art { max-width: 240px; margin: 0 auto; }
         }
     </style>
 </head>
@@ -155,15 +181,25 @@
     <div class="bar">A collection of everyday things. If it looks good, it belongs here.</div>
 
     <header class="site-header">
-        <a href="magazine.html" class="brand"><span class="m">Milk</span> <span class="n">Mondays</span></a>
+        <a href="index.html" class="brand"><span class="m">Milk</span><span class="n">Mondays</span></a>
     </header>
 
-    <div class="wrap">
+    <div class="gate-wrap">
+        <div>
+            <div class="gate-art">
+                <div class="gate-art-pin" aria-hidden="true"></div>
+                <img src="eyes.jpg" alt="Illustrated portrait — the Milk Mondays mascot, waiting for you to say hello" loading="lazy">
+            </div>
+
+        </div>
+
         <div class="card">
+            <span class="card-eyebrow">One quick step</span>
             <h1 class="card-title">Before you read…</h1>
             <p class="card-intro">
-                Just your name and email<br>
-                a little hello before the good part.
+                This entry is part of the members' side of the archive. Drop your name and email once,
+                and you're in
+                <strong>We'll take you straight back to the article you clicked.</strong>
             </p>
 
             <form id="mm-gate-form" method="POST" action="https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse" target="hidden-iframe">
@@ -182,6 +218,11 @@
                 <button type="submit" class="submit-btn" id="submit-btn">Unlock Content →</button>
             </form>
 
+            <p class="gate-note">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+              After you submit, you'll land right back on the piece you came to read.
+            </p>
+
             <iframe id="hidden-iframe" name="hidden-iframe" style="display:none;"></iframe>
         </div>
     </div>
@@ -198,7 +239,7 @@
         var errorMsg = document.getElementById('error-msg');
         var submitBtn = document.getElementById('submit-btn');
         var iframe = document.getElementById('hidden-iframe');
-        
+
         var isSubmitting = false;
 
         function getRedirectDest() {
@@ -212,7 +253,7 @@
 
         // Fired after data reaches Google Forms
         iframe.addEventListener('load', function() {
-            if (!isSubmitting) return; 
+            if (!isSubmitting) return;
 
             try {
                 localStorage.setItem('mm_gate_passed', 'true');
