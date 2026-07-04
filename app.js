@@ -223,10 +223,22 @@
                 allPosts = (data.posts || []).sort(function (a, b) {
                     return new Date(b.date) - new Date(a.date);
                 });
+
+                /* handle category deep link, e.g. magazine.html?category=skincare */
+                var params = new URLSearchParams(window.location.search);
+                var targetCategory = params.get('category');
+                if (targetCategory) {
+                    var targetBtn = document.querySelector('.nav-btn[data-category="' + targetCategory.toLowerCase() + '"]');
+                    if (targetBtn) {
+                        navButtons.forEach(function (b) { b.classList.remove('active'); });
+                        targetBtn.classList.add('active');
+                        activeCategory = targetCategory.toLowerCase();
+                    }
+                }
+
                 renderMag();
 
-                /* handle deep link */
-                var params = new URLSearchParams(window.location.search);
+                /* handle article deep link */
                 var targetId = params.get('article');
                 if (targetId) {
                     var match = allPosts.find(function (p) { return p.id === targetId; });

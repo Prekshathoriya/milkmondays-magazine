@@ -13,134 +13,6 @@
 
     <link rel="stylesheet" href="styles.css">
 
-    <style>
-        /* ── SKELETON LOADER STYLES ── */
-        .skeleton-hero {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            margin-bottom: 80px;
-            min-height: 460px;
-            overflow: hidden;
-        }
-        .skeleton-hero-img {
-            background: #EFEDE9;
-            position: relative;
-            overflow: hidden;
-        }
-        .skeleton-hero-body {
-            padding: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 16px;
-        }
-        .skeleton-block {
-            background: #EFEDE9;
-            border-radius: 6px;
-            position: relative;
-            overflow: hidden;
-        }
-        .skeleton-block::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%);
-            animation: shimmer 1.7s infinite;
-        }
-        @keyframes shimmer {
-            0%   { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        .skeleton-tag   { height: 20px; width: 80px; border-radius: 20px; }
-        .skeleton-h1    { height: 36px; width: 85%; margin-top: 8px; }
-        .skeleton-h1b   { height: 36px; width: 65%; }
-        .skeleton-sub   { height: 14px; width: 90%; margin-top: 8px; }
-        .skeleton-subb  { height: 14px; width: 75%; }
-        .skeleton-btn   { height: 40px; width: 140px; margin-top: 16px; border-radius: 40px; }
-
-        .skeleton-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 44px 28px;
-            margin-top: 40px;
-        }
-        .skeleton-card  { display: flex; flex-direction: column; gap: 12px; }
-        .skeleton-img   { aspect-ratio: 4/5; width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md); }
-        .skeleton-line  { height: 13px; border-radius: 4px; }
-        .skeleton-line.w60 { width: 60%; }
-        .skeleton-line.w80 { width: 80%; }
-        .skeleton-line.w50 { width: 50%; }
-
-        @media (max-width: 1024px) {
-            .skeleton-hero { grid-template-columns: 1fr; }
-            .skeleton-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 768px) {
-            .skeleton-grid { grid-template-columns: 1fr; }
-            .skeleton-hero-body { padding: 30px; }
-        }
-
-        /* ── FETCH ERROR BANNER ── */
-        .fetch-error-wrap {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 55vh;
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .fetch-error-wrap.visible { display: flex; }
-        .fetch-error-eyebrow {
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--grey);
-            margin-bottom: 20px;
-        }
-        .fetch-error-title {
-            font-family: var(--serif);
-            font-size: clamp(24px, 4vw, 36px);
-            font-style: italic;
-            font-weight: 400;
-            margin-bottom: 16px;
-        }
-        .fetch-error-sub {
-            color: var(--grey);
-            font-size: 13px;
-            line-height: 1.75;
-            max-width: 400px;
-            margin-bottom: 32px;
-        }
-        .fetch-error-line {
-            background: var(--pink);
-            height: 1px;
-            width: 56px;
-            margin: 0 auto 32px;
-        }
-        .fetch-error-retry {
-            border: 1px solid var(--black);
-            color: var(--black);
-            font-family: var(--sans);
-            font-size: 10px;
-            font-weight: 500;
-            letter-spacing: 0.15em;
-            padding: 12px 28px;
-            border-radius: 40px;
-            text-transform: uppercase;
-            background: none;
-            cursor: pointer;
-            transition: background 0.2s, color 0.2s;
-        }
-        .fetch-error-retry:hover { background: var(--black); color: var(--white); }
-
-        /* skeleton visibility toggles */
-        #skeleton-loader { display: block; }
-        #skeleton-loader.hidden { display: none; }
-    </style>
-
     <!-- Netlify Identity (only needed for /admin) -->
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
 </head>
@@ -269,7 +141,7 @@
                 <p class="footer-sub">Drop your thoughts or apply to collaborate below.</p>
                 <a href="https://forms.gle/xEZQGAnCKHLkUvFTA" target="_blank" rel="noopener" class="footer-cta">Open Digital Application Form ↗</a>
             </div>
-            <div>
+            <div class="founder-box">
                 <h4 class="footer-heading">About The Founder</h4>
                 <p class="footer-text">
                     Hi, I'm Preksha Thoriya a digital creator with a strong inclination toward aesthetics, media, and contemporary internet culture.
@@ -279,6 +151,13 @@
                     Currently overanalyzing fonts, layouts, and whether a shade of beige feels emotionally correct.
                     Thanks for accidentally ending up here.
                 </p>
+
+                <div class="mascot-corner">
+                    <span class="mascot-avatar">
+                        <img src="eyes.jpg" alt="Milk Mondays illustrated mascot" loading="lazy">
+                    </span>
+    
+                </div>
 
                 <h4 class="footer-heading" style="margin-top: 20px;">Digital Indexes</h4>
                 <ul class="footer-social-list">

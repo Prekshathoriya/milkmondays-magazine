@@ -11,6 +11,7 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --pink:  #F3C1C6;
+            --pink-deep: #E39CA4;
             --black: #121212;
             --cream: #FAF9F6;
             --grey:  #8E8E8E;
@@ -42,6 +43,7 @@
             text-align: center;
             padding: 9px 20px;
             text-transform: uppercase;
+            border-bottom: 3px solid var(--pink-deep);
         }
         .site-header {
             text-align: center;
@@ -68,9 +70,10 @@
             padding: 0 20px;
         }
         .card {
-            border: 1px solid var(--black);
+            border: 2px solid var(--black);
             padding: 44px 40px;
-            background: var(--cream);
+            background: #fff;
+            box-shadow: 6px 6px 0 rgba(18,18,18,0.1);
         }
         .card-title {
             font-family: var(--serif);
