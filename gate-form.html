@@ -202,7 +202,7 @@
                 <strong>We'll take you straight back to the article you clicked.</strong>
             </p>
 
-            <form id="mm-gate-form" method="POST" action="https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse" target="hidden-iframe">
+            <form id="mm-gate-form" method="POST" action="https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse">
                 <div class="field">
                     <label for="input-name">Your name *</label>
                     <input type="text" id="input-name" name="entry.1112062655" placeholder="What should we call you?" autocomplete="given-name" required>
@@ -223,7 +223,6 @@
               After you submit, you'll land right back on the piece you came to read.
             </p>
 
-            <iframe id="hidden-iframe" name="hidden-iframe" style="display:none;"></iframe>
         </div>
     </div>
 
@@ -233,66 +232,102 @@
     (function() {
         'use strict';
 
-        var form = document.getElementById('mm-gate-form');
+        var form      = document.getElementById('mm-gate-form');
         var nameInput = document.getElementById('input-name');
-        var emailInput = document.getElementById('input-email');
-        var errorMsg = document.getElementById('error-msg');
+        var emailInput= document.getElementById('input-email');
+        var errorMsg  = document.getElementById('error-msg');
         var submitBtn = document.getElementById('submit-btn');
-        var iframe = document.getElementById('hidden-iframe');
 
-        var isSubmitting = false;
+        /* Prevent the redirect firing twice (iframe fallback + timeout race). */
+        var hasRedirected = false;
 
+        /* ── WHERE TO GO AFTER THE GATE ── */
         function getRedirectDest() {
             var params = new URLSearchParams(window.location.search);
-            var dest = params.get('redirect');
+            var dest   = params.get('redirect');
             if (!dest || !/^(https?:\/\/|\/|[^:]+\.html)/.test(dest)) {
                 dest = 'magazine.html';
             }
             return dest;
         }
 
-        // Fired after data reaches Google Forms
-        iframe.addEventListener('load', function() {
-            if (!isSubmitting) return;
-
-            try {
-                localStorage.setItem('mm_gate_passed', 'true');
-                localStorage.setItem('mm_user_name', nameInput.value.trim());
-                localStorage.setItem('mm_user_email', emailInput.value.trim());
-            } catch(e) {}
-
+        /* Single entry-point for the redirect so it only fires once. */
+        function doRedirect() {
+            if (hasRedirected) return;
+            hasRedirected = true;
             window.location.href = getRedirectDest();
-        });
+        }
 
+        /* ── FORM SUBMIT ──
+           Root cause of the original bug: the hidden-iframe approach relies on
+           the cross-origin iframe firing a `load` event after the Google Forms
+           POST. Modern browsers (especially Safari) do not reliably fire that
+           event for cross-origin iframes, so `mm_gate_passed` was never stored
+           and every card click kept redirecting back here.
+
+           Fix:
+           1. Always preventDefault — we drive the submission ourselves.
+           2. Set mm_gate_passed in localStorage IMMEDIATELY (synchronous),
+              before any async work, so the flag is guaranteed to be present
+              when the magazine page loads next.
+           3. POST to Google Forms in the background via fetch + mode:'no-cors'
+              (no-cors doesn't need a readable response; Google still captures
+              the entry).
+           4. Redirect after a short delay so the fetch has time to fire.
+        */
         form.addEventListener('submit', function(e) {
-            var name = nameInput.value.trim();
+            e.preventDefault();
+
+            var name  = nameInput.value.trim();
             var email = emailInput.value.trim();
 
             errorMsg.classList.remove('show');
 
             if (!name || !email) {
-                e.preventDefault();
                 errorMsg.textContent = 'Please fill in your name and email address.';
                 errorMsg.classList.add('show');
                 return;
             }
 
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                e.preventDefault();
                 errorMsg.textContent = 'Please enter a valid email address.';
                 errorMsg.classList.add('show');
                 return;
             }
 
-            isSubmitting = true;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Unlocking…';
+            submitBtn.disabled    = true;
+            submitBtn.textContent = 'Unlocking\u2026';
+
+            /* ── STEP 1: lock the gate IMMEDIATELY (synchronous) ── */
+            try {
+                localStorage.setItem('mm_gate_passed',  'true');
+                localStorage.setItem('mm_user_name',    name);
+                localStorage.setItem('mm_user_email',   email);
+            } catch (storageErr) { /* private-mode browsers may block writes */ }
+
+            /* ── STEP 2: ship the data to Google Forms in the background ── */
+            /* mode:'no-cors' means we never read the response, but Google    */
+            /* Forms still records the submission — identical to the old      */
+            /* hidden-iframe POST, just without the unreliable load event.    */
+            var formData = new FormData();
+            formData.append('entry.1112062655', name);
+            formData.append('entry.71996981',   email);
+
+            fetch(form.getAttribute('action'), {
+                method : 'POST',
+                mode   : 'no-cors',
+                body   : formData
+            }).catch(function() { /* silent — gate is already stored */ });
+
+            /* ── STEP 3: redirect (fetch fires async; 700 ms is plenty) ── */
+            setTimeout(doRedirect, 700);
         });
 
+        /* Allow Enter-key submission from either field. */
         [nameInput, emailInput].forEach(function(inp) {
             inp.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
-                    if(form.reportValidity ? form.reportValidity() : true) {
+                    if (form.reportValidity ? form.reportValidity() : true) {
                         form.requestSubmit ? form.requestSubmit() : form.submit();
                     }
                 }
