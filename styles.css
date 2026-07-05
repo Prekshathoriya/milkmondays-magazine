@@ -1823,7 +1823,7 @@ body::before {
     background-image: url('polka_dot.jpg');
     background-size: 260px 260px;
     background-repeat: repeat;
-    opacity: 0.1;
+    opacity: 0;
     z-index: -1;
     pointer-events: none;
 }
