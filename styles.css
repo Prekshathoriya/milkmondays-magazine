@@ -1752,3 +1752,170 @@ input:focus-visible {
     border-radius: var(--radius-sm);
     margin: 20px 0;
 }
+
+/* ============================================================================
+   34. NEW BACKGROUND LAYERS — polka_dot.jpg + Cute.jpg (gingham)
+   ----------------------------------------------------------------------------
+   Purely additive: nothing above this line was touched. These rules add
+   extra low-opacity texture layers behind existing sections so the two
+   new reference images read as soft paper/fabric layers underneath the
+   current design — not as new visible photos, just added depth.
+   Every layer sits behind real content (negative z-index / pointer-events
+   none) so nothing about layout, clicks, or existing visuals changes.
+============================================================================ */
+
+/* ---- Global base layer: a very faint polka-dot wash behind the whole
+   page, sitting under the existing .grain overlay and under all content ---- */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('polka_dot.jpg');
+    background-size: 340px 340px;
+    background-repeat: repeat;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Content sits above the new global layer. .grain already renders at
+   z-index 9999 so it continues to sit on top exactly as before. */
+.bar,
+.site-header,
+.cover-hero,
+.category-section,
+.mag-wrap,
+.site-footer,
+.gate-wrap,
+.article-modal,
+#article-modal {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---- Cover hero: an extra gingham layer stacked on top of the existing
+   dots.jpg texture (that rule is untouched above), adding a second,
+   softer layer of depth to the same panel ---- */
+.cover-hero-inner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('Cute.jpg');
+    background-size: cover;
+    background-position: right center;
+    opacity: 0.14;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ---- Category section: a faint polka-dot paper layer behind the tiles,
+   echoing the same dot motif already used elsewhere on the site ---- */
+.category-section {
+    position: relative;
+    isolation: isolate;
+}
+.category-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('polka_dot.jpg');
+    background-size: 260px 260px;
+    background-repeat: repeat;
+    opacity: 0.07;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* ---- Footer: a soft gingham wash sitting quietly behind the founder /
+   newsletter columns, tying the page's start and end together ---- */
+.site-footer {
+    position: relative;
+    isolation: isolate;
+}
+.site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('Cute.jpg');
+    background-size: 480px 480px;
+    background-repeat: repeat;
+    opacity: 0.08;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* ---- Article modal / reader: the faintest polka-dot layer behind the
+   reading panel, so long-form reading still feels like part of the
+   same paper world without competing with the text ---- */
+.modal-panel {
+    position: relative;
+    isolation: isolate;
+}
+.modal-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('polka_dot.jpg');
+    background-size: 300px 300px;
+    background-repeat: repeat;
+    opacity: 0.05;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* ---- Gate page card: a whisper of gingham behind the sign-up card,
+   picked up automatically since gate-form.html also loads styles.css ---- */
+.gate-wrap .card {
+    position: relative;
+    isolation: isolate;
+}
+.gate-wrap .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('Cute.jpg');
+    background-size: 320px 320px;
+    background-repeat: repeat;
+    opacity: 0.06;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* ---- Category tiles: the faintest individual polka-dot layer per tile,
+   layered under the tile's existing corner-dot ::after decoration ---- */
+.category-tile {
+    isolation: isolate;
+}
+.category-tile::before,
+.category-tile-large::before {
+    z-index: 0;
+}
+.category-tile > div,
+.category-tile > span {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---- Responsive: keep the new layers light on small screens so they
+   never fight with text for legibility ---- */
+@media (max-width: 768px) {
+    body::before { opacity: 0.035; }
+    .category-section::before { opacity: 0.05; }
+    .site-footer::before { opacity: 0.06; }
+    .cover-hero-inner::after { opacity: 0.1; }
+}
+
+/* ---- Print: new decorative layers are visual-only, so drop them from
+   print output exactly like the existing .grain rule already does ---- */
+@media print {
+    body::before,
+    .category-section::before,
+    .site-footer::before,
+    .modal-panel::before,
+    .gate-wrap .card::before,
+    .cover-hero-inner::after { display: none !important; }
+}
