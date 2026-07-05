@@ -1794,6 +1794,21 @@ body::before {
     z-index: 1;
 }
 
+/* CORRECTION: #article-modal is the fixed full-viewport article overlay
+   (see "19. ARTICLE MODAL / READER" .modal-bg above), not a static page
+   section like the others in the list above it. Because it got swept into
+   that shared selector list, its position was being demoted from fixed to
+   relative and its z-index dropped from 200 down to 1 — which is exactly
+   why the overlay and its close button could feel like they were sitting
+   in the wrong place, sliding oddly, or fighting the pink ribbon-tab/corner
+   decorations underneath as it opened or closed, especially on mobile,
+   since it was no longer a true fixed layer stacked cleanly above the rest
+   of the page. This restores the correct fixed/high-stack behavior. */
+#article-modal {
+    position: fixed;
+    z-index: 1000;
+}
+
 /* ---- Cover hero: a clearly visible gingham layer stacked on top of the
    existing dots.jpg texture (that rule is untouched above), adding a
    second layer of depth to the same panel ---- */
