@@ -1764,8 +1764,9 @@ input:focus-visible {
    none) so nothing about layout, clicks, or existing visuals changes.
 ============================================================================ */
 
-/* ---- Global base layer: a very faint polka-dot wash behind the whole
-   page, sitting under the existing .grain overlay and under all content ---- */
+/* ---- Global base layer: a clearly visible polka-dot wash behind the
+   whole page, sitting under the existing .grain overlay and under all
+   content ---- */
 body::before {
     content: '';
     position: fixed;
@@ -1773,31 +1774,29 @@ body::before {
     background-image: url('polka_dot.jpg');
     background-size: 340px 340px;
     background-repeat: repeat;
-    opacity: 0.05;
-    mix-blend-mode: multiply;
+    opacity: 0.13;
     pointer-events: none;
     z-index: 0;
 }
 
 /* Content sits above the new global layer. .grain already renders at
-   z-index 9999 so it continues to sit on top exactly as before.
-   NOTE: the article modal (.modal-bg / #article-modal) is intentionally
-   left out of this list — it already renders above everything via its
-   own position:fixed + z-index:200 rule, and it does not need help. */
+   z-index 9999 so it continues to sit on top exactly as before. */
 .bar,
 .site-header,
 .cover-hero,
 .category-section,
 .mag-wrap,
 .site-footer,
-.gate-wrap {
+.gate-wrap,
+.article-modal,
+#article-modal {
     position: relative;
     z-index: 1;
 }
 
-/* ---- Cover hero: an extra gingham layer stacked on top of the existing
-   dots.jpg texture (that rule is untouched above), adding a second,
-   softer layer of depth to the same panel ---- */
+/* ---- Cover hero: a clearly visible gingham layer stacked on top of the
+   existing dots.jpg texture (that rule is untouched above), adding a
+   second layer of depth to the same panel ---- */
 .cover-hero-inner::after {
     content: '';
     position: absolute;
@@ -1805,13 +1804,14 @@ body::before {
     background-image: url('Cute.jpg');
     background-size: cover;
     background-position: right center;
-    opacity: 0.32;
+    opacity: 0.42;
     pointer-events: none;
     z-index: 1;
 }
 
-/* ---- Category section: a faint polka-dot paper layer behind the tiles,
-   echoing the same dot motif already used elsewhere on the site ---- */
+/* ---- Category section: a clearly visible polka-dot paper layer behind
+   the tiles, echoing the same dot motif already used elsewhere on the
+   site ---- */
 .category-section {
     position: relative;
     isolation: isolate;
@@ -1823,13 +1823,13 @@ body::before {
     background-image: url('polka_dot.jpg');
     background-size: 260px 260px;
     background-repeat: repeat;
-    opacity: 0.07;
+    opacity: 0.1;
     z-index: -1;
     pointer-events: none;
 }
 
-/* ---- Footer: a soft gingham wash sitting quietly behind the founder /
-   newsletter columns, tying the page's start and end together ---- */
+/* ---- Footer: a clearly visible gingham wash sitting behind the founder
+   / newsletter columns, tying the page's start and end together ---- */
 .site-footer {
     position: relative;
     isolation: isolate;
@@ -1841,13 +1841,13 @@ body::before {
     background-image: url('Cute.jpg');
     background-size: 480px 480px;
     background-repeat: repeat;
-    opacity: 0.22;
+    opacity: 0.45;
     z-index: -1;
     pointer-events: none;
 }
 
-/* ---- Article modal / reader: the faintest polka-dot layer behind the
-   reading panel, so long-form reading still feels like part of the
+/* ---- Article modal / reader: a clearly visible polka-dot layer behind
+   the reading panel, so long-form reading still feels like part of the
    same paper world without competing with the text ---- */
 .modal-panel {
     position: relative;
@@ -1860,14 +1860,15 @@ body::before {
     background-image: url('polka_dot.jpg');
     background-size: 300px 300px;
     background-repeat: repeat;
-    opacity: 0.05;
+    opacity: 0.13;
     z-index: -1;
     pointer-events: none;
     border-radius: inherit;
 }
 
-/* ---- Gate page card: a whisper of gingham behind the sign-up card,
-   picked up automatically since gate-form.html also loads styles.css ---- */
+/* ---- Gate page card: a clearly visible gingham layer behind the
+   sign-up card, picked up automatically since gate-form.html also loads
+   styles.css ---- */
 .gate-wrap .card {
     position: relative;
     isolation: isolate;
@@ -1879,7 +1880,7 @@ body::before {
     background-image: url('Cute.jpg');
     background-size: 320px 320px;
     background-repeat: repeat;
-    opacity: 0.2;
+    opacity: 0.4;
     z-index: -1;
     pointer-events: none;
     border-radius: inherit;
@@ -1903,10 +1904,10 @@ body::before {
 /* ---- Responsive: keep the new layers light on small screens so they
    never fight with text for legibility ---- */
 @media (max-width: 768px) {
-    body::before { opacity: 0.035; }
-    .category-section::before { opacity: 0.05; }
-    .site-footer::before { opacity: 0.06; }
-    .cover-hero-inner::after { opacity: 0.22; }
+    body::before { opacity: 0.32; }
+    .category-section::before { opacity: 0.3; }
+    .site-footer::before { opacity: 0.35; }
+    .cover-hero-inner::after { opacity: 0.32; }
 }
 
 /* ---- Print: new decorative layers are visual-only, so drop them from
@@ -1918,4 +1919,55 @@ body::before {
     .modal-panel::before,
     .gate-wrap .card::before,
     .cover-hero-inner::after { display: none !important; }
+}
+
+/* ============================================================================
+   35. SINGLE STAR STICKER — star.png
+   ----------------------------------------------------------------------------
+   Purely additive: nothing above this line is touched, and no HTML files
+   need to change. Just one sticker, used once, tucked directly onto the
+   framed portrait photo in the cover hero — overlapping the photo/frame
+   itself like a real scrapbook sticker stuck on a printed picture, never
+   floating over plain white/cream space. It idles with a small float +
+   tilt and gives a slightly bigger wiggle when you hover the photo.
+============================================================================ */
+
+@keyframes stickerFloatStar {
+    0%, 100% { transform: translateY(0) rotate(-8deg); }
+    50%      { transform: translateY(-4px) rotate(-4deg); }
+}
+
+.cover-hero-art-frame::after {
+    content: '';
+    position: absolute;
+    bottom: 10%;
+    right: -16px;
+    width: 58px;
+    height: 58px;
+    background-image: url('star.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: auto;
+    z-index: 4;
+    filter: drop-shadow(0 6px 12px rgba(18,18,18,0.25));
+    animation: stickerFloatStar 5s ease-in-out infinite;
+    transition: transform var(--dur-med) var(--ease);
+}
+.cover-hero-art-frame:hover::after {
+    animation-play-state: paused;
+    transform: scale(1.18) rotate(6deg);
+}
+
+@media (max-width: 768px) {
+    .cover-hero-art-frame::after {
+        width: 42px;
+        height: 42px;
+        bottom: 8%;
+        right: -10px;
+    }
+}
+
+@media print {
+    .cover-hero-art-frame::after { display: none !important; }
 }
