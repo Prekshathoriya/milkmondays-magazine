@@ -13,6 +13,59 @@
 
     <link rel="stylesheet" href="styles.css">
 
+    <!-- ── MODAL FIX ───────────────────────────────────────────────────────
+         The modal overlay must be position:fixed so it covers the entire
+         viewport regardless of scroll position. Without this it renders in
+         document flow (below all page content) instead of on top of it.
+    ─────────────────────────────────────────────────────────────────────── -->
+    <style>
+        #article-modal {
+            position: fixed;
+            inset: 0;                       /* top/right/bottom/left: 0  */
+            z-index: 1000;
+            background: rgba(18, 18, 18, 0.72);
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 40px 20px 60px;
+            box-sizing: border-box;
+        }
+        #article-modal.open {
+            display: flex;
+        }
+        #modal-panel {
+            position: relative;
+            width: 100%;
+            max-width: 740px;
+            flex-shrink: 0;
+            background: var(--white, #faf9f6);
+            border-radius: 16px;
+            padding: 52px 48px 56px;
+            box-sizing: border-box;
+            margin: auto 0;
+        }
+        #modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        #modal-close:hover { background: rgba(18,18,18,0.06); }
+        @media (max-width: 700px) {
+            #article-modal  { padding: 20px 12px 40px; }
+            #modal-panel    { padding: 32px 20px 36px; border-radius: 12px; }
+        }
+    </style>
+
     <!-- Netlify Identity (only needed for /admin) -->
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
 </head>
