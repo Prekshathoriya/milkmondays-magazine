@@ -1780,16 +1780,17 @@ body::before {
 }
 
 /* Content sits above the new global layer. .grain already renders at
-   z-index 9999 so it continues to sit on top exactly as before. */
+   z-index 9999 so it continues to sit on top exactly as before.
+   NOTE: the article modal (.modal-bg / #article-modal) is intentionally
+   left out of this list — it already renders above everything via its
+   own position:fixed + z-index:200 rule, and it does not need help. */
 .bar,
 .site-header,
 .cover-hero,
 .category-section,
 .mag-wrap,
 .site-footer,
-.gate-wrap,
-.article-modal,
-#article-modal {
+.gate-wrap {
     position: relative;
     z-index: 1;
 }
@@ -1804,8 +1805,7 @@ body::before {
     background-image: url('Cute.jpg');
     background-size: cover;
     background-position: right center;
-    opacity: 0.14;
-    mix-blend-mode: multiply;
+    opacity: 0.32;
     pointer-events: none;
     z-index: 1;
 }
@@ -1841,7 +1841,7 @@ body::before {
     background-image: url('Cute.jpg');
     background-size: 480px 480px;
     background-repeat: repeat;
-    opacity: 0.08;
+    opacity: 0.22;
     z-index: -1;
     pointer-events: none;
 }
@@ -1879,7 +1879,7 @@ body::before {
     background-image: url('Cute.jpg');
     background-size: 320px 320px;
     background-repeat: repeat;
-    opacity: 0.06;
+    opacity: 0.2;
     z-index: -1;
     pointer-events: none;
     border-radius: inherit;
@@ -1906,7 +1906,7 @@ body::before {
     body::before { opacity: 0.035; }
     .category-section::before { opacity: 0.05; }
     .site-footer::before { opacity: 0.06; }
-    .cover-hero-inner::after { opacity: 0.1; }
+    .cover-hero-inner::after { opacity: 0.22; }
 }
 
 /* ---- Print: new decorative layers are visual-only, so drop them from
