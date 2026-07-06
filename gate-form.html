@@ -4,95 +4,326 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Milk Mondays — Before You Read</title>
+    <meta name="description" content="Verify your email to access the Milk Mondays archive.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,400;1,400&family=Playball&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Playball&display=swap" rel="stylesheet">
+
+    <!--
+    ╔══════════════════════════════════════════════════════════════════════════╗
+    ║  EMAILJS — FREE EMAIL SENDING (200 emails/month on free tier)          ║
+    ║                                                                        ║
+    ║  SETUP INSTRUCTIONS (takes about 5 minutes):                          ║
+    ║                                                                        ║
+    ║  1. Go to https://www.emailjs.com → create a free account             ║
+    ║  2. Dashboard → Email Services → Add New Service → Gmail              ║
+    ║     → connect your milkmondaysbiz@gmail.com (OAuth — no password)     ║
+    ║     → note your Service ID (e.g. "service_abc123")                    ║
+    ║                                                                        ║
+    ║  3. Dashboard → Email Templates → Create New Template                 ║
+    ║     Subject:  Your Milk Mondays code: {{otp_code}}                    ║
+    ║     Body:     Hi {{to_name}},                                         ║
+    ║                                                                        ║
+    ║               Your one-time access code for Milk Mondays:             ║
+    ║               ── {{otp_code}} ──                                      ║
+    ║               This code expires in 10 minutes.                        ║
+    ║               If you didn't request this, ignore this email.          ║
+    ║               — Milk Mondays                                          ║
+    ║     To email: {{to_email}}                                            ║
+    ║     → note your Template ID (e.g. "template_xyz789")                 ║
+    ║                                                                        ║
+    ║  4. Dashboard → Account → General → copy your Public Key              ║
+    ║                                                                        ║
+    ║  5. Paste all three values into the CONFIG block at the top of the    ║
+    ║     <script> section at the bottom of this file.                      ║
+    ╚══════════════════════════════════════════════════════════════════════════╝
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
     <style>
-        /* ── GATE-SPECIFIC LAYOUT (palette/type all come from styles.css) ── */
+        /* ================================================================
+           LOCAL DESIGN TOKENS
+           Keeps the gate page self-contained while matching the site palette.
+        ================================================================ */
+        :root {
+            --pink:         #F3C1C6;
+            --pink-deep:    #E39CA4;
+            --black:        #121212;
+            --ink:          #1B1B1B;
+            --cream:        #FAF9F6;
+            --white:        #FFFFFF;
+            --grey:         #8E8E8E;
+            --grey-light:   #B9B7B2;
+            --border:       #E9E6E0;
+            --hairline:     #DEDAD2;
+            --red:          #c0392b;
+            --green:        #2d7a4f;
+
+            --serif:        'Playfair Display', Georgia, serif;
+            --sans:         'DM Sans', sans-serif;
+            --logo:         'Playball', cursive;
+
+            --ease:         cubic-bezier(0.25, 1, 0.5, 1);
+            --fast:         0.22s;
+
+            /* Offset shadow system — hard, non-gradient, editorial */
+            --shadow-offset-sm: 3px 3px 0 0 var(--ink);
+            --shadow-offset-md: 5px 5px 0 0 var(--ink);
+            --shadow-art:       8px 8px 0 0 var(--hairline);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--cream);
+            color: var(--ink);
+            font-family: var(--sans);
+            font-size: 13px;
+            letter-spacing: 0.03em;
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: inherit; text-decoration: none; }
+        button { background: none; border: none; cursor: pointer; font-family: inherit; }
+        :focus-visible { outline: 2px solid var(--pink-deep); outline-offset: 3px; }
+
+        /* ── GRAIN ── */
+        .grain {
+            position: fixed;
+            inset: -50%;
+            width: 200%; height: 200%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ── ANNOUNCEMENT BAR ── */
+        .bar {
+            background: var(--black);
+            color: var(--white);
+            font-size: 10px;
+            font-weight: 400;
+            letter-spacing: 0.18em;
+            padding: 9px 20px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        /* ── HEADER ── */
+        .site-header {
+            text-align: center;
+            padding: 32px 20px 28px;
+            border-bottom: 1px solid var(--black);
+        }
+        .brand {
+            display: inline-block;
+            font-family: var(--logo);
+            font-size: 38px;
+            font-weight: 400;
+            line-height: 1;
+            text-decoration: none;
+            color: inherit;
+            transition: opacity var(--fast) var(--ease);
+        }
+        .brand:hover { opacity: 0.7; }
+        .brand .m { color: var(--pink-deep); margin-right: -4px; }
+        .brand .n {
+            font-family: var(--serif);
+            font-size: 32px;
+            font-style: italic;
+            font-weight: 300;
+            letter-spacing: -0.03em;
+        }
+
+        /* ── MAIN LAYOUT ── */
         .gate-wrap {
-            max-width: 920px;
+            max-width: 940px;
             margin: 56px auto 90px;
-            padding: 0 20px;
+            padding: 0 24px;
             display: grid;
-            grid-template-columns: 0.85fr 1fr;
-            gap: 44px;
+            grid-template-columns: 0.8fr 1fr;
+            gap: 52px;
             align-items: start;
         }
 
+        /* ── ART PANEL ── */
+        .gate-art-panel { position: relative; }
+
         .gate-art {
-            position: relative;
-            border: 6px solid var(--white);
-            border-radius: 50% 50% 18px 18px / 60% 60% 18px 18px;
+            border: 1.5px solid var(--black);
             overflow: hidden;
-            aspect-ratio: 4/5;
-            box-shadow: var(--shadow-lift);
-            transform: rotate(-2deg);
-            animation: gateArtIn 0.7s var(--ease) both;
+            aspect-ratio: 3/4;
+            box-shadow: var(--shadow-art);
+            background: var(--pink);
+            position: relative;
         }
         .gate-art img {
             width: 100%; height: 100%;
             object-fit: cover;
             object-position: top center;
-        }
-        .gate-art-pin {
-            position: absolute;
-            top: -18px; left: 40%;
-            width: 20px; height: 58px;
-            background: linear-gradient(180deg, var(--ribbon) 0%, var(--ribbon-deep) 100%);
-            clip-path: polygon(0 0, 100% 0, 100% 84%, 50% 100%, 0 84%);
-            transform: rotate(6deg);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            animation: ribbonFlutter 4.5s ease-in-out infinite;
-        }
-        .gate-art-credit {
             display: block;
-            text-align: center;
-            font-size: var(--fs-xxs);
-            color: var(--grey);
-            margin-top: 14px;
         }
-        .gate-art-credit a { text-decoration: underline; text-decoration-color: var(--pink-deep); }
+        /* Decorative corner accent */
+        .gate-art::before {
+            content: '';
+            position: absolute;
+            top: 12px; left: 12px;
+            right: 12px; bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            pointer-events: none;
+            z-index: 2;
+        }
+        /* Pink accent bar at top of art */
+        .gate-art-badge {
+            position: absolute;
+            top: -1px; left: 28px;
+            background: var(--pink-deep);
+            color: var(--ink);
+            font-family: var(--sans);
+            font-size: 9px;
+            font-weight: 500;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border: 1.5px solid var(--ink);
+            border-top: none;
+            z-index: 3;
+        }
 
-        .card {
-            border: 2px solid var(--black);
-            padding: 44px 40px;
-            background: var(--white);
-            box-shadow: 6px 6px 0 rgba(18,18,18,0.1);
-            border-radius: var(--radius-md);
-            animation: gateCardIn 0.7s var(--ease) 0.1s both;
+        .gate-art-meta {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
+        .gate-art-rule {
+            width: 28px;
+            height: 2px;
+            background: var(--pink-deep);
+        }
+        .gate-art-label {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 15px;
+            font-weight: 400;
+            color: var(--ink);
+        }
+        .gate-art-sublabel {
+            font-size: 11px;
+            color: var(--grey);
+            letter-spacing: 0.04em;
+        }
+
+        /* ── FORM CARD ── */
+        .card {
+            border: 1.5px solid var(--ink);
+            padding: 44px 40px;
+            background: var(--cream);
+            box-shadow: var(--shadow-offset-md);
+            animation: gateCardIn 0.7s var(--ease) 0.06s both;
+        }
+        @keyframes gateCardIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── STEP INDICATOR ── */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid var(--hairline);
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .step-num {
+            width: 26px;
+            height: 26px;
+            border: 1.5px solid var(--grey-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 13px;
+            color: var(--grey-light);
+            flex-shrink: 0;
+            transition: border-color var(--fast) var(--ease),
+                        background var(--fast) var(--ease),
+                        color var(--fast) var(--ease);
+        }
+        .step-label {
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--grey-light);
+            white-space: nowrap;
+            transition: color var(--fast) var(--ease);
+        }
+        .step-item.active .step-num {
+            border-color: var(--ink);
+            background: var(--ink);
+            color: var(--cream);
+        }
+        .step-item.active .step-label { color: var(--ink); }
+        .step-item.done .step-num {
+            border-color: var(--pink-deep);
+            background: var(--pink-deep);
+            color: var(--ink);
+        }
+        .step-item.done .step-label { color: var(--grey); }
+        .step-connector {
+            flex: 1;
+            height: 1px;
+            background: var(--hairline);
+            margin: 0 14px;
+            transition: background 0.4s var(--ease);
+        }
+        .step-connector.done { background: var(--pink-deep); }
+
+        /* ── CARD EYEBROW ── */
         .card-eyebrow {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: var(--fs-xxs);
+            font-size: 10px;
             letter-spacing: 0.18em;
             text-transform: uppercase;
             color: var(--grey);
-            margin-bottom: 14px;
+            margin-bottom: 10px;
         }
         .card-eyebrow::before {
             content: '';
-            width: 20px; height: 1px;
-            background: var(--grey);
+            width: 16px; height: 1px;
+            background: var(--pink-deep);
+            flex-shrink: 0;
         }
+
+        /* ── CARD TITLE ── */
         .card-title {
             font-family: var(--serif);
-            font-size: 30px;
+            font-size: 28px;
             font-weight: 400;
             font-style: italic;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
+            line-height: 1.2;
         }
         .card-intro {
             color: var(--grey);
             font-size: 13px;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
             line-height: 1.75;
         }
         .card-intro strong { color: var(--black); font-weight: 500; }
 
-        .field { margin-bottom: 26px; }
+        /* ── FIELDS ── */
+        .field { margin-bottom: 24px; position: relative; }
         label {
             display: block;
             font-size: 10px;
@@ -100,12 +331,13 @@
             text-transform: uppercase;
             margin-bottom: 8px;
             font-weight: 500;
+            color: var(--ink);
         }
         input[type="text"],
         input[type="email"] {
             width: 100%;
             border: none;
-            border-bottom: 1px solid var(--black);
+            border-bottom: 1.5px solid var(--ink);
             background: transparent;
             padding: 10px 0;
             font-family: var(--sans);
@@ -115,225 +347,1204 @@
             transition: border-color 0.2s;
             -webkit-appearance: none;
             appearance: none;
+            letter-spacing: 0.02em;
         }
         input[type="text"]::placeholder,
-        input[type="email"]::placeholder { color: #bbb; }
-        input[type="text"]:focus,
-        input[type="email"]:focus { border-bottom-color: var(--pink); }
+        input[type="email"]::placeholder { color: #bbb; font-size: 13px; }
+        input[type="text"]:focus { border-bottom-color: var(--pink-deep); }
+        input[type="email"]:focus { border-bottom-color: var(--pink-deep); }
 
+        /* ── EMAIL TYPO SUGGESTION ── */
+        .email-suggestion {
+            display: none;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--grey);
+            padding: 8px 12px;
+            border-left: 2px solid var(--pink-deep);
+            background: rgba(243, 193, 198, 0.1);
+        }
+        .email-suggestion.visible { display: block; }
+        .suggestion-btn {
+            color: var(--ink);
+            font-weight: 500;
+            font-size: 12px;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: var(--sans);
+            padding: 0;
+        }
+        .suggestion-btn:hover { color: var(--pink-deep); }
+
+        /* ── ERROR MESSAGES ── */
         .error-msg {
-            font-size: 11px;
+            font-size: 11.5px;
             color: var(--red);
             margin-bottom: 14px;
             display: none;
+            padding: 10px 14px;
+            border-left: 2px solid var(--red);
+            background: rgba(192, 57, 43, 0.05);
+            letter-spacing: 0.01em;
         }
-        .error-msg.show { display: block; animation: shakeX 0.4s var(--ease); }
+        .error-msg.show {
+            display: block;
+            animation: shakeX 0.35s var(--ease);
+        }
+        @keyframes shakeX {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
 
+        /* ── SUBMIT BUTTON ── */
         .submit-btn {
             display: block;
             width: 100%;
             background: none;
-            border: 1px solid var(--black);
-            padding: 14px;
+            border: 1.5px solid var(--ink);
+            padding: 14px 20px;
             font-family: var(--sans);
             font-size: 11px;
-            letter-spacing: 0.15em;
+            font-weight: 500;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s;
+            transition: background var(--fast) var(--ease),
+                        color var(--fast) var(--ease),
+                        box-shadow var(--fast) var(--ease),
+                        transform var(--fast) var(--ease);
             color: var(--black);
-            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-offset-sm);
         }
-        .submit-btn:hover { background: var(--black); color: #fff; }
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .submit-btn:hover:not(:disabled) {
+            background: var(--black);
+            color: var(--cream);
+            box-shadow: 1px 1px 0 0 var(--ink);
+            transform: translate(2px, 2px);
+        }
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
 
+        /* ── STEP 2: OTP SECTION ── */
+        #step-2 {
+            animation: stepIn 0.4s var(--ease) both;
+        }
+        @keyframes stepIn {
+            from { opacity: 0; transform: translateX(12px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .verify-subtext {
+            font-size: 13px;
+            color: var(--grey);
+            margin-bottom: 28px;
+            line-height: 1.7;
+        }
+        .verify-subtext strong { color: var(--ink); font-weight: 500; }
+
+        /* ── OTP BOXES ── */
+        .otp-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            justify-content: flex-start;
+        }
+        .otp-box {
+            width: 48px;
+            height: 58px;
+            border: 1.5px solid var(--ink);
+            background: var(--cream);
+            font-family: var(--serif);
+            font-size: 24px;
+            font-weight: 400;
+            text-align: center;
+            color: var(--ink);
+            outline: none;
+            transition: border-color var(--fast) var(--ease),
+                        box-shadow var(--fast) var(--ease),
+                        background var(--fast) var(--ease);
+            -webkit-appearance: none;
+            appearance: none;
+            caret-color: var(--pink-deep);
+        }
+        .otp-box:focus {
+            border-color: var(--pink-deep);
+            box-shadow: var(--shadow-offset-sm);
+            background: var(--white);
+        }
+        .otp-box.filled { border-color: var(--ink); }
+        .otp-box.error  { border-color: var(--red); }
+        .otp-container.shake {
+            animation: shakeX 0.4s var(--ease);
+        }
+
+        /* ── RESEND + BACK AREA ── */
+        .verify-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid var(--hairline);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .resend-area {
+            font-size: 12px;
+            color: var(--grey);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        #resend-countdown {
+            font-size: 11px;
+            color: var(--grey-light);
+            letter-spacing: 0.04em;
+        }
+        .resend-link {
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: var(--sans);
+            padding: 0;
+            display: none;
+        }
+        .resend-link:hover { color: var(--pink-deep); }
+
+        .back-link {
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--grey);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: var(--sans);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0;
+            transition: color var(--fast);
+        }
+        .back-link:hover { color: var(--ink); }
+
+        /* ── SUCCESS STATE ── */
+        .verify-success {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border: 1px solid var(--green);
+            background: rgba(45, 122, 79, 0.06);
+            margin-top: 16px;
+        }
+        .verify-success.visible { display: flex; }
+        .verify-success-text {
+            font-size: 12px;
+            color: var(--green);
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── GATE NOTE ── */
         .gate-note {
             display: flex;
             align-items: flex-start;
-            gap: 8px;
-            margin-top: 22px;
+            gap: 9px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--hairline);
             font-size: 11px;
             color: var(--grey);
-            line-height: 1.6;
+            line-height: 1.65;
         }
-        .gate-note svg { flex-shrink: 0; margin-top: 2px; }
+        .gate-note svg { flex-shrink: 0; margin-top: 1px; }
 
+        /* ── ATTEMPTS COUNTER ── */
+        .attempts-indicator {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .attempt-dot {
+            width: 7px;
+            height: 7px;
+            border: 1px solid var(--grey-light);
+            border-radius: 50%;
+            transition: background var(--fast), border-color var(--fast);
+        }
+        .attempt-dot.used {
+            background: var(--red);
+            border-color: var(--red);
+        }
+
+        /* ── FOOTER ── */
         .site-footer-sm {
             text-align: center;
             padding: 28px 20px 40px;
-            border-top: 1px solid #E5E5E5;
+            border-top: 1px solid var(--border);
             font-size: 10px;
             color: var(--grey);
+            letter-spacing: 0.04em;
         }
 
-        @keyframes gateArtIn  { from { opacity: 0; transform: translateY(16px) rotate(-2deg); } to { opacity: 1; transform: translateY(0) rotate(-2deg); } }
-        @keyframes gateCardIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes shakeX { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-
+        /* ── RESPONSIVE ── */
         @media (max-width: 760px) {
-            .gate-wrap { grid-template-columns: 1fr; gap: 30px; }
-            .gate-art { max-width: 240px; margin: 0 auto; }
+            .gate-wrap {
+                grid-template-columns: 1fr;
+                gap: 32px;
+                margin-top: 36px;
+            }
+            .gate-art { max-width: 260px; }
+            .gate-art-panel { display: flex; flex-direction: column; align-items: flex-start; }
+            .card { padding: 36px 28px; }
+            .otp-box { width: 42px; height: 52px; font-size: 20px; }
+            .otp-container { gap: 8px; }
+        }
+        @media (max-width: 400px) {
+            .otp-box { width: 36px; height: 46px; font-size: 18px; }
+            .otp-container { gap: 6px; }
+            .card { padding: 28px 20px; }
         }
     </style>
 </head>
 <body>
+
     <div class="grain" aria-hidden="true"></div>
     <div class="bar">A collection of everyday things. If it looks good, it belongs here.</div>
 
     <header class="site-header">
-        <a href="index.html" class="brand"><span class="m">Milk</span><span class="n">Mondays</span></a>
+        <a href="index.html" class="brand" aria-label="Milk Mondays — home">
+            <span class="m">Milk</span><span class="n">Mondays</span>
+        </a>
     </header>
 
-    <div class="gate-wrap">
-        <div>
+    <div class="gate-wrap" role="main">
+
+        <!-- ── LEFT: ART PANEL ── -->
+        <div class="gate-art-panel" aria-hidden="true">
             <div class="gate-art">
-                <div class="gate-art-pin" aria-hidden="true"></div>
-                <img src="eyes.jpg" alt="Illustrated portrait — the Milk Mondays mascot, waiting for you to say hello" loading="lazy">
+                <div class="gate-art-badge">Members</div>
+                <img src="eyes.jpg"
+                     alt="Illustration — the Milk Mondays archive, waiting."
+                     loading="lazy"
+                     onerror="this.style.display='none'">
+            </div>
+            <div class="gate-art-meta">
+                <span class="gate-art-rule"></span>
+                <span class="gate-art-label">The Archive</span>
+                <span class="gate-art-sublabel">Skincare · Fashion · Pop Culture · Story Time</span>
+            </div>
+        </div>
+
+        <!-- ── RIGHT: FORM CARD ── -->
+        <div class="card" role="region" aria-label="Gate form">
+
+            <!-- Step indicator -->
+            <div class="step-indicator" aria-label="Progress">
+                <div class="step-item active" id="step-ind-1" aria-current="step">
+                    <span class="step-num" aria-hidden="true">1</span>
+                    <span class="step-label">Your details</span>
+                </div>
+                <div class="step-connector" id="step-connector" aria-hidden="true"></div>
+                <div class="step-item" id="step-ind-2">
+                    <span class="step-num" aria-hidden="true">2</span>
+                    <span class="step-label">Verify email</span>
+                </div>
             </div>
 
-        </div>
+            <!-- ════════════════════════════════
+                 STEP 1: NAME + EMAIL
+            ════════════════════════════════ -->
+            <div id="step-1">
+                <span class="card-eyebrow">One quick step</span>
+                <h1 class="card-title">Before you read…</h1>
+                <p class="card-intro">
+                    This is the members' side of the archive. Drop your name and email once
+                    and we'll send you a quick code to confirm it's yours.
+                    <strong>You'll land right back on the article you clicked.</strong>
+                </p>
 
-        <div class="card">
-            <span class="card-eyebrow">One quick step</span>
-            <h1 class="card-title">Before you read…</h1>
-            <p class="card-intro">
-                This entry is part of the members' side of the archive. Drop your name and email once,
-                and you're in
-                <strong>We'll take you straight back to the article you clicked.</strong>
-            </p>
+                <form id="step1-form" novalidate autocomplete="on">
+                    <div class="field">
+                        <label for="input-name">Your name <span aria-hidden="true">*</span></label>
+                        <input
+                            type="text"
+                            id="input-name"
+                            name="name"
+                            placeholder="What should we call you?"
+                            autocomplete="given-name"
+                            required
+                            minlength="2"
+                            maxlength="80"
+                            spellcheck="false"
+                        >
+                    </div>
 
-            <form id="mm-gate-form" method="POST" action="https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse">
-                <div class="field">
-                    <label for="input-name">Your name *</label>
-                    <input type="text" id="input-name" name="entry.1112062655" placeholder="What should we call you?" autocomplete="given-name" required>
+                    <div class="field">
+                        <label for="input-email">Email address <span aria-hidden="true">*</span></label>
+                        <input
+                            type="email"
+                            id="input-email"
+                            name="email"
+                            placeholder="your@email.com"
+                            autocomplete="email"
+                            required
+                            maxlength="200"
+                            spellcheck="false"
+                            inputmode="email"
+                        >
+                        <div class="email-suggestion" id="email-suggestion" role="status" aria-live="polite"></div>
+                    </div>
+
+                    <p class="error-msg" id="step1-error" role="alert" aria-live="assertive"></p>
+
+                    <button type="submit" class="submit-btn" id="send-btn">
+                        Send verification code →
+                    </button>
+                </form>
+
+                <p class="gate-note">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.5" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 8v4M12 16h.01"/>
+                    </svg>
+                    We'll send a 6-digit code to your inbox. No password. No newsletter sign-up — just a quick hello.
+                </p>
+            </div>
+
+            <!-- ════════════════════════════════
+                 STEP 2: OTP VERIFICATION
+            ════════════════════════════════ -->
+            <div id="step-2" style="display: none;" role="region" aria-label="Email verification">
+                <span class="card-eyebrow">Check your inbox</span>
+                <h2 class="card-title">Enter your code</h2>
+                <p class="verify-subtext" id="verify-subtext">
+                    We sent a 6-digit code to
+                    <strong id="masked-email" aria-live="polite"></strong>.
+                    It expires in 10 minutes.
+                </p>
+
+                <form id="step2-form" novalidate>
+
+                    <!-- Attempt dots (3 circles = 3 attempts) -->
+                    <div class="attempts-indicator" id="attempts-indicator" aria-label="Attempts remaining" aria-live="polite">
+                        <span class="attempt-dot" aria-hidden="true"></span>
+                        <span class="attempt-dot" aria-hidden="true"></span>
+                        <span class="attempt-dot" aria-hidden="true"></span>
+                    </div>
+
+                    <!-- 6-box OTP input -->
+                    <div class="otp-container" id="otp-container" role="group" aria-label="6-digit verification code">
+                        <input class="otp-box" type="text"
+                               inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1" autocomplete="one-time-code"
+                               aria-label="Digit 1" id="otp-0">
+                        <input class="otp-box" type="text"
+                               inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1"
+                               aria-label="Digit 2" id="otp-1">
+                        <input class="otp-box" type="text"
+                               inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1"
+                               aria-label="Digit 3" id="otp-2">
+                        <input class="otp-box" type="text"
+                               inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1"
+                               aria-label="Digit 4" id="otp-3">
+                        <input class="otp-box" type="text"
+                               inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1"
+                               aria-label="Digit 5" id="otp-4">
+                        <input class="otp-box" type="text"
+                               inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1"
+                               aria-label="Digit 6" id="otp-5">
+                    </div>
+
+                    <p class="error-msg" id="step2-error" role="alert" aria-live="assertive"></p>
+
+                    <button type="submit" class="submit-btn" id="verify-btn" disabled>
+                        Verify &amp; Unlock →
+                    </button>
+
+                </form>
+
+                <!-- Success state -->
+                <div class="verify-success" id="verify-success" role="status" aria-live="polite">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    <span class="verify-success-text">Email verified — taking you to the archive…</span>
                 </div>
 
-                <div class="field">
-                    <label for="input-email">Email address *</label>
-                    <input type="email" id="input-email" name="entry.71996981" placeholder="your@email.com" autocomplete="email" required>
+                <!-- Resend + back -->
+                <div class="verify-actions">
+                    <div class="resend-area">
+                        <span id="resend-countdown" aria-live="polite"></span>
+                        <button type="button" class="resend-link" id="resend-btn" aria-label="Resend verification code">
+                            Resend code
+                        </button>
+                    </div>
+                    <button type="button" class="back-link" id="back-btn" aria-label="Go back to name and email form">
+                        ← Wrong email?
+                    </button>
                 </div>
+            </div>
 
-                <p class="error-msg" id="error-msg" role="alert">Please fill in your name and email address.</p>
+        </div><!-- /.card -->
+    </div><!-- /.gate-wrap -->
 
-                <button type="submit" class="submit-btn" id="submit-btn">Unlock Content →</button>
-            </form>
+    <footer class="site-footer-sm">
+        &copy; 2026 Milk Mondays. All rights reserved. Curated for the modern archive.
+    </footer>
 
-            <p class="gate-note">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
-              After you submit, you'll land right back on the piece you came to read.
-            </p>
-
-        </div>
-    </div>
-
-    <footer class="site-footer-sm">&copy; 2026 Milk Mondays. All rights reserved.</footer>
-
+    <!-- ================================================================
+         EMAILJS + GATE LOGIC
+    ================================================================ -->
     <script>
-    (function() {
+    (function () {
         'use strict';
 
-        var form      = document.getElementById('mm-gate-form');
-        var nameInput = document.getElementById('input-name');
-        var emailInput= document.getElementById('input-email');
-        var errorMsg  = document.getElementById('error-msg');
-        var submitBtn = document.getElementById('submit-btn');
+        /* ════════════════════════════════════════════════════════════════
+           CONFIGURATION — fill these in after setting up your EmailJS account
+           See the setup instructions at the top of this file's <head>.
+        ════════════════════════════════════════════════════════════════ */
+        var EMAILJS_PUBLIC_KEY  = 'uBxhYa8ketKR5IxeU';
+var EMAILJS_SERVICE_ID  = 'service_ht8nh7b';
+var EMAILJS_TEMPLATE_ID = 'template_glqy6bg';
 
-        /* Prevent the redirect firing twice (iframe fallback + timeout race). */
-        var hasRedirected = false;
+        /* ── OTP SETTINGS ── */
+        var OTP_LENGTH      = 6;
+        var OTP_LIFETIME_MS = 10 * 60 * 1000; /* 10 minutes */
+        var MAX_ATTEMPTS    = 3;
+        var RESEND_WAIT_S   = 60;              /* seconds before resend is allowed */
 
-        /* ── WHERE TO GO AFTER THE GATE ── */
+        /* ── STATE ── */
+        var currentOTP       = '';
+        var otpExpiry        = 0;
+        var otpAttempts      = 0;
+        var hasRedirected    = false;
+        var currentName      = '';
+        var currentEmail     = '';
+        var resendTimerID    = null;
+        var resendSecondsLeft = 0;
+        var emailjsReady     = false;
+
+        /* ── DOM REFS ── */
+        var step1El, step2El;
+        var nameInput, emailInput, emailSuggestion;
+        var otpBoxes = [];
+        var sendBtn, verifyBtn, resendBtn, backBtn;
+        var step1Error, step2Error;
+        var resendCountdownEl, maskedEmailEl;
+        var stepInd1, stepInd2, stepConnector;
+        var attemptsIndicator, otpContainer, verifySuccess;
+
+        /* ════════════════════════════════════════════════════════════════
+           EMAIL VALIDATION DATA
+        ════════════════════════════════════════════════════════════════ */
+
+        /* Known disposable / temporary email services — expand as needed */
+        var DISPOSABLE_DOMAINS = [
+            'mailinator.com','guerrillamail.com','tempmail.com','throwam.com',
+            'yopmail.com','sharklasers.com','guerrillamailblock.com','grr.la',
+            'guerrillamail.info','guerrillamail.biz','guerrillamail.de',
+            'guerrillamail.net','guerrillamail.org','spam4.me','10minutemail.com',
+            'trashmail.com','mailnull.com','fakeinbox.com','tempinbox.com',
+            'dispostable.com','maildrop.cc','throwaway.email','getnada.com',
+            'mailnesia.com','mintemail.com','spamgourmet.com','trashmail.me',
+            'getairmail.com','filzmail.com','spamfree24.org','tempr.email',
+            'crazymailing.com','spamgourmet.net','spamgourmet.org','mt2015.com',
+            'spamex.com','mailexpire.com','spamfree.eu','owlpic.com',
+            'cuvox.de','dayrep.com','einrot.com','fleckens.hu',
+            'gustr.com','hashmail.de','jourrapide.com','objectmail.com',
+            'rhyta.com','superrito.com','teleworm.us','vomoto.com',
+            'armyspy.com','cuvox.de','dayrep.com','einrot.com',
+            'nwldx.com','txen.de','wetrainbayarea.com'
+        ];
+
+        /* Common domain typo map: typo → correct */
+        var EMAIL_TYPOS = {
+            'gmial.com':'gmail.com',   'gmal.com':'gmail.com',
+            'gmil.com':'gmail.com',    'gmail.co':'gmail.com',
+            'gmail.comm':'gmail.com',  'gmail.con':'gmail.com',
+            'gnail.com':'gmail.com',   'gamil.com':'gmail.com',
+            'gmai.com':'gmail.com',    'gmaill.com':'gmail.com',
+            'gmailcom':'gmail.com',    'gmail.net':'gmail.com',
+            'yahooo.com':'yahoo.com',  'yaho.com':'yahoo.com',
+            'yahoo.co':'yahoo.com',    'yhoo.com':'yahoo.com',
+            'yahocom':'yahoo.com',     'yhaoo.com':'yahoo.com',
+            'yahoo.con':'yahoo.com',   'yahoo.net':'yahoo.com',
+            'hotmial.com':'hotmail.com','hotmail.co':'hotmail.com',
+            'hotamil.com':'hotmail.com','homail.com':'hotmail.com',
+            'hotmail.con':'hotmail.com','hotmai.com':'hotmail.com',
+            'outlok.com':'outlook.com','outllok.com':'outlook.com',
+            'outlook.co':'outlook.com','outloook.com':'outlook.com',
+            'iclould.com':'icloud.com','icloud.co':'icloud.com',
+            'icould.com':'icloud.com', 'iclod.com':'icloud.com',
+            'protonmial.com':'protonmail.com','protonmil.com':'protonmail.com'
+        };
+
+        /* ════════════════════════════════════════════════════════════════
+           INIT
+        ════════════════════════════════════════════════════════════════ */
+        document.addEventListener('DOMContentLoaded', function () {
+
+            /* Initialise EmailJS if available */
+            if (typeof emailjs !== 'undefined' && EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY_HERE') {
+                try {
+                    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+                    emailjsReady = true;
+                } catch (e) {
+                    console.warn('[MM Gate] EmailJS init failed:', e);
+                }
+            }
+
+            /* Collect DOM refs */
+            step1El           = document.getElementById('step-1');
+            step2El           = document.getElementById('step-2');
+            nameInput         = document.getElementById('input-name');
+            emailInput        = document.getElementById('input-email');
+            emailSuggestion   = document.getElementById('email-suggestion');
+            sendBtn           = document.getElementById('send-btn');
+            verifyBtn         = document.getElementById('verify-btn');
+            resendBtn         = document.getElementById('resend-btn');
+            backBtn           = document.getElementById('back-btn');
+            step1Error        = document.getElementById('step1-error');
+            step2Error        = document.getElementById('step2-error');
+            resendCountdownEl = document.getElementById('resend-countdown');
+            maskedEmailEl     = document.getElementById('masked-email');
+            stepInd1          = document.getElementById('step-ind-1');
+            stepInd2          = document.getElementById('step-ind-2');
+            stepConnector     = document.getElementById('step-connector');
+            attemptsIndicator = document.getElementById('attempts-indicator');
+            otpContainer      = document.getElementById('otp-container');
+            verifySuccess     = document.getElementById('verify-success');
+
+            /* Collect OTP boxes in order */
+            for (var i = 0; i < OTP_LENGTH; i++) {
+                var box = document.getElementById('otp-' + i);
+                if (box) otpBoxes.push(box);
+            }
+
+            /* Wire events */
+            document.getElementById('step1-form').addEventListener('submit', handleStep1Submit);
+            document.getElementById('step2-form').addEventListener('submit', handleStep2Submit);
+            emailInput.addEventListener('blur',  onEmailBlur);
+            emailInput.addEventListener('input', onEmailInput);
+            if (backBtn)   backBtn.addEventListener('click',   goToStep1);
+            if (resendBtn) resendBtn.addEventListener('click',  handleResendClick);
+
+            wireOTPBoxes();
+        });
+
+        /* ════════════════════════════════════════════════════════════════
+           EMAIL VALIDATION HELPERS
+        ════════════════════════════════════════════════════════════════ */
+
+        function isValidEmailFormat(email) {
+            /* RFC 5322-lite: local@domain.tld, 2+ char TLD */
+            return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email.trim());
+        }
+
+        function isDisposableEmail(email) {
+            var domain = (email.split('@')[1] || '').toLowerCase().trim();
+            return DISPOSABLE_DOMAINS.indexOf(domain) !== -1;
+        }
+
+        function getTypoSuggestion(email) {
+            var parts = email.split('@');
+            if (parts.length !== 2) return null;
+            var domain = parts[1].toLowerCase().trim();
+            return EMAIL_TYPOS[domain] ? parts[0] + '@' + EMAIL_TYPOS[domain] : null;
+        }
+
+        function onEmailBlur() {
+            var email = emailInput.value.trim();
+            if (!email || !isValidEmailFormat(email)) return;
+            var suggestion = getTypoSuggestion(email);
+            if (suggestion) {
+                emailSuggestion.innerHTML =
+                    'Did you mean <button type="button" class="suggestion-btn" id="use-suggestion">' +
+                    escHTML(suggestion) + '</button>?';
+                emailSuggestion.classList.add('visible');
+                var useBtn = document.getElementById('use-suggestion');
+                if (useBtn) {
+                    useBtn.addEventListener('click', function () {
+                        emailInput.value = suggestion;
+                        emailSuggestion.classList.remove('visible');
+                        emailSuggestion.innerHTML = '';
+                    });
+                }
+            }
+        }
+
+        function onEmailInput() {
+            if (emailSuggestion) {
+                emailSuggestion.classList.remove('visible');
+                emailSuggestion.innerHTML = '';
+            }
+            clearStep1Error();
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           STEP 1 HANDLER
+        ════════════════════════════════════════════════════════════════ */
+
+        function handleStep1Submit(e) {
+            e.preventDefault();
+            clearStep1Error();
+
+            var name  = nameInput.value.trim();
+            var email = emailInput.value.trim().toLowerCase();
+
+            /* Validate name */
+            if (!name) {
+                return showStep1Error('Please enter your name.');
+            }
+            if (name.length < 2) {
+                return showStep1Error('Your name must be at least 2 characters.');
+            }
+            if (name.length > 80) {
+                return showStep1Error('That name is a bit long — please shorten it.');
+            }
+
+            /* Validate email format */
+            if (!email) {
+                return showStep1Error('Please enter your email address.');
+            }
+            if (!isValidEmailFormat(email)) {
+                return showStep1Error(
+                    'That doesn\'t look like a valid email address. ' +
+                    'Double-check for typos (e.g. you@gmail.com).'
+                );
+            }
+
+            /* Block disposable emails */
+            if (isDisposableEmail(email)) {
+                return showStep1Error(
+                    'Disposable email addresses aren\'t accepted. ' +
+                    'Please use your real email address.'
+                );
+            }
+
+            /* Block emails without a valid TLD (extra sanity check) */
+            var tld = email.split('.').pop();
+            if (!tld || tld.length < 2) {
+                return showStep1Error(
+                    'Please enter a complete email address including the domain (e.g. .com or .in).'
+                );
+            }
+
+            currentName  = name;
+            currentEmail = email;
+            sendVerificationCode();
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           OTP GENERATION & SENDING
+        ════════════════════════════════════════════════════════════════ */
+
+        function generateOTP() {
+            var code = '';
+            for (var i = 0; i < OTP_LENGTH; i++) {
+                code += Math.floor(Math.random() * 10).toString();
+            }
+            return code;
+        }
+
+        function sendVerificationCode() {
+            currentOTP  = generateOTP();
+            otpExpiry   = Date.now() + OTP_LIFETIME_MS;
+            otpAttempts = 0;
+
+            setStep1Loading(true);
+
+            /* ── DEV FALLBACK: EmailJS not yet configured ── */
+            if (!emailjsReady) {
+                console.log(
+                    '%c[MM Gate] EmailJS not configured — dev mode OTP: ' + currentOTP,
+                    'font-size:14px; font-weight:bold; color:#E39CA4; background:#1B1B1B; padding:6px 12px;'
+                );
+                setStep1Loading(false);
+                transitionToStep2();
+                return;
+            }
+
+            /* ── SEND VIA EMAILJS ── */
+            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                to_name:   currentName,
+                to_email:  currentEmail,
+                otp_code:  currentOTP,
+                reply_to:  'milkmondaysbiz@gmail.com'
+            }).then(function () {
+                setStep1Loading(false);
+                transitionToStep2();
+            }).catch(function (err) {
+                console.error('[MM Gate] EmailJS send error:', err);
+                setStep1Loading(false);
+                showStep1Error(
+                    'We couldn\'t send the code right now. ' +
+                    'Check your email address and try again, or refresh the page.'
+                );
+            });
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           STEP TRANSITION: 1 → 2
+        ════════════════════════════════════════════════════════════════ */
+
+        function transitionToStep2() {
+            /* Update step indicators */
+            if (stepInd1) {
+                stepInd1.classList.remove('active');
+                stepInd1.classList.add('done');
+                stepInd1.removeAttribute('aria-current');
+            }
+            if (stepConnector) stepConnector.classList.add('done');
+            if (stepInd2) {
+                stepInd2.classList.add('active');
+                stepInd2.setAttribute('aria-current', 'step');
+            }
+
+            /* Hide step 1, reveal step 2 */
+            if (step1El) step1El.style.display = 'none';
+            if (step2El) step2El.style.display = 'block';
+
+            /* Show masked email */
+            if (maskedEmailEl) maskedEmailEl.textContent = maskEmail(currentEmail);
+
+            /* Reset OTP boxes */
+            clearOTPBoxes();
+            updateAttemptsUI();
+
+            /* Focus first box */
+            if (otpBoxes.length > 0) {
+                setTimeout(function () { otpBoxes[0].focus(); }, 80);
+            }
+
+            /* Start resend countdown */
+            startResendCountdown();
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           STEP 2 HANDLER
+        ════════════════════════════════════════════════════════════════ */
+
+        function handleStep2Submit(e) {
+            e.preventDefault();
+            clearStep2Error();
+
+            /* Lockout checks */
+            if (otpAttempts >= MAX_ATTEMPTS) {
+                showStep2Error(
+                    'No attempts remaining. Please click "Wrong email?" to go back and request a new code.'
+                );
+                return;
+            }
+            if (Date.now() > otpExpiry) {
+                showStep2Error(
+                    'This code has expired (10-minute limit). ' +
+                    'Click "Wrong email?" to go back and send a new one.'
+                );
+                return;
+            }
+
+            var entered = getOTPValue();
+            if (entered.length < OTP_LENGTH) {
+                showStep2Error('Please fill in all ' + OTP_LENGTH + ' digits of your code.');
+                return;
+            }
+
+            setStep2Loading(true);
+            otpAttempts++;
+            updateAttemptsUI();
+
+            /* Short delay for UX feel — makes it feel like it's checking */
+            setTimeout(function () {
+                if (entered === currentOTP) {
+                    handleVerificationSuccess();
+                } else {
+                    setStep2Loading(false);
+                    var remaining = MAX_ATTEMPTS - otpAttempts;
+                    if (remaining > 0) {
+                        showStep2Error(
+                            'Incorrect code. ' +
+                            remaining + ' attempt' + (remaining === 1 ? '' : 's') +
+                            ' remaining.'
+                        );
+                    } else {
+                        showStep2Error(
+                            'No attempts remaining. ' +
+                            'Click "Wrong email?" to go back and request a new code.'
+                        );
+                        /* Disable verify button after lockout */
+                        if (verifyBtn) verifyBtn.disabled = true;
+                    }
+                    clearOTPBoxes();
+                    /* Colour boxes red briefly */
+                    otpBoxes.forEach(function (b) {
+                        b.classList.add('error');
+                        setTimeout(function () { b.classList.remove('error'); }, 600);
+                    });
+                }
+            }, 700);
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           SUCCESS — unlock, persist, submit to Google Forms, redirect
+        ════════════════════════════════════════════════════════════════ */
+
+        function handleVerificationSuccess() {
+            if (hasRedirected) return;
+            hasRedirected = true;
+
+            /* ── 1. Persist gate status immediately ── */
+            try {
+                localStorage.setItem('mm_gate_passed', 'true');
+                localStorage.setItem('mm_user_name',   currentName);
+                localStorage.setItem('mm_user_email',  currentEmail);
+            } catch (storageErr) {
+                /* Private/incognito browsers may block writes — gate still works for this session */
+                console.warn('[MM Gate] localStorage write blocked:', storageErr);
+            }
+
+            /* ── 2. Submit verified email to Google Forms (background) ── */
+            /* Only verified emails reach this point — data quality is guaranteed. */
+            try {
+                var formData = new FormData();
+                formData.append('entry.1112062655', currentName);
+                formData.append('entry.71996981',   currentEmail);
+                fetch(
+                    'https://docs.google.com/forms/d/e/1FAIpQLSeEjjDtWM9naUilBhodwqCCHetUhm2HPzBOgMMvE6PnbWOm4g/formResponse',
+                    { method: 'POST', mode: 'no-cors', body: formData }
+                ).catch(function () { /* silent — gate is already stored */ });
+            } catch (fetchErr) { /* silent */ }
+
+            /* ── 3. Show success visual ── */
+            if (verifySuccess) verifySuccess.classList.add('visible');
+            if (verifyBtn) {
+                verifyBtn.textContent = 'Verified ✓';
+                verifyBtn.style.background  = 'var(--ink)';
+                verifyBtn.style.color       = 'var(--cream)';
+                verifyBtn.style.borderColor = 'var(--ink)';
+                verifyBtn.style.boxShadow   = 'none';
+                verifyBtn.style.transform   = 'none';
+                verifyBtn.disabled = true;
+            }
+            clearResendTimer();
+
+            /* ── 4. Redirect ── */
+            setTimeout(function () {
+                window.location.href = getRedirectDest();
+            }, 950);
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           BACK TO STEP 1
+        ════════════════════════════════════════════════════════════════ */
+
+        function goToStep1() {
+            clearResendTimer();
+
+            /* Reset step indicators */
+            if (stepInd1) {
+                stepInd1.classList.add('active');
+                stepInd1.classList.remove('done');
+                stepInd1.setAttribute('aria-current', 'step');
+            }
+            if (stepConnector) stepConnector.classList.remove('done');
+            if (stepInd2) {
+                stepInd2.classList.remove('active');
+                stepInd2.removeAttribute('aria-current');
+            }
+
+            /* Show step 1, hide step 2 */
+            if (step2El) step2El.style.display = 'none';
+            if (step1El) step1El.style.display = 'block';
+
+            clearStep1Error();
+            clearStep2Error();
+
+            /* Reset attempt state */
+            otpAttempts = 0;
+            currentOTP  = '';
+            otpExpiry   = 0;
+            clearOTPBoxes();
+
+            /* Re-focus email input */
+            if (emailInput) {
+                setTimeout(function () { emailInput.focus(); }, 60);
+            }
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           RESEND
+        ════════════════════════════════════════════════════════════════ */
+
+        function handleResendClick() {
+            if (resendSecondsLeft > 0) return;
+            clearResendTimer();
+            clearStep2Error();
+            clearOTPBoxes();
+            otpAttempts = 0;
+            updateAttemptsUI();
+
+            /* Re-enable verify button */
+            if (verifyBtn) verifyBtn.disabled = true; /* disabled until boxes filled */
+
+            sendVerificationCode();
+        }
+
+        function startResendCountdown() {
+            resendSecondsLeft = RESEND_WAIT_S;
+            updateResendUI();
+            resendTimerID = setInterval(function () {
+                resendSecondsLeft--;
+                updateResendUI();
+                if (resendSecondsLeft <= 0) {
+                    clearInterval(resendTimerID);
+                    resendTimerID = null;
+                }
+            }, 1000);
+        }
+
+        function updateResendUI() {
+            if (!resendCountdownEl || !resendBtn) return;
+            if (resendSecondsLeft > 0) {
+                resendCountdownEl.textContent = 'Resend in ' + resendSecondsLeft + 's';
+                resendCountdownEl.style.display = 'inline';
+                resendBtn.style.display = 'none';
+            } else {
+                resendCountdownEl.style.display = 'none';
+                resendBtn.style.display = 'inline';
+            }
+        }
+
+        function clearResendTimer() {
+            if (resendTimerID) {
+                clearInterval(resendTimerID);
+                resendTimerID = null;
+            }
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           OTP BOX WIRING
+        ════════════════════════════════════════════════════════════════ */
+
+        function wireOTPBoxes() {
+            otpBoxes.forEach(function (box, idx) {
+
+                box.addEventListener('input', function () {
+                    /* Strip anything that isn't a digit */
+                    this.value = this.value.replace(/\D/g, '').slice(0, 1);
+
+                    /* Mark filled */
+                    if (this.value) {
+                        this.classList.add('filled');
+                        /* Advance to next box */
+                        if (idx < otpBoxes.length - 1) otpBoxes[idx + 1].focus();
+                    } else {
+                        this.classList.remove('filled');
+                    }
+
+                    checkOTPComplete();
+                });
+
+                box.addEventListener('keydown', function (e) {
+                    if (e.key === 'Backspace') {
+                        if (!this.value && idx > 0) {
+                            /* If empty, go back and clear previous */
+                            otpBoxes[idx - 1].value = '';
+                            otpBoxes[idx - 1].classList.remove('filled');
+                            otpBoxes[idx - 1].focus();
+                            e.preventDefault();
+                        } else {
+                            this.value = '';
+                            this.classList.remove('filled');
+                            e.preventDefault();
+                            checkOTPComplete();
+                        }
+                    }
+                    if (e.key === 'ArrowLeft'  && idx > 0)                 otpBoxes[idx - 1].focus();
+                    if (e.key === 'ArrowRight' && idx < otpBoxes.length - 1) otpBoxes[idx + 1].focus();
+                    /* Allow Tab to work normally */
+                });
+
+                box.addEventListener('paste', function (e) {
+                    e.preventDefault();
+                    var text = (e.clipboardData || window.clipboardData)
+                        .getData('text')
+                        .replace(/\D/g, '')
+                        .slice(0, OTP_LENGTH);
+
+                    /* Fill from the pasted position */
+                    text.split('').forEach(function (char, i) {
+                        var targetIdx = idx + i;
+                        if (otpBoxes[targetIdx]) {
+                            otpBoxes[targetIdx].value = char;
+                            otpBoxes[targetIdx].classList.add('filled');
+                        }
+                    });
+
+                    /* Focus the box after the last filled */
+                    var nextFocus = Math.min(idx + text.length, otpBoxes.length - 1);
+                    otpBoxes[nextFocus].focus();
+                    checkOTPComplete();
+                });
+
+                box.addEventListener('click', function () {
+                    this.select();
+                });
+            });
+        }
+
+        function getOTPValue() {
+            return otpBoxes.map(function (b) { return b.value; }).join('');
+        }
+
+        function clearOTPBoxes() {
+            otpBoxes.forEach(function (b) {
+                b.value = '';
+                b.classList.remove('filled', 'error');
+            });
+            if (verifyBtn) verifyBtn.disabled = true;
+        }
+
+        function checkOTPComplete() {
+            var code = getOTPValue();
+            if (verifyBtn) verifyBtn.disabled = (code.length < OTP_LENGTH);
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           ATTEMPTS INDICATOR UI
+        ════════════════════════════════════════════════════════════════ */
+
+        function updateAttemptsUI() {
+            if (!attemptsIndicator) return;
+            var dots = attemptsIndicator.querySelectorAll('.attempt-dot');
+            dots.forEach(function (dot, i) {
+                if (i < otpAttempts) {
+                    dot.classList.add('used');
+                } else {
+                    dot.classList.remove('used');
+                }
+            });
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           LOADING STATE HELPERS
+        ════════════════════════════════════════════════════════════════ */
+
+        function setStep1Loading(isLoading) {
+            if (!sendBtn) return;
+            if (isLoading) {
+                sendBtn.disabled = true;
+                sendBtn.dataset.orig = sendBtn.textContent;
+                sendBtn.textContent = 'Sending code…';
+            } else {
+                sendBtn.disabled = false;
+                sendBtn.textContent = sendBtn.dataset.orig || 'Send verification code →';
+            }
+        }
+
+        function setStep2Loading(isLoading) {
+            if (!verifyBtn) return;
+            if (isLoading) {
+                verifyBtn.disabled = true;
+                verifyBtn.dataset.orig = verifyBtn.textContent;
+                verifyBtn.textContent = 'Verifying…';
+            } else {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = verifyBtn.dataset.orig || 'Verify & Unlock →';
+            }
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           ERROR HELPERS
+        ════════════════════════════════════════════════════════════════ */
+
+        function showStep1Error(msg) {
+            if (!step1Error) return;
+            step1Error.textContent = msg;
+            step1Error.classList.remove('show');
+            void step1Error.offsetWidth; /* force reflow for re-animation */
+            step1Error.classList.add('show');
+        }
+
+        function clearStep1Error() {
+            if (step1Error) step1Error.classList.remove('show');
+        }
+
+        function showStep2Error(msg) {
+            if (!step2Error) return;
+            step2Error.textContent = msg;
+            step2Error.classList.remove('show');
+            void step2Error.offsetWidth;
+            step2Error.classList.add('show');
+
+            if (otpContainer) {
+                otpContainer.classList.remove('shake');
+                void otpContainer.offsetWidth;
+                otpContainer.classList.add('shake');
+            }
+        }
+
+        function clearStep2Error() {
+            if (step2Error) step2Error.classList.remove('show');
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           UTILITY
+        ════════════════════════════════════════════════════════════════ */
+
+        function maskEmail(email) {
+            var parts = email.split('@');
+            if (parts.length !== 2) return email;
+            var local  = parts[0];
+            var domain = parts[1];
+            /* Show first 2 chars + *** for local part */
+            var visibleChars = Math.min(2, local.length);
+            var visible      = local.slice(0, visibleChars);
+            return visible + '***@' + domain;
+        }
+
         function getRedirectDest() {
             var params = new URLSearchParams(window.location.search);
             var dest   = params.get('redirect');
-            if (!dest || !/^(https?:\/\/|\/|[^:]+\.html)/.test(dest)) {
+            /* Sanity check: only allow relative paths / known extensions */
+            if (!dest || !/^(https?:\/\/|\/|[^:]+\.html(\?.*)?$)/.test(dest)) {
                 dest = 'magazine.html';
             }
             return dest;
         }
 
-        /* Single entry-point for the redirect so it only fires once. */
-        function doRedirect() {
-            if (hasRedirected) return;
-            hasRedirected = true;
-            window.location.href = getRedirectDest();
+        function escHTML(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
-        /* ── FORM SUBMIT ──
-           Root cause of the original bug: the hidden-iframe approach relies on
-           the cross-origin iframe firing a `load` event after the Google Forms
-           POST. Modern browsers (especially Safari) do not reliably fire that
-           event for cross-origin iframes, so `mm_gate_passed` was never stored
-           and every card click kept redirecting back here.
-
-           Fix:
-           1. Always preventDefault — we drive the submission ourselves.
-           2. Set mm_gate_passed in localStorage IMMEDIATELY (synchronous),
-              before any async work, so the flag is guaranteed to be present
-              when the magazine page loads next.
-           3. POST to Google Forms in the background via fetch + mode:'no-cors'
-              (no-cors doesn't need a readable response; Google still captures
-              the entry).
-           4. Redirect after a short delay so the fetch has time to fire.
-        */
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            var name  = nameInput.value.trim();
-            var email = emailInput.value.trim();
-
-            errorMsg.classList.remove('show');
-
-            if (!name || !email) {
-                errorMsg.textContent = 'Please fill in your name and email address.';
-                errorMsg.classList.add('show');
-                return;
-            }
-
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                errorMsg.textContent = 'Please enter a valid email address.';
-                errorMsg.classList.add('show');
-                return;
-            }
-
-            submitBtn.disabled    = true;
-            submitBtn.textContent = 'Unlocking\u2026';
-
-            /* ── STEP 1: lock the gate IMMEDIATELY (synchronous) ── */
-            try {
-                localStorage.setItem('mm_gate_passed',  'true');
-                localStorage.setItem('mm_user_name',    name);
-                localStorage.setItem('mm_user_email',   email);
-            } catch (storageErr) { /* private-mode browsers may block writes */ }
-
-            /* ── STEP 2: ship the data to Google Forms in the background ── */
-            /* mode:'no-cors' means we never read the response, but Google    */
-            /* Forms still records the submission — identical to the old      */
-            /* hidden-iframe POST, just without the unreliable load event.    */
-            var formData = new FormData();
-            formData.append('entry.1112062655', name);
-            formData.append('entry.71996981',   email);
-
-            fetch(form.getAttribute('action'), {
-                method : 'POST',
-                mode   : 'no-cors',
-                body   : formData
-            }).catch(function() { /* silent — gate is already stored */ });
-
-            /* ── STEP 3: redirect (fetch fires async; 700 ms is plenty) ── */
-            setTimeout(doRedirect, 700);
-        });
-
-        /* Allow Enter-key submission from either field. */
-        [nameInput, emailInput].forEach(function(inp) {
-            inp.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    if (form.reportValidity ? form.reportValidity() : true) {
-                        form.requestSubmit ? form.requestSubmit() : form.submit();
-                    }
-                }
-            });
-        });
     })();
     </script>
+
 </body>
 </html>
