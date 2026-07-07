@@ -204,7 +204,7 @@
         modalBg.classList.remove('open');
         document.body.style.overflow = '';
         /* restore URL */
-        try { window.history.pushState({}, '', window.location.pathname); } catch (e) {}
+       try { window.history.pushState({}, '', '/magazine'); } catch (e) {}
     }
 
     /* ──────────────────────────────────────────
@@ -238,12 +238,14 @@
 
                 renderMag();
 
-                /* handle article deep link */
-                var targetId = params.get('article');
-                if (targetId) {
-                    var match = allPosts.find(function (p) { return p.id === targetId; });
-                    if (match) checkGateAndOpen(match);
-                }
+                /* handle article deep link — support both /magazine/id and ?article=id */
+var pathParts = window.location.pathname.replace(/\/$/, '').split('/');
+var lastSegment = pathParts[pathParts.length - 1];
+var targetId = (lastSegment && lastSegment !== 'magazine') ? decodeURIComponent(lastSegment) : params.get('article');
+if (targetId) {
+    var match = allPosts.find(function (p) { return p.id === targetId; });
+    if (match) checkGateAndOpen(match);
+}
             })
             .catch(function (err) {
                 console.error('Failed to load posts:', err);
@@ -411,8 +413,7 @@
         if (gatePassed()) {
             launchReader(post);
         } else {
-            var returnUrl = window.location.origin + window.location.pathname +
-                            '?article=' + encodeURIComponent(post.id);
+            var returnUrl = window.location.origin + '/magazine/' + encodeURIComponent(post.id);
             window.location.href = 'gate-form.html?redirect=' + encodeURIComponent(returnUrl);
         }
     }
@@ -463,7 +464,7 @@
             '</div>';
 
         /* update URL */
-        try { window.history.pushState({}, '', '?article=' + encodeURIComponent(post.id)); } catch (e) {}
+        try { window.history.pushState({}, '', '/magazine/' + encodeURIComponent(post.id)); } catch (e) {}
 
         openModal();
 
@@ -516,8 +517,7 @@
 
         if (shareBtn) {
             shareBtn.addEventListener('click', function () {
-                var url = window.location.origin + window.location.pathname +
-                          '?article=' + encodeURIComponent(post.id);
+                var url = window.location.origin + '/magazine/' + encodeURIComponent(post.id);
                 if (navigator.share) {
                     navigator.share({ title: post.title, url: url }).catch(function () {});
                 } else {
