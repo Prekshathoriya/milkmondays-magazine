@@ -137,14 +137,9 @@
         if (!shareStoryBtn) return;
 
         shareStoryBtn.addEventListener('click', function () {
-            /* Track that the visitor engaged with the submission CTA
-               (does not gate or block navigation in any way). */
             try { localStorage.setItem('mm_story_submit_clicked', 'true'); } catch (e) {}
         });
 
-        /* If the primary Google Form link ever fails to resolve (e.g. the
-           form is deleted or unpublished), fall back to the short link
-           on the next click instead of leaving the button dead. */
         shareStoryBtn.addEventListener('error', function () {
             var fallback = shareStoryBtn.getAttribute('data-fallback-href');
             if (fallback) shareStoryBtn.setAttribute('href', fallback);
@@ -204,7 +199,7 @@
         modalBg.classList.remove('open');
         document.body.style.overflow = '';
         /* restore URL */
-       try { window.history.pushState({}, '', '/magazine'); } catch (e) {}
+        try { window.history.pushState({}, '', '/magazine'); } catch (e) {}
     }
 
     /* ──────────────────────────────────────────
@@ -217,7 +212,6 @@
                 return r.json();
             })
             .then(function (data) {
-                /* Hide skeleton on successful load */
                 if (typeof window.mm_hideSkeleton === 'function') window.mm_hideSkeleton();
 
                 allPosts = (data.posts || []).sort(function (a, b) {
@@ -238,18 +232,15 @@
 
                 renderMag();
 
-                /* handle article deep link — support both /magazine/id and ?article=id */
-var pathParts = window.location.pathname.replace(/\/$/, '').split('/');
-var lastSegment = pathParts[pathParts.length - 1];
-var targetId = (lastSegment && lastSegment !== 'magazine') ? decodeURIComponent(lastSegment) : params.get('article');
-if (targetId) {
-    var match = allPosts.find(function (p) { return p.id === targetId; });
-    if (match) checkGateAndOpen(match);
-}
+                /* handle article deep link */
+                var targetId = params.get('article');
+                if (targetId) {
+                    var match = allPosts.find(function (p) { return p.id === targetId; });
+                    if (match) checkGateAndOpen(match);
+                }
             })
             .catch(function (err) {
                 console.error('Failed to load posts:', err);
-                /* Show graceful error UI instead of raw error text */
                 if (typeof window.mm_showFetchError === 'function') {
                     window.mm_showFetchError();
                 } else {
@@ -262,7 +253,7 @@ if (targetId) {
        RENDER
     ────────────────────────────────────────── */
     function showState(msg) {
-        if (stateView)  {
+        if (stateView) {
             stateView.style.display = 'flex';
             var subEl = stateView.querySelector('.state-sub');
             if (subEl) subEl.textContent = msg || '';
@@ -490,10 +481,9 @@ if (targetId) {
         if (likeBtn) {
             likeBtn.addEventListener('click', function () {
                 var currentlyLiked = isLiked(post.id);
-                /* animate */
                 if (likeIcon) {
                     likeIcon.classList.remove('pop');
-                    void likeIcon.offsetWidth; /* reflow */
+                    void likeIcon.offsetWidth;
                     likeIcon.classList.add('pop');
                 }
                 if (!currentlyLiked) {
@@ -531,7 +521,6 @@ if (targetId) {
             });
         }
 
-        /* Modal save button logic */
         if (modalSaveBtn) {
             function updateModalSaveButton() {
                 var saved = isSaved(post.id);
@@ -541,7 +530,6 @@ if (targetId) {
                 if (modalSaveLabel) {
                     modalSaveLabel.textContent = saved ? 'Saved' : 'Save for later';
                 }
-                /* Sync with any visible save button on the grid */
                 var gridSaveBtn = document.querySelector('.save-btn[data-id="' + post.id + '"]');
                 if (gridSaveBtn) {
                     if (saved) gridSaveBtn.classList.add('saved');
@@ -569,7 +557,6 @@ if (targetId) {
         return raw.split('\n').map(function (line) {
             line = line.trim();
             if (!line) return '';
-            /* blockquote */
             if (line.charAt(0) === '>') {
                 return '<blockquote>' + sanitiseInline(line.slice(1).trim()) + '</blockquote>';
             }
@@ -577,24 +564,14 @@ if (targetId) {
         }).join('');
     }
 
-    /* Allow safe inline HTML tags that exist in the post data:
-       <strong>, <b>, <a href="..." target="...">, <em>, <br>
-       Everything else is escaped. */
     function sanitiseInline(s) {
         if (!s) return '';
-        /* temporarily extract allowed tags, escape remainder, restore */
         var ALLOWED_RE = /<(\/?(strong|b|em|i|br)\s*\/?)>|<a\s[^>]*>|<\/a>/gi;
         var parts = [];
         var last = 0;
         var m;
-        /* We do a simple approach: replace the string, escaping chars
-           outside whitelisted tags. For these posts this is safe enough. */
         var result = s
-            /* escape bare & that are not already entities */
-            .replace(/&(?![a-zA-Z]+;|#\d+;)/g, '&amp;')
-            /* let existing strong/b/em/a/br tags through by restoring them */
-            /* (they come from content we control — posts.json) */
-            ;
+            .replace(/&(?![a-zA-Z]+;|#\d+;)/g, '&amp;');
         return result;
     }
 

@@ -1,1 +1,1 @@
-/magazine/* /magazine.html 200
+/magazine/:id /magazine?article=:id 302
