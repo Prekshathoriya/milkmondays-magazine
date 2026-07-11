@@ -2,37 +2,19 @@
  * Cloudflare Pages Function
  * -------------------------------------------------------------------------
  * Endpoint: POST /api/send-otp
- *
- * This runs SERVER-SIDE on Cloudflare's network — never in the browser —
- * so your Brevo API key is never exposed in page source, unlike the old
- * EmailJS public key which anyone could view.
- *
- * The frontend (gate-form.html) calls this endpoint instead of talking to
- * Brevo directly. This function validates the request, then forwards a
- * transactional email request to Brevo's REST API using the secret key.
- *
- * Setup required (see SETUP.md for full walkthrough):
- *   1. Create a Brevo account and verify a sender email/domain.
- *   2. Generate an API key in Brevo (SMTP & API > API Keys).
- *   3. Add it as a secret environment variable in Cloudflare Pages named
- *      BREVO_API_KEY (Settings > Environment variables > Production/Preview).
- *   4. Set BREVO_SENDER_EMAIL and BREVO_SENDER_NAME as env vars too
- *      (or hardcode them below if you prefer).
  * -------------------------------------------------------------------------
  */
 
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  // ---- CORS / method guard --------------------------------------------
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*', // tighten to your domain in production if you like
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 
   try {
-    // ---- Parse & validate incoming JSON ---------------------------------
     let body;
     try {
       body = await request.json();
@@ -52,7 +34,6 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: 'Missing or invalid otp_code.' }, 400, corsHeaders);
     }
 
-    // ---- Read secrets / config from environment --------------------------
     const BREVO_API_KEY     = env.BREVO_API_KEY;
     const BREVO_SENDER_EMAIL = env.BREVO_SENDER_EMAIL || 'milkmondaysbiz@gmail.com';
     const BREVO_SENDER_NAME  = env.BREVO_SENDER_NAME  || 'Milk Mondays';
@@ -66,12 +47,6 @@ export async function onRequestPost(context) {
       );
     }
 
-    // ---- Basic rate limiting note -----------------------------------------
-    // Cloudflare Pages Functions are stateless per-request. For real abuse
-    // protection, put this behind Cloudflare's built-in Rate Limiting rules
-    // (Security > WAF > Rate limiting rules) pointed at /api/send-otp.
-
-    // ---- Build the Brevo transactional email request ----------------------
     const emailPayload = {
       sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
       to: [{ email: to_email, name: to_name }],
@@ -119,7 +94,6 @@ export async function onRequestPost(context) {
   }
 }
 
-// Handle CORS preflight
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
@@ -130,8 +104,6 @@ export async function onRequestOptions() {
     },
   });
 }
-
-// ---- helpers --------------------------------------------------------------
 
 function isValidEmail(email) {
   return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email.trim());
