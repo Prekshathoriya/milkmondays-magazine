@@ -12,34 +12,25 @@
 
     <!--
     ╔══════════════════════════════════════════════════════════════════════════╗
-    ║  EMAILJS — FREE EMAIL SENDING (200 emails/month on free tier)          ║
+    ║  BREVO — TRANSACTIONAL EMAIL (300 free emails/day)                     ║
     ║                                                                        ║
-    ║  SETUP INSTRUCTIONS (takes about 5 minutes):                          ║
+    ║  This page no longer talks to Brevo directly. Brevo's API key is a     ║
+    ║  full-access secret and must never live in frontend code (anyone can   ║
+    ║  view page source). Instead, this form calls a small serverless        ║
+    ║  function at /api/send-otp (see functions/api/send-otp.js), which      ║
+    ║  holds the Brevo API key server-side as an environment variable and    ║
+    ║  forwards the email request on this page's behalf.                     ║
     ║                                                                        ║
-    ║  1. Go to https://www.emailjs.com → create a free account             ║
-    ║  2. Dashboard → Email Services → Add New Service → Gmail              ║
-    ║     → connect your milkmondaysbiz@gmail.com (OAuth — no password)     ║
-    ║     → note your Service ID (e.g. "service_abc123")                    ║
-    ║                                                                        ║
-    ║  3. Dashboard → Email Templates → Create New Template                 ║
-    ║     Subject:  Your Milk Mondays code: {{otp_code}}                    ║
-    ║     Body:     Hi {{to_name}},                                         ║
-    ║                                                                        ║
-    ║               Your one-time access code for Milk Mondays:             ║
-    ║               ── {{otp_code}} ──                                      ║
-    ║               This code expires in 10 minutes.                        ║
-    ║               If you didn't request this, ignore this email.          ║
-    ║               — Milk Mondays                                          ║
-    ║     To email: {{to_email}}                                            ║
-    ║     → note your Template ID (e.g. "template_xyz789")                 ║
-    ║                                                                        ║
-    ║  4. Dashboard → Account → General → copy your Public Key              ║
-    ║                                                                        ║
-    ║  5. Paste all three values into the CONFIG block at the top of the    ║
-    ║     <script> section at the bottom of this file.                      ║
+    ║  See SETUP.md for the full walkthrough:                                ║
+    ║    1. Create a Brevo account, verify your sender email/domain.        ║
+    ║    2. Generate an API key in Brevo.                                    ║
+    ║    3. Deploy this project to Cloudflare Pages (functions/ folder       ║
+    ║       deploys automatically alongside the static site).                ║
+    ║    4. Add BREVO_API_KEY (and optionally BREVO_SENDER_EMAIL /           ║
+    ║       BREVO_SENDER_NAME) as environment variables in the Cloudflare    ║
+    ║       Pages project settings.                                          ║
     ╚══════════════════════════════════════════════════════════════════════════╝
     -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
     <style>
         /* ================================================================
@@ -733,10 +724,19 @@
                 <span class="card-eyebrow">Check your inbox</span>
                 <h2 class="card-title">Enter your code</h2>
                 <p class="verify-subtext" id="verify-subtext">
-                    We sent a 6-digit code to
-                    <strong id="masked-email" aria-live="polite"></strong>.
-                    It expires in 10 minutes.
-                <br><br> <u><strong>No email? Don't panic </u></strong> it sometimes takes a minute or two. If you still don't see it, open your email app and <u><strong>check</u></strong> the <u><strong>Spam</strong></u>, <u><strong>Junk</strong></u>, or <u><strong>Promotions</strong></u> folder. That's where it usually hides.
+    We sent a 6-digit code to
+    <strong id="masked-email" aria-live="polite"></strong>.
+    It expires in 10 minutes.
+
+    <br><br>
+
+    <strong><u>No email? Don't panic</u></strong>, it sometimes takes a
+    minute or two. If you still don't see it, open your email app and
+    <strong><u>check</u></strong> the
+    <strong><u>Spam</u></strong>,
+    <strong><u>Junk</u></strong>, or
+    <strong><u>Promotions</u></strong> folder. That's where it usually hides.
+</p>
                 <form id="step2-form" novalidate>
 
                     <!-- Attempt dots (3 circles = 3 attempts) -->
@@ -813,19 +813,18 @@
     </footer>
 
     <!-- ================================================================
-         EMAILJS + GATE LOGIC
+         BREVO (VIA SERVER-SIDE PROXY) + GATE LOGIC
     ================================================================ -->
     <script>
     (function () {
         'use strict';
 
         /* ════════════════════════════════════════════════════════════════
-           CONFIGURATION — fill these in after setting up your EmailJS account
-           See the setup instructions at the top of this file's <head>.
+           CONFIGURATION
+           No API keys here — the browser calls our own serverless endpoint,
+           which holds the Brevo API key server-side. See SETUP.md.
         ════════════════════════════════════════════════════════════════ */
-        var EMAILJS_PUBLIC_KEY  = 'uBxhYa8ketKR5IxeU';
-var EMAILJS_SERVICE_ID  = 'service_ht8nh7b';
-var EMAILJS_TEMPLATE_ID = 'template_glqy6bg';
+        var SEND_OTP_ENDPOINT = '/api/send-otp';
 
         /* ── OTP SETTINGS ── */
         var OTP_LENGTH      = 6;
@@ -842,7 +841,6 @@ var EMAILJS_TEMPLATE_ID = 'template_glqy6bg';
         var currentEmail     = '';
         var resendTimerID    = null;
         var resendSecondsLeft = 0;
-        var emailjsReady     = false;
 
         /* ── DOM REFS ── */
         var step1El, step2El;
@@ -903,16 +901,6 @@ var EMAILJS_TEMPLATE_ID = 'template_glqy6bg';
            INIT
         ════════════════════════════════════════════════════════════════ */
         document.addEventListener('DOMContentLoaded', function () {
-
-            /* Initialise EmailJS if available */
-            if (typeof emailjs !== 'undefined' && EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY_HERE') {
-                try {
-                    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-                    emailjsReady = true;
-                } catch (e) {
-                    console.warn('[MM Gate] EmailJS init failed:', e);
-                }
-            }
 
             /* Collect DOM refs */
             step1El           = document.getElementById('step-1');
@@ -1057,6 +1045,10 @@ var EMAILJS_TEMPLATE_ID = 'template_glqy6bg';
 
         /* ════════════════════════════════════════════════════════════════
            OTP GENERATION & SENDING
+           The OTP is generated here in the browser (as before) and sent to
+           our own serverless endpoint, which relays it to Brevo. Brevo never
+           sees or generates the code itself — same trust model as the old
+           EmailJS setup, just with the API key kept off the client.
         ════════════════════════════════════════════════════════════════ */
 
         function generateOTP() {
@@ -1074,32 +1066,33 @@ var EMAILJS_TEMPLATE_ID = 'template_glqy6bg';
 
             setStep1Loading(true);
 
-            /* ── DEV FALLBACK: EmailJS not yet configured ── */
-            if (!emailjsReady) {
-                console.log(
-                    '%c[MM Gate] EmailJS not configured — dev mode OTP: ' + currentOTP,
-                    'font-size:14px; font-weight:bold; color:#E39CA4; background:#1B1B1B; padding:6px 12px;'
-                );
+            fetch(SEND_OTP_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to_name:  currentName,
+                    to_email: currentEmail,
+                    otp_code: currentOTP
+                })
+            })
+            .then(function (res) {
+                return res.json().then(function (data) {
+                    if (!res.ok) {
+                        throw new Error(data && data.error ? data.error : 'Failed to send code.');
+                    }
+                    return data;
+                });
+            })
+            .then(function () {
                 setStep1Loading(false);
                 transitionToStep2();
-                return;
-            }
-
-            /* ── SEND VIA EMAILJS ── */
-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                to_name:   currentName,
-                to_email:  currentEmail,
-                otp_code:  currentOTP,
-                reply_to:  'milkmondaysbiz@gmail.com'
-            }).then(function () {
-                setStep1Loading(false);
-                transitionToStep2();
-            }).catch(function (err) {
-                console.error('[MM Gate] EmailJS send error:', err);
+            })
+            .catch(function (err) {
+                console.error('[MM Gate] send-otp error:', err);
                 setStep1Loading(false);
                 showStep1Error(
-                    'We couldn\'t send the code right now. ' +
-                    'Check your email address and try again, or refresh the page.'
+                    (err && err.message) ||
+                    'We couldn\'t send the code right now. Check your email address and try again, or refresh the page.'
                 );
             });
         }
