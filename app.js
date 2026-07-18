@@ -40,6 +40,7 @@
         bindNav();
         bindModal();
         bindShareStory();
+        bindSearch();
         loadPosts();
 
         /* ── BACK TO TOP BUTTON ── */
@@ -167,6 +168,77 @@
                 if (homeBtn) homeBtn.classList.add('active');
                 activeCategory = 'all';
                 renderMag();
+            });
+        }
+    }
+
+    /* ──────────────────────────────────────────
+       SEARCH
+       Self-contained: reads from the existing
+       #site-search input/results markup if present
+       in the page. If that markup isn't there yet,
+       this quietly does nothing — safe no-op.
+    ────────────────────────────────────────── */
+    function bindSearch() {
+        var input   = document.getElementById('site-search-input');
+        var results = document.getElementById('site-search-results');
+        if (!input || !results) return; /* markup not on this page — no-op */
+
+        var debounceTimer;
+
+        input.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            var q = input.value.trim();
+            if (!q) {
+                results.innerHTML = '';
+                results.classList.remove('open');
+                return;
+            }
+            debounceTimer = setTimeout(function () { runSearch(q); }, 150);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.site-search-wrap')) {
+                results.classList.remove('open');
+            }
+        });
+
+        function runSearch(q) {
+            var qLower = q.toLowerCase();
+            var matches = allPosts.filter(function (p) {
+                var haystack = (
+                    (p.title || '') + ' ' +
+                    (p.subtitle || '') + ' ' +
+                    (p.category || '') + ' ' +
+                    (p.tags || []).join(' ')
+                ).toLowerCase();
+                return haystack.indexOf(qLower) !== -1;
+            }).slice(0, 6);
+
+            if (!matches.length) {
+                results.innerHTML = '<p class="site-search-empty">No matches for &ldquo;' + esc(q) + '&rdquo;.</p>';
+                results.classList.add('open');
+                return;
+            }
+
+            results.innerHTML = matches.map(function (p) {
+                return '<button class="site-search-result" data-id="' + esc(p.id) + '">' +
+                    '<span class="site-search-result-cat">' + esc(p.category) + '</span>' +
+                    '<span class="site-search-result-title">' + esc(p.title) + '</span>' +
+                '</button>';
+            }).join('');
+            results.classList.add('open');
+
+            results.querySelectorAll('.site-search-result').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var p = allPosts.find(function (post) { return post.id === btn.dataset.id; });
+                    if (p) {
+                        checkGateAndOpen(p);
+                        input.value = '';
+                        results.innerHTML = '';
+                        results.classList.remove('open');
+                    }
+                });
             });
         }
     }
@@ -452,7 +524,8 @@
                     '</svg>' +
                     '<span id="modal-save-label">' + (savedInitial ? 'Saved' : 'Save for later') + '</span>' +
                 '</button>' +
-            '</div>';
+            '</div>' +
+            buildRecircHtml(post);
 
         /* update URL */
         try { window.history.pushState({}, '', '/magazine/' + encodeURIComponent(post.id)); } catch (e) {}
@@ -544,6 +617,159 @@
                 updateModalSaveButton();
             });
         }
+
+        bindRecircClicks();
+
+        /* Scroll the reader back to the top on every open.
+           #article-modal (modalBg) is the actual scroll container
+           (overflow-y: auto in CSS) — modalPanel itself doesn't scroll,
+           so resetting modalPanel.scrollTop was a no-op. */
+        if (modalBg) modalBg.scrollTop = 0;
+    }
+
+    /* ──────────────────────────────────────────
+       RECIRCULATION (related articles, read next,
+       topic links) — appended below the action bar
+       in launchReader(). Pure read from allPosts,
+       no network calls, no new data source needed.
+    ────────────────────────────────────────── */
+    function buildRecircHtml(post) {
+        var related = getRelatedPosts(post, 3);
+        var nextPost = getNextPost(post);
+        var tags = post.tags || [];
+
+        var html = '<div class="recirc" id="reader-recirc">';
+
+        /* Read Next */
+        if (nextPost) {
+            var nextImg = nextPost.coverImage || '';
+            html += '<div class="recirc-nextup">' +
+                '<span class="recirc-nextup-label">Keep reading</span>' +
+                '<button class="recirc-next-btn" data-id="' + esc(nextPost.id) + '">' +
+                    (nextImg ? '<img class="recirc-next-btn-img" src="' + esc(nextImg) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
+                    '<span class="recirc-next-btn-text">' +
+                        '<span class="recirc-next-btn-eyebrow">Read Next</span>' +
+                        '<span class="recirc-next-btn-title">' + esc(nextPost.title) + '</span>' +
+                    '</span>' +
+                    '<svg class="recirc-next-btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>' +
+                '</button>' +
+            '</div>';
+        }
+
+        /* Topic links (franchise tags) */
+        if (tags.length) {
+            html += '<div class="recirc-topics">' +
+                tags.map(function (t) {
+                    return '<button class="recirc-topic-pill" data-tag="' + esc(t) + '">More ' + esc(t) + '</button>';
+                }).join('') +
+            '</div>';
+        }
+
+        /* Related articles */
+        if (related.length) {
+            html += '<div class="recirc-related">' +
+                '<span class="recirc-related-label">You might also like</span>' +
+                '<div class="recirc-related-grid">' +
+                related.map(function (p) {
+                    var img = p.coverImage || '';
+                    return '<button class="recirc-related-card" data-id="' + esc(p.id) + '">' +
+                        (img ? '<img src="' + esc(img) + '" alt="' + esc(p.title) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
+                        '<span class="recirc-related-tag">' + esc(p.category) + '</span>' +
+                        '<span class="recirc-related-title">' + esc(p.title) + '</span>' +
+                    '</button>';
+                }).join('') +
+                '</div>' +
+            '</div>';
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    /* Related = same category, most recent first, excluding current post */
+    function getRelatedPosts(post, count) {
+        if (!allPosts.length) return [];
+        var sameCategory = allPosts.filter(function (p) {
+            return p.id !== post.id &&
+                p.category && post.category &&
+                p.category.toLowerCase() === post.category.toLowerCase();
+        });
+        return sameCategory.slice(0, count);
+    }
+
+    /* Next = next post after this one in the already-sorted allPosts list (wraps to start) */
+    function getNextPost(post) {
+        if (!allPosts.length) return null;
+        var idx = allPosts.findIndex(function (p) { return p.id === post.id; });
+        if (idx === -1) return null;
+        var nextIdx = (idx + 1) % allPosts.length;
+        return allPosts[nextIdx].id !== post.id ? allPosts[nextIdx] : null;
+    }
+
+    function bindRecircClicks() {
+        var recirc = document.getElementById('reader-recirc');
+        if (!recirc) return;
+
+        recirc.addEventListener('click', function (e) {
+            var nextBtn = e.target.closest('.recirc-next-btn');
+            var relatedCard = e.target.closest('.recirc-related-card');
+            var topicPill = e.target.closest('.recirc-topic-pill');
+
+            if (nextBtn) {
+                var p = allPosts.find(function (post) { return post.id === nextBtn.dataset.id; });
+                if (p) checkGateAndOpen(p);
+                return;
+            }
+            if (relatedCard) {
+                var p2 = allPosts.find(function (post) { return post.id === relatedCard.dataset.id; });
+                if (p2) checkGateAndOpen(p2);
+                return;
+            }
+            if (topicPill) {
+                openTopicResults(topicPill.dataset.tag);
+                return;
+            }
+        });
+    }
+
+    /* ──────────────────────────────────────────
+       TOPIC RESULTS (shown inside the reader when
+       a "More <Franchise>" pill is clicked)
+    ────────────────────────────────────────── */
+    function openTopicResults(tag) {
+        if (!modalBody) return;
+        var matches = allPosts.filter(function (p) {
+            return (p.tags || []).indexOf(tag) !== -1;
+        });
+
+        var html = '<header class="reader-header">' +
+                '<span class="tag pink">Topic</span>' +
+                '<h1 class="reader-title">More ' + esc(tag) + '</h1>' +
+            '</header>' +
+            '<div class="recirc-related-grid recirc-topic-grid">' +
+            matches.map(function (p) {
+                var img = p.coverImage || '';
+                return '<button class="recirc-related-card" data-id="' + esc(p.id) + '">' +
+                    (img ? '<img src="' + esc(img) + '" alt="' + esc(p.title) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
+                    '<span class="recirc-related-tag">' + esc(p.category) + '</span>' +
+                    '<span class="recirc-related-title">' + esc(p.title) + '</span>' +
+                '</button>';
+            }).join('') +
+            '</div>';
+
+        modalBody.innerHTML = html;
+        if (modalBg) modalBg.scrollTop = 0;
+
+        modalBody.addEventListener('click', function handler(e) {
+            var card = e.target.closest('.recirc-related-card');
+            if (card) {
+                var p = allPosts.find(function (post) { return post.id === card.dataset.id; });
+                if (p) {
+                    modalBody.removeEventListener('click', handler);
+                    checkGateAndOpen(p);
+                }
+            }
+        });
     }
 
     /* ──────────────────────────────────────────

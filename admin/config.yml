@@ -24,4 +24,13 @@ collections:
           widget: "select", 
           options: ["Skincare", "Fashion", "Pop Culture", "Archives", "Story Time"] 
         }
+      - {
+          label: "Topic / Franchise Tags",
+          name: "tags",
+          widget: "select",
+          multiple: true,
+          required: false,
+          hint: "Used for 'More <Topic>' links under related articles. Pick any that apply, or leave blank.",
+          options: ["Gossip Girl", "The Summer I Turned Pretty", "My Life with the Walter Boys", "Off Campus", "Euphoria", "Bridgerton", "Ginny & Georgia", "Spider-Man", "Taylor Swift", "Kendall Jenner & Jacob Elordi", "Kylie Jenner", "Rihanna", "Hailey Bieber", "Ariana Grande", "Alia Bhatt", "Vogue", "Victoria's Secret", "Rhode Skin"]
+        }
       - { label: "Body Copy Editorial Entry", name: "body", widget: "markdown" }
