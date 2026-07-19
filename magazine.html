@@ -133,18 +133,21 @@
                 <span class="m">Milk</span><span class="n">Mondays</span>
             </a>
         </div>
-        <nav class="nav" aria-label="Categories">
-            <button class="nav-btn active" data-category="all">Home</button>
-            <button class="nav-btn" data-category="skincare">Skincare</button>
-            <button class="nav-btn" data-category="fashion">Fashion</button>
-            <button class="nav-btn" data-category="pop-culture">Pop Culture</button>
-            <button class="nav-btn" data-category="archives">Archives</button>
-            <button class="nav-btn" data-category="story-time">Story Time</button>
-            <button class="nav-btn" data-category="saved">Saved</button>
-        </nav>
-        <div class="site-search-wrap">
-            <input type="text" id="site-search-input" class="site-search-input" placeholder="Search articles…" autocomplete="off" aria-label="Search articles">
-            <div id="site-search-results" class="site-search-results" role="listbox" aria-label="Search results"></div>
+        <div class="nav-row">
+            <nav class="nav" aria-label="Categories">
+                <button class="nav-btn active" data-category="all">Home</button>
+                <button class="nav-btn" data-category="skincare">Skincare</button>
+                <button class="nav-btn" data-category="fashion">Fashion</button>
+                <button class="nav-btn" data-category="pop-culture">Pop Culture</button>
+                <button class="nav-btn" data-category="archives">Archives</button>
+                <button class="nav-btn" data-category="story-time">Story Time</button>
+                <button class="nav-btn" data-category="saved">Saved</button>
+            </nav>
+            <div class="site-search-wrap">
+                <input type="text" id="site-search-input" class="site-search-input" placeholder="Search articles…" autocomplete="off" aria-label="Search articles">
+                <div id="site-search-backdrop" class="site-search-backdrop" aria-hidden="true"></div>
+                <div id="site-search-results" class="site-search-results" role="listbox" aria-label="Search results"></div>
+            </div>
         </div>
     </header>
 

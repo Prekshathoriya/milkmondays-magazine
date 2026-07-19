@@ -1990,10 +1990,19 @@ body::before {
 /* ============================================================================
    30. SITE SEARCH (header)
 ============================================================================ */
+.nav-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+}
+
 .site-search-wrap {
     position: relative;
-    width: 100%;
-    max-width: 360px;
+    flex: 0 1 260px;
+    min-width: 180px;
 }
 
 .site-search-input {
@@ -2010,19 +2019,24 @@ body::before {
 .site-search-input:focus { border-color: var(--black); outline: none; }
 .site-search-input::placeholder { color: var(--grey); }
 
+/* Dropdown and backdrop are moved to be direct children of <body> at
+   runtime (see bindSearch in app.js) so they can never get trapped
+   behind other elements' stacking contexts — including the article
+   modal, which has its own z-index. Position is set inline via JS to
+   match the search box's exact on-screen location. z-index here is
+   set higher than every other z-index used on the site (max is the
+   modal at 200), so this always wins regardless of what else is open. */
 .site-search-results {
     display: none;
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    right: 0;
+    position: fixed;
     background: var(--white);
+    opacity: 1;
     border: 1px solid var(--black);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lift);
     max-height: 340px;
     overflow-y: auto;
-    z-index: 60;
+    z-index: 10000;
     padding: 6px;
 }
 .site-search-results.open { display: block; }
@@ -2035,6 +2049,7 @@ body::before {
     text-align: left;
     padding: 10px 12px;
     border-radius: var(--radius-sm, 8px);
+    background: var(--white);
     transition: background var(--dur-fast) var(--ease);
 }
 .site-search-result:hover { background: var(--cream); }
@@ -2054,10 +2069,24 @@ body::before {
     padding: 12px;
     font-size: var(--fs-xs);
     color: var(--grey);
+    background: var(--white);
 }
 
+/* Scrim behind the open dropdown so it always reads as a layer floating
+   above the page, never mixed in with article cards, the modal, or
+   any other content. */
+.site-search-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(18,18,18,0.35);
+    z-index: 9999;
+}
+.site-search-backdrop.open { display: block; }
+
 @media (max-width: 768px) {
-    .site-search-wrap { max-width: 100%; }
+    .nav-row { flex-direction: column; align-items: stretch; gap: 12px; }
+    .site-search-wrap { flex: none; width: 100%; min-width: 0; }
 }
 
 

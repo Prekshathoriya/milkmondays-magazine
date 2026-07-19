@@ -180,28 +180,63 @@
        this quietly does nothing — safe no-op.
     ────────────────────────────────────────── */
     function bindSearch() {
-        var input   = document.getElementById('site-search-input');
-        var results = document.getElementById('site-search-results');
+        var input    = document.getElementById('site-search-input');
+        var results  = document.getElementById('site-search-results');
+        var backdrop = document.getElementById('site-search-backdrop');
         if (!input || !results) return; /* markup not on this page — no-op */
 
         var debounceTimer;
+
+        /* .site-header has its own z-index (creates a stacking context),
+           so no z-index on a child inside it can ever beat elements
+           outside that context — like the article modal — no matter how
+           high that child's z-index number is. Moving the dropdown and
+           its backdrop to be direct children of <body> escapes that trap
+           entirely, so they always render above absolutely everything,
+           including an already-open article. Position is recalculated
+           against the search box's real screen location every time it
+           opens or the window resizes. */
+        if (results.parentNode !== document.body) document.body.appendChild(results);
+        if (backdrop && backdrop.parentNode !== document.body) document.body.appendChild(backdrop);
+
+        function positionResults() {
+            var rect = input.getBoundingClientRect();
+            results.style.position = 'fixed';
+            results.style.top      = (rect.bottom + 8) + 'px';
+            results.style.left     = rect.left + 'px';
+            results.style.width    = rect.width + 'px';
+        }
+
+        function openResults() {
+            positionResults();
+            results.classList.add('open');
+            if (backdrop) backdrop.classList.add('open');
+        }
+
+        function closeResults() {
+            results.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('open');
+        }
+
+        window.addEventListener('resize', function () {
+            if (results.classList.contains('open')) positionResults();
+        });
 
         input.addEventListener('input', function () {
             clearTimeout(debounceTimer);
             var q = input.value.trim();
             if (!q) {
                 results.innerHTML = '';
-                results.classList.remove('open');
+                closeResults();
                 return;
             }
             debounceTimer = setTimeout(function () { runSearch(q); }, 150);
         });
 
         document.addEventListener('click', function (e) {
-            if (!e.target.closest('.site-search-wrap')) {
-                results.classList.remove('open');
-            }
+            if (!e.target.closest('.site-search-wrap') && !e.target.closest('#site-search-results')) closeResults();
         });
+        if (backdrop) backdrop.addEventListener('click', closeResults);
 
         function runSearch(q) {
             var qLower = q.toLowerCase();
@@ -217,7 +252,7 @@
 
             if (!matches.length) {
                 results.innerHTML = '<p class="site-search-empty">No matches for &ldquo;' + esc(q) + '&rdquo;.</p>';
-                results.classList.add('open');
+                openResults();
                 return;
             }
 
@@ -227,7 +262,7 @@
                     '<span class="site-search-result-title">' + esc(p.title) + '</span>' +
                 '</button>';
             }).join('');
-            results.classList.add('open');
+            openResults();
 
             results.querySelectorAll('.site-search-result').forEach(function (btn) {
                 btn.addEventListener('click', function () {
@@ -236,7 +271,7 @@
                         checkGateAndOpen(p);
                         input.value = '';
                         results.innerHTML = '';
-                        results.classList.remove('open');
+                        closeResults();
                     }
                 });
             });
@@ -262,6 +297,14 @@
 
     function openModal() {
         if (!modalBg) return;
+        /* If search is open when an article opens (e.g. clicking a
+           search result), make sure it's closed — they should never
+           both be visible at once. */
+        var searchResults = document.getElementById('site-search-results');
+        var searchBackdrop = document.getElementById('site-search-backdrop');
+        if (searchResults) searchResults.classList.remove('open');
+        if (searchBackdrop) searchBackdrop.classList.remove('open');
+
         modalBg.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
@@ -621,10 +664,14 @@
         bindRecircClicks();
 
         /* Scroll the reader back to the top on every open.
-           #article-modal (modalBg) is the actual scroll container
-           (overflow-y: auto in CSS) — modalPanel itself doesn't scroll,
-           so resetting modalPanel.scrollTop was a no-op. */
+           On desktop, #article-modal (modalBg) is the scroll container.
+           On mobile (<=768px), CSS switches .modal-panel itself to
+           overflow-y:auto/max-height:92vh instead — so modalPanel becomes
+           the scroll container there. Reset all three so it's correct
+           regardless of viewport or browser quirks. */
         if (modalBg) modalBg.scrollTop = 0;
+        if (modalPanel) modalPanel.scrollTop = 0;
+        window.scrollTo(0, 0);
     }
 
     /* ──────────────────────────────────────────
@@ -759,6 +806,8 @@
 
         modalBody.innerHTML = html;
         if (modalBg) modalBg.scrollTop = 0;
+        if (modalPanel) modalPanel.scrollTop = 0;
+        window.scrollTo(0, 0);
 
         modalBody.addEventListener('click', function handler(e) {
             var card = e.target.closest('.recirc-related-card');
