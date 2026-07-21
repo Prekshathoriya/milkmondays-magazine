@@ -515,9 +515,9 @@
     /* ──────────────────────────────────────────
        GATE
     ────────────────────────────────────────── */
-    function checkGateAndOpen(post) {
+    function checkGateAndOpen(post, scrollToTop) {
         if (gatePassed()) {
-            launchReader(post);
+            launchReader(post, scrollToTop);
         } else {
             var returnUrl = window.location.origin + '/magazine/' + encodeURIComponent(post.id);
             window.location.href = 'gate-form.html?redirect=' + encodeURIComponent(returnUrl);
@@ -527,7 +527,7 @@
     /* ──────────────────────────────────────────
        ARTICLE READER
     ────────────────────────────────────────── */
-    function launchReader(post) {
+    function launchReader(post, scrollToTop) {
         if (!modalBody) return;
 
         var fullDate = fmtDate(post.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -663,15 +663,43 @@
 
         bindRecircClicks();
 
-        /* Scroll the reader back to the top on every open.
+        /* Always reset the reader's own internal scroll position so the
+           article content itself starts from its top — this matters
+           whenever a new article is swapped into an already-open modal
+           (e.g. "Read Next" / related-article clicks).
            On desktop, #article-modal (modalBg) is the scroll container.
            On mobile (<=768px), CSS switches .modal-panel itself to
            overflow-y:auto/max-height:92vh instead — so modalPanel becomes
-           the scroll container there. Reset all three so it's correct
+           the scroll container there. Reset both so it's correct
            regardless of viewport or browser quirks. */
         if (modalBg) modalBg.scrollTop = 0;
         if (modalPanel) modalPanel.scrollTop = 0;
-        window.scrollTo(0, 0);
+
+        /* When opened from "Keep Reading" / "You Might Also Like", the
+           background listing page must NOT jump to the top — it should
+           move to wherever the newly opened article's own card sits in
+           the listing (never a global scroll-to-top). Opening normally
+           from the listing (grid card, hero, search, deep link) leaves
+           the background scroll position untouched entirely. */
+        if (scrollToTop) {
+            scrollListingToPost(post.id);
+        }
+    }
+
+    /* Finds the listing card/hero for a given post id and scrolls the
+       background page so that card is in view. Used only for articles
+       opened via the recirc "Keep Reading" / "You Might Also Like"
+       section — never for normal listing opens. */
+    function scrollListingToPost(postId) {
+        var btns = document.querySelectorAll('.save-btn[data-id]');
+        var target = null;
+        for (var i = 0; i < btns.length; i++) {
+            if (btns[i].dataset.id === postId) { target = btns[i]; break; }
+        }
+        var el = target ? (target.closest('.article-card') || target.closest('.hero-body')) : null;
+        if (el && el.scrollIntoView) {
+            el.scrollIntoView({ block: 'center' });
+        }
     }
 
     /* ──────────────────────────────────────────
@@ -764,12 +792,12 @@
 
             if (nextBtn) {
                 var p = allPosts.find(function (post) { return post.id === nextBtn.dataset.id; });
-                if (p) checkGateAndOpen(p);
+                if (p) checkGateAndOpen(p, true);
                 return;
             }
             if (relatedCard) {
                 var p2 = allPosts.find(function (post) { return post.id === relatedCard.dataset.id; });
-                if (p2) checkGateAndOpen(p2);
+                if (p2) checkGateAndOpen(p2, true);
                 return;
             }
             if (topicPill) {
