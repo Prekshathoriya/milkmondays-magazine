@@ -2,7 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!--
+        Shared article URLs are served at /magazine/<article-id>.
+        Without a root base URL, browsers resolve relative assets against that
+        nested path (for example, /magazine/styles.css and /magazine/app.js).
+        Those files do not exist there, so shared links display raw HTML and
+        the article reader never starts. Keeping the document base at the site
+        root makes every current and future relative local URL safe on direct
+        visits, redirects, refreshes, and in-app browsers on any device.
+    -->
+    <base href="/">
     <title>Milk Mondays</title>
     <meta name="description" content="A collection of everyday things. Skincare, fashion, and pop culture — curated for the modern archive.">
     <meta name="p:domain_verify" content="85725db9aaf55872674a6ff2af76f9c3"/>
@@ -15,7 +25,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Playball&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="styles.css">
+    <!-- Root-absolute critical asset: must work from /magazine/<article-id>. -->
+    <link rel="stylesheet" href="/styles.css">
 
     <!-- ── MODAL FIX ───────────────────────────────────────────────────────
          The modal overlay must be position:fixed so it covers the entire
@@ -129,7 +140,7 @@
     <!-- ── HEADER ── -->
     <header class="site-header">
         <div class="logo-wrap">
-            <a href="index.html" class="brand" id="logo-btn">
+            <a href="/" class="brand" id="logo-btn">
                 <span class="m">Milk</span><span class="n">Mondays</span>
             </a>
         </div>
@@ -264,7 +275,7 @@
 
                 <div class="mascot-corner">
                     <span class="mascot-avatar">
-                        <img src="eyes.jpg" alt="Milk Mondays illustrated mascot" loading="lazy">
+                        <img src="/eyes.jpg" alt="Milk Mondays illustrated mascot" loading="lazy">
                     </span>
     
                 </div>
@@ -282,7 +293,8 @@
     </footer>
 
     <!-- ── APP SCRIPT ── -->
-    <script src="app.js"></script>
+    <!-- Root-absolute application entry: direct shared links must load it. -->
+    <script src="/app.js"></script>
 
     <!-- Back to top button -->
     <button id="back-to-top" class="back-to-top" aria-label="Back to top">
