@@ -349,6 +349,19 @@
 
                 /* handle article deep link */
                 var targetId = params.get('article');
+                /* Fallback: articles are now served directly at
+                   /magazine/<id> (see functions/magazine/[id].js), so the
+                   id may be in the URL path instead of a ?article= query
+                   string. window.__mmArticleId is set by that Function;
+                   the pathname match below covers any other case where
+                   the page was reached without it (e.g. cached HTML). */
+                if (!targetId && typeof window.__mmArticleId === 'string' && window.__mmArticleId) {
+                    targetId = window.__mmArticleId;
+                }
+                if (!targetId) {
+                    var pathMatch = window.location.pathname.match(/^\/magazine\/([^\/?#]+)/);
+                    if (pathMatch) targetId = decodeURIComponent(pathMatch[1]);
+                }
                 if (targetId) {
                     var match = allPosts.find(function (p) { return p.id === targetId; });
                     if (match) checkGateAndOpen(match);
