@@ -1,5 +1,5 @@
 /**
- * Milk Mondays — app.js
+ * Milk Mondays â€” app.js
  * Handles: post loading, category filtering, gate check, article modal,
  *          likes (server + local), share, deep-link via ?article=
  */
@@ -7,23 +7,32 @@
 (function () {
     'use strict';
 
-    /* ── CONFIG ── */
+    /* â”€â”€ CONFIG â”€â”€ */
     var LIKES_API = 'https://muddy-shadow-6c19.milkmondaysbiz.workers.dev';
     var POSTS_URL = 'https://milkmondays-magazine.pages.dev/content/posts.json';
+    var COMMENTS_API = '/api/comments';
+    var COMMENTS_REFRESH_MS = 10000;
+    var COMMENTS_MAX_LENGTH = 1200;
 
-    /* ── STATE ── */
+    /* â”€â”€ STATE â”€â”€ */
     var allPosts      = [];
     var activeCategory = 'all';
+    var activeCommentsArticleId = '';
+    var commentsRefreshTimer = null;
+    var commentProfile = null;
+    var commentTurnstileSiteKey = '';
+    var commentTurnstileToken = '';
+    var commentTurnstileWidgetId = null;
 
-    /* ── DOM REFS (set after DOMContentLoaded) ── */
+    /* â”€â”€ DOM REFS (set after DOMContentLoaded) â”€â”€ */
     var stateView, magContent, heroSection, postsGrid;
     var modalBg, modalPanel, modalBody, closeBtn;
     var navButtons, logoBtn;
     var shareStoryBtn;
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        INIT
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     document.addEventListener('DOMContentLoaded', function () {
         stateView   = document.getElementById('state-view');
         magContent  = document.getElementById('mag-content');
@@ -43,7 +52,7 @@
         bindSearch();
         loadPosts();
 
-        /* ── BACK TO TOP BUTTON ── */
+        /* â”€â”€ BACK TO TOP BUTTON â”€â”€ */
         var backToTopBtn = document.getElementById('back-to-top');
         if (backToTopBtn) {
             window.addEventListener('scroll', function () {
@@ -59,9 +68,9 @@
         }
     });
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        HELPERS
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function esc(s) {
         if (!s) return '';
         return String(s).replace(/[&<>"']/g, function (c) {
@@ -92,7 +101,7 @@
         try { return new Date(iso).toLocaleDateString('en-US', opts); } catch (e) { return iso; }
     }
 
-    /* ── SAVE FOR LATER HELPERS ── */
+    /* â”€â”€ SAVE FOR LATER HELPERS â”€â”€ */
     function getSavedIds() {
         try {
             var saved = localStorage.getItem('mm_saved_posts');
@@ -131,9 +140,9 @@
         }
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        STORY TIME SUBMISSION CTA
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function bindShareStory() {
         if (!shareStoryBtn) return;
 
@@ -147,9 +156,9 @@
         }, true);
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        NAV BINDING
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function bindNav() {
         navButtons.forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -172,24 +181,24 @@
         }
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        SEARCH
        Self-contained: reads from the existing
        #site-search input/results markup if present
        in the page. If that markup isn't there yet,
-       this quietly does nothing — safe no-op.
-    ────────────────────────────────────────── */
+       this quietly does nothing â€” safe no-op.
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function bindSearch() {
         var input    = document.getElementById('site-search-input');
         var results  = document.getElementById('site-search-results');
         var backdrop = document.getElementById('site-search-backdrop');
-        if (!input || !results) return; /* markup not on this page — no-op */
+        if (!input || !results) return; /* markup not on this page â€” no-op */
 
         var debounceTimer;
 
         /* .site-header has its own z-index (creates a stacking context),
            so no z-index on a child inside it can ever beat elements
-           outside that context — like the article modal — no matter how
+           outside that context â€” like the article modal â€” no matter how
            high that child's z-index number is. Moving the dropdown and
            its backdrop to be direct children of <body> escapes that trap
            entirely, so they always render above absolutely everything,
@@ -278,9 +287,9 @@
         }
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        MODAL BINDING
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function bindModal() {
         if (closeBtn) closeBtn.addEventListener('click', closeModal);
 
@@ -298,7 +307,7 @@
     function openModal() {
         if (!modalBg) return;
         /* If search is open when an article opens (e.g. clicking a
-           search result), make sure it's closed — they should never
+           search result), make sure it's closed â€” they should never
            both be visible at once. */
         var searchResults = document.getElementById('site-search-results');
         var searchBackdrop = document.getElementById('site-search-backdrop');
@@ -311,15 +320,16 @@
 
     function closeModal() {
         if (!modalBg) return;
+        stopComments();
         modalBg.classList.remove('open');
         document.body.style.overflow = '';
         /* restore URL */
         try { window.history.pushState({}, '', '/magazine'); } catch (e) {}
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        LOAD POSTS
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function loadPosts() {
         fetch(POSTS_URL)
             .then(function (r) {
@@ -372,14 +382,14 @@
                 if (typeof window.mm_showFetchError === 'function') {
                     window.mm_showFetchError();
                 } else {
-                    showState('Something went wrong loading the archive — please refresh and try again.');
+                    showState('Something went wrong loading the archive â€” please refresh and try again.');
                 }
             });
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        RENDER
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function showState(msg) {
         if (stateView) {
             stateView.style.display = 'flex';
@@ -396,7 +406,7 @@
 
     function renderMag() {
         if (!allPosts.length) {
-            showState('Check back soon — new content is on its way.');
+            showState('Check back soon â€” new content is on its way.');
             return;
         }
         hideState();
@@ -525,9 +535,9 @@
         });
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        GATE
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function checkGateAndOpen(post, scrollToTop) {
         if (gatePassed()) {
             launchReader(post, scrollToTop);
@@ -537,11 +547,12 @@
         }
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        ARTICLE READER
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function launchReader(post, scrollToTop) {
         if (!modalBody) return;
+        stopComments();
 
         var fullDate = fmtDate(post.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         var img      = post.coverImage || '';
@@ -581,6 +592,7 @@
                     '<span id="modal-save-label">' + (savedInitial ? 'Saved' : 'Save for later') + '</span>' +
                 '</button>' +
             '</div>' +
+            buildCommentsShellHtml(post) +
             buildRecircHtml(post);
 
         /* update URL */
@@ -675,21 +687,22 @@
         }
 
         bindRecircClicks();
+        initComments(post);
 
         /* Always reset the reader's own internal scroll position so the
-           article content itself starts from its top — this matters
+           article content itself starts from its top â€” this matters
            whenever a new article is swapped into an already-open modal
            (e.g. "Read Next" / related-article clicks).
            On desktop, #article-modal (modalBg) is the scroll container.
            On mobile (<=768px), CSS switches .modal-panel itself to
-           overflow-y:auto/max-height:92vh instead — so modalPanel becomes
+           overflow-y:auto/max-height:92vh instead â€” so modalPanel becomes
            the scroll container there. Reset both so it's correct
            regardless of viewport or browser quirks. */
         if (modalBg) modalBg.scrollTop = 0;
         if (modalPanel) modalPanel.scrollTop = 0;
 
         /* When opened from "Keep Reading" / "You Might Also Like", the
-           background listing page must NOT jump to the top — it should
+           background listing page must NOT jump to the top â€” it should
            move to wherever the newly opened article's own card sits in
            the listing (never a global scroll-to-top). Opening normally
            from the listing (grid card, hero, search, deep link) leaves
@@ -702,7 +715,7 @@
     /* Finds the listing card/hero for a given post id and scrolls the
        background page so that card is in view. Used only for articles
        opened via the recirc "Keep Reading" / "You Might Also Like"
-       section — never for normal listing opens. */
+       section â€” never for normal listing opens. */
     function scrollListingToPost(postId) {
         var btns = document.querySelectorAll('.save-btn[data-id]');
         var target = null;
@@ -715,12 +728,12 @@
         }
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        RECIRCULATION (related articles, read next,
-       topic links) — appended below the action bar
+       topic links) â€” appended below the action bar
        in launchReader(). Pure read from allPosts,
        no network calls, no new data source needed.
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function buildRecircHtml(post) {
         var related = getRelatedPosts(post, 3);
         var nextPost = getNextPost(post);
@@ -820,12 +833,599 @@
         });
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+       LIVE COMMENTS
+       Persistent Cloudflare D1 comments with a
+       one-time public display-name choice.
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    function buildCommentsShellHtml(post) {
+        return '<section class="mm-comments" id="mm-comments" data-article-id="' + esc(post.id) + '">' +
+            '<div class="mm-comments-heading-row">' +
+                '<div>' +
+                    '<span class="mm-comments-kicker">milk mondays, after hours</span>' +
+                    '<h2 class="mm-comments-title">The comment section</h2>' +
+                    '<p class="mm-comments-intro">The article ends here. The opinions do not.</p>' +
+                '</div>' +
+                '<span class="mm-comments-count" id="mm-comments-count">0 comments</span>' +
+            '</div>' +
+            '<form class="mm-comment-form" id="mm-comment-form" novalidate>' +
+                '<label class="mm-comment-label" for="mm-comment-body">Leave a thought</label>' +
+                '<textarea class="mm-comment-textarea" id="mm-comment-body" maxlength="' + COMMENTS_MAX_LENGTH + '" rows="4" placeholder="Add to the conversation..." aria-describedby="mm-comment-help"></textarea>' +
+                '<div class="mm-comment-form-bottom">' +
+                    '<span class="mm-comment-help" id="mm-comment-help"><span id="mm-comment-char-count">0</span>/' + COMMENTS_MAX_LENGTH + '</span>' +
+                    '<button class="mm-comment-submit" id="mm-comment-submit" type="submit">Post comment</button>' +
+                '</div>' +
+                '<div class="mm-comment-turnstile" id="mm-comment-turnstile"></div>' +
+                '<p class="mm-comment-message" id="mm-comment-message" role="status" aria-live="polite"></p>' +
+            '</form>' +
+            '<div class="mm-comments-toolbar">' +
+                '<span class="mm-comments-conversation">The conversation</span>' +
+                '<label class="mm-comments-sort-label" for="mm-comments-sort">Sort' +
+                    '<select class="mm-comments-sort" id="mm-comments-sort">' +
+                        '<option value="newest">Newest</option>' +
+                        '<option value="oldest">Oldest</option>' +
+                    '</select>' +
+                '</label>' +
+            '</div>' +
+            '<div class="mm-comments-list" id="mm-comments-list" aria-live="polite">' +
+                '<p class="mm-comments-loading">Opening the conversation...</p>' +
+            '</div>' +
+        '</section>';
+    }
+
+    function initComments(post) {
+        var section = document.getElementById('mm-comments');
+        var form = document.getElementById('mm-comment-form');
+        var textarea = document.getElementById('mm-comment-body');
+        var sort = document.getElementById('mm-comments-sort');
+
+        if (!section || !form || !textarea) return;
+
+        activeCommentsArticleId = post.id;
+        commentProfile = null;
+        commentTurnstileToken = '';
+
+        textarea.addEventListener('input', updateCommentCharacterCount);
+        textarea.addEventListener('focus', function () {
+            ensureCommentProfile().catch(function (error) {
+                if (error && error.message !== 'Name choice cancelled.') {
+                    setCommentMessage(error.message, true);
+                }
+            });
+        }, { once: true });
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            submitComment(post.id);
+        });
+
+        if (sort) {
+            sort.addEventListener('change', function () {
+                loadComments(post.id, true);
+            });
+        }
+
+        section.addEventListener('click', function (event) {
+            var reportButton = event.target.closest('.mm-comment-report');
+            if (reportButton) {
+                reportComment(post.id, reportButton);
+            }
+        });
+
+        loadComments(post.id, true);
+        commentsRefreshTimer = window.setInterval(function () {
+            if (activeCommentsArticleId === post.id &&
+                modalBg && modalBg.classList.contains('open') &&
+                !document.hidden) {
+                loadComments(post.id, false);
+            }
+        }, COMMENTS_REFRESH_MS);
+    }
+
+    function stopComments() {
+        activeCommentsArticleId = '';
+        commentProfile = null;
+        commentTurnstileToken = '';
+        commentTurnstileSiteKey = '';
+
+        if (commentsRefreshTimer) {
+            window.clearInterval(commentsRefreshTimer);
+            commentsRefreshTimer = null;
+        }
+
+        if (commentTurnstileWidgetId !== null &&
+            window.turnstile && typeof window.turnstile.remove === 'function') {
+            try { window.turnstile.remove(commentTurnstileWidgetId); } catch (error) {}
+        }
+        commentTurnstileWidgetId = null;
+
+        var chooser = document.getElementById('mm-comment-name-overlay');
+        if (chooser && chooser.parentNode) chooser.parentNode.removeChild(chooser);
+    }
+
+    function getReaderIdentity() {
+        var name = '';
+        var email = '';
+        try {
+            name = String(localStorage.getItem('mm_user_name') || '').trim();
+            email = String(localStorage.getItem('mm_user_email') || '').trim().toLowerCase();
+        } catch (error) {}
+
+        if (!email) {
+            throw new Error('Please unlock the article with your email before joining the comments.');
+        }
+
+        return { gateName: name, email: email };
+    }
+
+    function ensureCommentProfile() {
+        if (commentProfile) return Promise.resolve(commentProfile);
+
+        var identity;
+        try {
+            identity = getReaderIdentity();
+        } catch (error) {
+            return Promise.reject(error);
+        }
+
+        return commentsRequest({
+            action: 'get_profile',
+            email: identity.email
+        }).then(function (data) {
+            if (data.profile) {
+                commentProfile = data.profile;
+                rememberCommentName(data.profile.displayName);
+                return commentProfile;
+            }
+
+            return openCommentNameChooser(identity).then(function (displayName) {
+                if (!displayName) throw new Error('Name choice cancelled.');
+
+                return commentsRequest({
+                    action: 'set_profile',
+                    email: identity.email,
+                    displayName: displayName
+                }).then(function (saved) {
+                    commentProfile = saved.profile;
+                    rememberCommentName(saved.profile.displayName);
+                    return commentProfile;
+                });
+            });
+        });
+    }
+
+    function rememberCommentName(displayName) {
+        try {
+            localStorage.setItem('mm_comment_name_locked', displayName);
+        } catch (error) {}
+    }
+
+    function openCommentNameChooser(identity) {
+        return new Promise(function (resolve) {
+            var oldChooser = document.getElementById('mm-comment-name-overlay');
+            if (oldChooser && oldChooser.parentNode) oldChooser.parentNode.removeChild(oldChooser);
+
+            var hasGateName = Boolean(identity.gateName);
+            var overlay = document.createElement('div');
+            overlay.className = 'mm-comment-name-overlay';
+            overlay.id = 'mm-comment-name-overlay';
+            overlay.setAttribute('role', 'dialog');
+            overlay.setAttribute('aria-modal', 'true');
+            overlay.setAttribute('aria-labelledby', 'mm-comment-name-title');
+
+            overlay.innerHTML =
+                '<div class="mm-comment-name-card">' +
+                    '<button class="mm-comment-name-close" type="button" aria-label="Close">Ã—</button>' +
+                    '<span class="mm-comment-name-kicker">a tiny but permanent decision</span>' +
+                    '<h2 class="mm-comment-name-title" id="mm-comment-name-title">Choose your little byline</h2>' +
+                    '<p class="mm-comment-name-copy">Every archive needs a signature. Pick the name that will sit beside all your Milk Mondays thoughts. Choose carefully. Once it is tucked into the archive, it stays.</p>' +
+                    '<form class="mm-comment-name-form" id="mm-comment-name-form">' +
+                        '<label class="mm-comment-name-option' + (hasGateName ? ' selected' : ' disabled') + '">' +
+                            '<input type="radio" name="comment-display-name" value="gate"' + (hasGateName ? ' checked' : ' disabled') + '>' +
+                            '<span class="mm-comment-option-copy">' +
+                                '<span class="mm-comment-option-label">Keep the name you came in with</span>' +
+                                '<span class="mm-comment-option-value">' + (hasGateName ? esc(identity.gateName) : 'No saved gate name found') + '</span>' +
+                            '</span>' +
+                        '</label>' +
+                        '<label class="mm-comment-name-option' + (hasGateName ? '' : ' selected') + '">' +
+                            '<input type="radio" name="comment-display-name" value="custom"' + (hasGateName ? '' : ' checked') + '>' +
+                            '<span class="mm-comment-option-copy">' +
+                                '<span class="mm-comment-option-label">Leave a different signature</span>' +
+                                '<input class="mm-comment-custom-name" id="mm-comment-custom-name" type="text" minlength="2" maxlength="30" autocomplete="nickname" placeholder="Type your forever comment name">' +
+                            '</span>' +
+                        '</label>' +
+                        '<p class="mm-comment-name-note">One name, every article, no little rebrands later.</p>' +
+                        '<p class="mm-comment-name-error" id="mm-comment-name-error" role="alert"></p>' +
+                        '<button class="mm-comment-name-confirm" type="submit">Make it mine</button>' +
+                    '</form>' +
+                '</div>';
+
+            document.body.appendChild(overlay);
+
+            var form = overlay.querySelector('#mm-comment-name-form');
+            var customInput = overlay.querySelector('#mm-comment-custom-name');
+            var close = overlay.querySelector('.mm-comment-name-close');
+            var radios = overlay.querySelectorAll('input[name="comment-display-name"]');
+            var settled = false;
+
+            function settle(value) {
+                if (settled) return;
+                settled = true;
+                document.removeEventListener('keydown', onKeydown);
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                resolve(value);
+            }
+
+            function onKeydown(event) {
+                if (event.key === 'Escape') settle(null);
+            }
+
+            function updateOptions() {
+                var options = overlay.querySelectorAll('.mm-comment-name-option');
+                for (var i = 0; i < options.length; i++) {
+                    var radio = options[i].querySelector('input[type="radio"]');
+                    options[i].classList.toggle('selected', Boolean(radio && radio.checked));
+                }
+
+                var selected = overlay.querySelector('input[name="comment-display-name"]:checked');
+                if (selected && selected.value === 'custom') {
+                    customInput.removeAttribute('disabled');
+                    customInput.focus();
+                }
+            }
+
+            for (var i = 0; i < radios.length; i++) {
+                radios[i].addEventListener('change', updateOptions);
+            }
+
+            close.addEventListener('click', function () { settle(null); });
+            overlay.addEventListener('click', function (event) {
+                if (event.target === overlay) settle(null);
+            });
+            document.addEventListener('keydown', onKeydown);
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                var selected = overlay.querySelector('input[name="comment-display-name"]:checked');
+                var error = overlay.querySelector('#mm-comment-name-error');
+                var chosen = selected && selected.value === 'custom'
+                    ? customInput.value.replace(/\s+/g, ' ').trim()
+                    : identity.gateName;
+
+                if (chosen.length < 2 || chosen.length > 30) {
+                    error.textContent = 'Choose a name between 2 and 30 characters.';
+                    if (selected && selected.value === 'custom') customInput.focus();
+                    return;
+                }
+
+                error.textContent = '';
+                settle(chosen);
+            });
+
+            window.setTimeout(function () {
+                var firstChoice = overlay.querySelector('input[name="comment-display-name"]:checked');
+                if (firstChoice) firstChoice.focus();
+                updateOptions();
+            }, 50);
+        });
+    }
+
+    function loadComments(articleId, showLoading) {
+        if (activeCommentsArticleId !== articleId) return;
+
+        var list = document.getElementById('mm-comments-list');
+        var sort = document.getElementById('mm-comments-sort');
+        var order = sort ? sort.value : 'newest';
+
+        if (showLoading && list) {
+            list.innerHTML = '<p class="mm-comments-loading">Opening the conversation...</p>';
+        }
+
+        fetch(COMMENTS_API + '?articleId=' + encodeURIComponent(articleId) +
+            '&order=' + encodeURIComponent(order) + '&_=' + Date.now(), {
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+        })
+            .then(readCommentsResponse)
+            .then(function (data) {
+                if (activeCommentsArticleId !== articleId) return;
+                commentTurnstileSiteKey = data.turnstileSiteKey || '';
+                renderComments(data.comments || []);
+                if (commentTurnstileSiteKey) ensureCommentTurnstile();
+            })
+            .catch(function (error) {
+                if (!showLoading || !list || activeCommentsArticleId !== articleId) return;
+                list.innerHTML = '';
+                var message = document.createElement('p');
+                message.className = 'mm-comments-error';
+                message.textContent = error.message || 'The comments are taking a tiny break.';
+                list.appendChild(message);
+            });
+    }
+
+    function renderComments(comments) {
+        var list = document.getElementById('mm-comments-list');
+        var count = document.getElementById('mm-comments-count');
+        if (!list) return;
+
+        if (count) {
+            count.textContent = comments.length + (comments.length === 1 ? ' comment' : ' comments');
+        }
+
+        list.innerHTML = '';
+        if (!comments.length) {
+            var empty = document.createElement('div');
+            empty.className = 'mm-comments-empty';
+
+            var title = document.createElement('strong');
+            title.textContent = 'A suspiciously quiet comment section.';
+
+            var copy = document.createElement('span');
+            copy.textContent = 'Be the first person to leave a thought in the archive.';
+
+            empty.appendChild(title);
+            empty.appendChild(copy);
+            list.appendChild(empty);
+            return;
+        }
+
+        var fragment = document.createDocumentFragment();
+        comments.forEach(function (comment) {
+            var item = document.createElement('article');
+            item.className = 'mm-comment';
+            item.dataset.commentId = comment.id;
+
+            var header = document.createElement('header');
+            header.className = 'mm-comment-header';
+
+            var avatar = document.createElement('span');
+            avatar.className = 'mm-comment-avatar';
+            avatar.setAttribute('aria-hidden', 'true');
+            avatar.textContent = String(comment.displayName || '?').charAt(0).toUpperCase();
+
+            var meta = document.createElement('span');
+            meta.className = 'mm-comment-meta';
+
+            var name = document.createElement('strong');
+            name.className = 'mm-comment-author';
+            name.textContent = comment.displayName;
+
+            var time = document.createElement('time');
+            time.className = 'mm-comment-time';
+            time.dateTime = new Date(Number(comment.createdAt)).toISOString();
+            time.textContent = formatCommentTime(comment.createdAt);
+
+            var report = document.createElement('button');
+            report.className = 'mm-comment-report';
+            report.type = 'button';
+            report.dataset.commentId = comment.id;
+            report.textContent = 'Report';
+            report.setAttribute('aria-label', 'Report comment by ' + comment.displayName);
+
+            var body = document.createElement('p');
+            body.className = 'mm-comment-body';
+            body.textContent = comment.body;
+
+            meta.appendChild(name);
+            meta.appendChild(time);
+            header.appendChild(avatar);
+            header.appendChild(meta);
+            header.appendChild(report);
+            item.appendChild(header);
+            item.appendChild(body);
+            fragment.appendChild(item);
+        });
+
+        list.appendChild(fragment);
+    }
+
+    function submitComment(articleId) {
+        var textarea = document.getElementById('mm-comment-body');
+        var submit = document.getElementById('mm-comment-submit');
+        var text = textarea ? textarea.value.trim() : '';
+
+        if (!text) {
+            setCommentMessage('Write something before posting.', true);
+            if (textarea) textarea.focus();
+            return;
+        }
+
+        if (text.length > COMMENTS_MAX_LENGTH) {
+            setCommentMessage('Keep your comment under ' + COMMENTS_MAX_LENGTH + ' characters.', true);
+            return;
+        }
+
+        if (submit) {
+            submit.disabled = true;
+            submit.textContent = 'Posting...';
+        }
+        setCommentMessage('', false);
+
+        ensureCommentProfile()
+            .then(function () {
+                var identity = getReaderIdentity();
+                return commentsRequest({
+                    action: 'post_comment',
+                    articleId: articleId,
+                    email: identity.email,
+                    body: text,
+                    turnstileToken: commentTurnstileToken
+                });
+            })
+            .then(function () {
+                if (textarea) textarea.value = '';
+                updateCommentCharacterCount();
+                setCommentMessage('Posted. Your thought is officially in the archive.', false);
+                resetCommentTurnstile();
+                return loadComments(articleId, false);
+            })
+            .catch(function (error) {
+                if (error && error.message !== 'Name choice cancelled.') {
+                    setCommentMessage(error.message || 'Your comment could not be posted.', true);
+                }
+            })
+            .finally(function () {
+                if (submit) {
+                    submit.disabled = false;
+                    submit.textContent = 'Post comment';
+                }
+            });
+    }
+
+    function reportComment(articleId, button) {
+        if (button.disabled || button.dataset.reported === 'true') return;
+
+        var identity;
+        try {
+            identity = getReaderIdentity();
+        } catch (error) {
+            setCommentMessage(error.message, true);
+            return;
+        }
+
+        button.disabled = true;
+        commentsRequest({
+            action: 'report_comment',
+            articleId: articleId,
+            commentId: button.dataset.commentId,
+            email: identity.email,
+            reason: 'reader_report'
+        })
+            .then(function () {
+                button.dataset.reported = 'true';
+                button.textContent = 'Reported';
+            })
+            .catch(function (error) {
+                button.disabled = false;
+                setCommentMessage(error.message || 'That report could not be sent.', true);
+            });
+    }
+
+    function commentsRequest(payload) {
+        return fetch(COMMENTS_API, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }).then(readCommentsResponse);
+    }
+
+    function readCommentsResponse(response) {
+        return response.json().catch(function () {
+            return { ok: false, error: 'The comments returned an unreadable response.' };
+        }).then(function (data) {
+            if (!response.ok || !data.ok) {
+                var error = new Error(data.error || 'The comments are taking a tiny break.');
+                error.status = response.status;
+                throw error;
+            }
+            return data;
+        });
+    }
+
+    function updateCommentCharacterCount() {
+        var textarea = document.getElementById('mm-comment-body');
+        var count = document.getElementById('mm-comment-char-count');
+        if (count) count.textContent = textarea ? textarea.value.length : 0;
+    }
+
+    function setCommentMessage(message, isError) {
+        var element = document.getElementById('mm-comment-message');
+        if (!element) return;
+        element.textContent = message || '';
+        element.classList.toggle('error', Boolean(isError));
+        element.classList.toggle('success', Boolean(message && !isError));
+    }
+
+    function formatCommentTime(timestamp) {
+        var value = Number(timestamp);
+        var diffSeconds = Math.max(0, Math.floor((Date.now() - value) / 1000));
+
+        if (diffSeconds < 10) return 'just now';
+        if (diffSeconds < 60) return diffSeconds + 's ago';
+
+        var minutes = Math.floor(diffSeconds / 60);
+        if (minutes < 60) return minutes + 'm ago';
+
+        var hours = Math.floor(minutes / 60);
+        if (hours < 24) return hours + 'h ago';
+
+        var days = Math.floor(hours / 24);
+        if (days < 7) return days + 'd ago';
+
+        return fmtDate(new Date(value).toISOString(), {
+            month: 'short',
+            day: 'numeric',
+            year: new Date(value).getFullYear() === new Date().getFullYear() ? undefined : 'numeric'
+        });
+    }
+
+    function ensureCommentTurnstile() {
+        var container = document.getElementById('mm-comment-turnstile');
+        if (!container || !commentTurnstileSiteKey || commentTurnstileWidgetId !== null) return;
+
+        loadTurnstileScript().then(function () {
+            if (!window.turnstile || !document.getElementById('mm-comment-turnstile')) return;
+            commentTurnstileWidgetId = window.turnstile.render('#mm-comment-turnstile', {
+                sitekey: commentTurnstileSiteKey,
+                theme: 'light',
+                size: 'flexible',
+                appearance: 'interaction-only',
+                callback: function (token) {
+                    commentTurnstileToken = token;
+                },
+                'expired-callback': function () {
+                    commentTurnstileToken = '';
+                },
+                'error-callback': function () {
+                    commentTurnstileToken = '';
+                }
+            });
+        }).catch(function () {
+            setCommentMessage('The quick human check could not load. Please refresh and try again.', true);
+        });
+    }
+
+    function loadTurnstileScript() {
+        if (window.turnstile) return Promise.resolve();
+
+        var existing = document.getElementById('mm-turnstile-script');
+        if (existing) {
+            return new Promise(function (resolve, reject) {
+                existing.addEventListener('load', resolve, { once: true });
+                existing.addEventListener('error', reject, { once: true });
+            });
+        }
+
+        return new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            script.id = 'mm-turnstile-script';
+            script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+            script.async = true;
+            script.defer = true;
+            script.addEventListener('load', resolve, { once: true });
+            script.addEventListener('error', reject, { once: true });
+            document.head.appendChild(script);
+        });
+    }
+
+    function resetCommentTurnstile() {
+        commentTurnstileToken = '';
+        if (commentTurnstileWidgetId !== null &&
+            window.turnstile && typeof window.turnstile.reset === 'function') {
+            try { window.turnstile.reset(commentTurnstileWidgetId); } catch (error) {}
+        }
+    }
+
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        TOPIC RESULTS (shown inside the reader when
        a "More <Franchise>" pill is clicked)
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function openTopicResults(tag) {
         if (!modalBody) return;
+        stopComments();
         var matches = allPosts.filter(function (p) {
             return (p.tags || []).indexOf(tag) !== -1;
         });
@@ -862,11 +1462,11 @@
         });
     }
 
-    /* ──────────────────────────────────────────
+    /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
        BODY PARSER
        Supports: > blockquote, HTML tags passthrough,
        plain paragraphs
-    ────────────────────────────────────────── */
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function buildBodyHtml(raw) {
         if (!raw) return '<p>Content not available.</p>';
 
