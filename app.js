@@ -970,8 +970,19 @@
             email = String(localStorage.getItem('mm_user_email') || '').trim().toLowerCase();
         } catch (error) {}
 
+        if (!email && gatePassed()) {
+            var legacyCommentId =
+                'v1-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 14);
+            try {
+                legacyCommentId =
+                    localStorage.getItem('mm_comment_legacy_id') || legacyCommentId;
+                localStorage.setItem('mm_comment_legacy_id', legacyCommentId);
+            } catch (legacyStorageError) {}
+            email = 'legacy-' + legacyCommentId + '@comments.milkmondays.local';
+        }
+
         if (!email) {
-            throw new Error('Please unlock the article with your email before joining the comments.');
+            throw new Error('Please unlock the article before joining the comments.');
         }
 
         return { gateName: name, email: email };
