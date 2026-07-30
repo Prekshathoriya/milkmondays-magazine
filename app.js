@@ -591,6 +591,12 @@
                     '</svg>' +
                     '<span id="modal-save-label">' + (savedInitial ? 'Saved' : 'Save for later') + '</span>' +
                 '</button>' +
+                '<button class="action-btn" id="mm-comments-toggle" type="button" aria-expanded="false" aria-controls="mm-comments">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+                        '<path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>' +
+                    '</svg>' +
+                    '<span>Comments <span id="mm-comments-count">0</span></span>' +
+                '</button>' +
             '</div>' +
             buildCommentsShellHtml(post) +
             buildRecircHtml(post);
@@ -839,18 +845,14 @@
        one-time public display-name choice.
     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function buildCommentsShellHtml(post) {
-        return '<section class="mm-comments" id="mm-comments" data-article-id="' + esc(post.id) + '">' +
-            '<div class="mm-comments-heading-row">' +
-                '<div>' +
-                    '<span class="mm-comments-kicker">milk mondays, after hours</span>' +
-                    '<h2 class="mm-comments-title">The comment section</h2>' +
-                    '<p class="mm-comments-intro">The article ends here. The opinions do not.</p>' +
-                '</div>' +
-                '<span class="mm-comments-count" id="mm-comments-count">0 comments</span>' +
+        return '<section class="mm-comments" id="mm-comments" data-article-id="' + esc(post.id) + '" hidden>' +
+            '<div class="mm-comments-panel-heading">' +
+                '<h2 class="mm-comments-title">Comments</h2>' +
+                '<button class="mm-comments-panel-close" id="mm-comments-panel-close" type="button">Close</button>' +
             '</div>' +
             '<form class="mm-comment-form" id="mm-comment-form" novalidate>' +
-                '<label class="mm-comment-label" for="mm-comment-body">Leave a thought</label>' +
-                '<textarea class="mm-comment-textarea" id="mm-comment-body" maxlength="' + COMMENTS_MAX_LENGTH + '" rows="4" placeholder="Add to the conversation..." aria-describedby="mm-comment-help"></textarea>' +
+                '<label class="mm-comment-label" for="mm-comment-body">Add a comment</label>' +
+                '<textarea class="mm-comment-textarea" id="mm-comment-body" maxlength="' + COMMENTS_MAX_LENGTH + '" rows="3" placeholder="Write your comment..." aria-describedby="mm-comment-help"></textarea>' +
                 '<div class="mm-comment-form-bottom">' +
                     '<span class="mm-comment-help" id="mm-comment-help"><span id="mm-comment-char-count">0</span>/' + COMMENTS_MAX_LENGTH + '</span>' +
                     '<button class="mm-comment-submit" id="mm-comment-submit" type="submit">Post comment</button>' +
@@ -858,23 +860,16 @@
                 '<div class="mm-comment-turnstile" id="mm-comment-turnstile"></div>' +
                 '<p class="mm-comment-message" id="mm-comment-message" role="status" aria-live="polite"></p>' +
             '</form>' +
-            '<div class="mm-comments-toolbar">' +
-                '<span class="mm-comments-conversation">The conversation</span>' +
-                '<label class="mm-comments-sort-label" for="mm-comments-sort">Sort' +
-                    '<select class="mm-comments-sort" id="mm-comments-sort">' +
-                        '<option value="newest">Newest</option>' +
-                        '<option value="oldest">Oldest</option>' +
-                    '</select>' +
-                '</label>' +
-            '</div>' +
             '<div class="mm-comments-list" id="mm-comments-list" aria-live="polite">' +
-                '<p class="mm-comments-loading">Opening the conversation...</p>' +
+                '<p class="mm-comments-loading">Loading comments...</p>' +
             '</div>' +
         '</section>';
     }
 
     function initComments(post) {
         var section = document.getElementById('mm-comments');
+        var toggle = document.getElementById('mm-comments-toggle');
+        var panelClose = document.getElementById('mm-comments-panel-close');
         var form = document.getElementById('mm-comment-form');
         var textarea = document.getElementById('mm-comment-body');
         var sort = document.getElementById('mm-comments-sort');
@@ -884,6 +879,30 @@
         activeCommentsArticleId = post.id;
         commentProfile = null;
         commentTurnstileToken = '';
+
+        function setCommentsPanelOpen(shouldOpen) {
+            section.hidden = !shouldOpen;
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+                toggle.classList.toggle('active', shouldOpen);
+            }
+            if (shouldOpen && commentTurnstileSiteKey) {
+                ensureCommentTurnstile();
+            }
+        }
+
+        if (toggle) {
+            toggle.addEventListener('click', function () {
+                setCommentsPanelOpen(section.hidden);
+            });
+        }
+
+        if (panelClose) {
+            panelClose.addEventListener('click', function () {
+                setCommentsPanelOpen(false);
+                if (toggle) toggle.focus();
+            });
+        }
 
         textarea.addEventListener('input', updateCommentCharacterCount);
         textarea.addEventListener('focus', function () {
@@ -1015,28 +1034,26 @@
 
             overlay.innerHTML =
                 '<div class="mm-comment-name-card">' +
-                    '<button class="mm-comment-name-close" type="button" aria-label="Close">Ã—</button>' +
-                    '<span class="mm-comment-name-kicker">a tiny but permanent decision</span>' +
-                    '<h2 class="mm-comment-name-title" id="mm-comment-name-title">Choose your little byline</h2>' +
-                    '<p class="mm-comment-name-copy">Every archive needs a signature. Pick the name that will sit beside all your Milk Mondays thoughts. Choose carefully. Once it is tucked into the archive, it stays.</p>' +
+                    '<button class="mm-comment-name-close" type="button" aria-label="Close">&times;</button>' +
+                    '<h2 class="mm-comment-name-title" id="mm-comment-name-title">Choose your comment name</h2>' +
+                    '<p class="mm-comment-name-copy">This name will appear with every comment you post. Choose carefully because it cannot be changed later.</p>' +
                     '<form class="mm-comment-name-form" id="mm-comment-name-form">' +
                         '<label class="mm-comment-name-option' + (hasGateName ? ' selected' : ' disabled') + '">' +
                             '<input type="radio" name="comment-display-name" value="gate"' + (hasGateName ? ' checked' : ' disabled') + '>' +
                             '<span class="mm-comment-option-copy">' +
-                                '<span class="mm-comment-option-label">Keep the name you came in with</span>' +
+                                '<span class="mm-comment-option-label">Use my name</span>' +
                                 '<span class="mm-comment-option-value">' + (hasGateName ? esc(identity.gateName) : 'No saved gate name found') + '</span>' +
                             '</span>' +
                         '</label>' +
                         '<label class="mm-comment-name-option' + (hasGateName ? '' : ' selected') + '">' +
                             '<input type="radio" name="comment-display-name" value="custom"' + (hasGateName ? '' : ' checked') + '>' +
                             '<span class="mm-comment-option-copy">' +
-                                '<span class="mm-comment-option-label">Leave a different signature</span>' +
-                                '<input class="mm-comment-custom-name" id="mm-comment-custom-name" type="text" minlength="2" maxlength="30" autocomplete="nickname" placeholder="Type your forever comment name">' +
+                                '<span class="mm-comment-option-label">Choose a different name</span>' +
+                                '<input class="mm-comment-custom-name" id="mm-comment-custom-name" type="text" minlength="2" maxlength="30" autocomplete="nickname" placeholder="Enter a comment name">' +
                             '</span>' +
                         '</label>' +
-                        '<p class="mm-comment-name-note">One name, every article, no little rebrands later.</p>' +
                         '<p class="mm-comment-name-error" id="mm-comment-name-error" role="alert"></p>' +
-                        '<button class="mm-comment-name-confirm" type="submit">Make it mine</button>' +
+                        '<button class="mm-comment-name-confirm" type="submit">Save name</button>' +
                     '</form>' +
                 '</div>';
 
@@ -1131,7 +1148,10 @@
                 if (activeCommentsArticleId !== articleId) return;
                 commentTurnstileSiteKey = data.turnstileSiteKey || '';
                 renderComments(data.comments || []);
-                if (commentTurnstileSiteKey) ensureCommentTurnstile();
+                var commentsPanel = document.getElementById('mm-comments');
+                if (commentTurnstileSiteKey && commentsPanel && !commentsPanel.hidden) {
+                    ensureCommentTurnstile();
+                }
             })
             .catch(function (error) {
                 if (!showLoading || !list || activeCommentsArticleId !== articleId) return;
@@ -1149,22 +1169,14 @@
         if (!list) return;
 
         if (count) {
-            count.textContent = comments.length + (comments.length === 1 ? ' comment' : ' comments');
+            count.textContent = comments.length;
         }
 
         list.innerHTML = '';
         if (!comments.length) {
-            var empty = document.createElement('div');
-            empty.className = 'mm-comments-empty';
-
-            var title = document.createElement('strong');
-            title.textContent = 'A suspiciously quiet comment section.';
-
-            var copy = document.createElement('span');
-            copy.textContent = 'Be the first person to leave a thought in the archive.';
-
-            empty.appendChild(title);
-            empty.appendChild(copy);
+            var empty = document.createElement('p');
+            empty.className = 'mm-comments-empty-line';
+            empty.textContent = 'No comments yet.';
             list.appendChild(empty);
             return;
         }

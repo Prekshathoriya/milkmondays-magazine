@@ -2905,3 +2905,365 @@ body::before {
         animation: none;
     }
 }
+
+
+/* ============================================================================
+   31. LIVE COMMENTS â€” QUIET READER INTEGRATION
+   These final overrides keep comments visually secondary to the article and
+   match the existing Like, Share and Save controls.
+============================================================================ */
+#mm-comments-toggle {
+    font-family: var(--sans);
+}
+
+#mm-comments-toggle.active {
+    border-color: var(--pink-deep);
+    background: rgba(243, 193, 198, 0.22);
+}
+
+.mm-comments[hidden] {
+    display: none !important;
+}
+
+.mm-comments {
+    margin: 16px 0 0;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--black);
+    overflow: visible;
+}
+
+.mm-comments::before {
+    display: none;
+}
+
+.mm-comments-panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 14px;
+    padding: 0 0 11px;
+    border-bottom: 1px solid var(--border);
+}
+
+.mm-comments-title {
+    margin: 0;
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: var(--fs-sm);
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0;
+}
+
+.mm-comments-panel-close {
+    padding: 6px 11px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: var(--fs-xxs);
+    line-height: 1;
+    transition:
+        border-color var(--dur-fast) var(--ease),
+        background var(--dur-fast) var(--ease);
+}
+
+.mm-comments-panel-close:hover {
+    border-color: var(--black);
+    background: var(--white);
+}
+
+.mm-comments-heading-row,
+.mm-comments-kicker,
+.mm-comments-intro,
+.mm-comments-toolbar,
+.mm-comments-conversation,
+.mm-comments-sort-label,
+.mm-comments-sort {
+    display: none;
+}
+
+.mm-comment-form {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.mm-comment-label {
+    margin: 0 0 7px;
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: var(--fs-xs);
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.mm-comment-textarea {
+    min-height: 82px;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+}
+
+.mm-comment-textarea:focus {
+    border-color: var(--black);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(243, 193, 198, 0.28);
+}
+
+.mm-comment-form-bottom {
+    margin-top: 9px;
+}
+
+.mm-comment-help {
+    font-family: var(--sans);
+    font-size: var(--fs-xxs);
+}
+
+.mm-comment-submit,
+.mm-comment-name-confirm {
+    min-height: auto;
+    padding: 9px 15px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+.mm-comment-submit:hover,
+.mm-comment-name-confirm:hover {
+    border-color: var(--black);
+    background: var(--white);
+    color: var(--black);
+    transform: none;
+}
+
+.mm-comment-message {
+    margin-top: 7px;
+    font-family: var(--sans);
+    font-size: var(--fs-xxs);
+}
+
+.mm-comments-list {
+    min-height: 0;
+    margin-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.mm-comments-loading,
+.mm-comments-error,
+.mm-comments-empty-line {
+    margin: 0;
+    padding: 13px 0 0;
+    color: var(--grey);
+    font-family: var(--sans);
+    font-size: var(--fs-xs);
+    font-style: normal;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.mm-comments-error {
+    color: var(--red);
+}
+
+.mm-comments-empty {
+    display: none;
+}
+
+.mm-comment {
+    padding: 15px 0;
+}
+
+.mm-comment-header {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    gap: 9px;
+}
+
+.mm-comment-avatar {
+    width: 32px;
+    height: 32px;
+    font-family: var(--sans);
+    font-size: var(--fs-xs);
+    font-style: normal;
+    font-weight: 600;
+}
+
+.mm-comment-author,
+.mm-comment-time,
+.mm-comment-report,
+.mm-comment-body {
+    font-family: var(--sans);
+}
+
+.mm-comment-body {
+    margin: 8px 0 0 41px;
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+}
+
+
+/* The one-time name choice follows the existing modal and button language. */
+.mm-comment-name-overlay {
+    padding: 18px;
+    background: rgba(18, 18, 18, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.mm-comment-name-card {
+    width: min(100%, 460px);
+    padding: 28px;
+    border: 1px solid var(--black);
+    border-radius: var(--radius-lg);
+    background: var(--cream);
+    box-shadow: var(--shadow-lift);
+}
+
+.mm-comment-name-card::after,
+.mm-comment-name-kicker,
+.mm-comment-name-note {
+    display: none;
+}
+
+.mm-comment-name-close {
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: 21px;
+    font-weight: 400;
+}
+
+.mm-comment-name-close:hover {
+    border-color: var(--black);
+    background: var(--white);
+}
+
+.mm-comment-name-title {
+    max-width: none;
+    margin: 0;
+    padding-right: 36px;
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: var(--fs-md);
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0;
+}
+
+.mm-comment-name-copy {
+    max-width: none;
+    margin: 9px 0 18px;
+    color: var(--grey);
+    font-family: var(--sans);
+    font-size: var(--fs-xs);
+    line-height: 1.55;
+}
+
+.mm-comment-name-form {
+    gap: 9px;
+}
+
+.mm-comment-name-option {
+    grid-template-columns: 17px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: var(--white);
+}
+
+.mm-comment-name-option:hover {
+    border-color: var(--black);
+    transform: none;
+}
+
+.mm-comment-name-option.selected {
+    border-color: var(--black);
+    box-shadow: 0 0 0 3px rgba(243, 193, 198, 0.32);
+}
+
+.mm-comment-option-label,
+.mm-comment-option-value,
+.mm-comment-custom-name,
+.mm-comment-name-error {
+    font-family: var(--sans);
+}
+
+.mm-comment-option-label {
+    font-size: var(--fs-xs);
+    font-weight: 500;
+}
+
+.mm-comment-option-value {
+    color: var(--grey);
+    font-size: var(--fs-xs);
+    font-style: normal;
+}
+
+.mm-comment-custom-name {
+    margin-top: 1px;
+    padding: 7px 0;
+    font-size: var(--fs-xs);
+    font-style: normal;
+}
+
+.mm-comment-name-error {
+    min-height: 15px;
+    font-size: var(--fs-xxs);
+}
+
+.mm-comment-name-confirm {
+    align-self: flex-start;
+    min-width: 0;
+}
+
+@media (max-width: 640px) {
+    .mm-comments {
+        margin-top: 12px;
+        padding: 14px;
+        border-radius: var(--radius-md);
+    }
+
+    .mm-comment-textarea {
+        min-height: 76px;
+    }
+
+    .mm-comment-body {
+        margin-left: 0;
+        padding-left: 41px;
+    }
+
+    .mm-comment-name-overlay {
+        align-items: center;
+        padding: 12px;
+    }
+
+    .mm-comment-name-card {
+        max-height: 90vh;
+        padding: 24px 18px 20px;
+        border-radius: var(--radius-lg);
+    }
+}
