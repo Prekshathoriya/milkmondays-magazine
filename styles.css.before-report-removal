@@ -3267,11 +3267,3 @@ body::before {
         border-radius: var(--radius-lg);
     }
 }
-/* MILK MONDAYS: COMMENT REPORT REMOVED */
-.mm-comment-header {
-    grid-template-columns: 32px minmax(0, 1fr);
-}
-
-.mm-comment-report {
-    display: none !important;
-}
