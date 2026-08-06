@@ -1335,6 +1335,69 @@ svg { display: block; }
 
 
 /* ============================================================================
+   20b. INLINE BODY IMAGES — magazine float layout (image2 / image3)
+   ----------------------------------------------------------------------------
+   Optional: only rendered when a post supplies image2 / image3 fields.
+   Older articles that have neither field are completely unaffected.
+============================================================================ */
+.body-float-img {
+    display: block;
+    margin: 8px 0 24px;
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    line-height: 0;
+}
+.body-float-img img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 0;
+    margin: 0;
+}
+
+/* Float right / left on wider screens */
+@media (min-width: 600px) {
+    .body-float-right {
+        float: right;
+        margin: 4px 0 20px 28px;
+    }
+    .body-float-left {
+        float: left;
+        margin: 4px 28px 20px 0;
+    }
+
+    /* Size variants — AI picks one per image */
+    .body-float-small  { width: 28%; }
+    .body-float-medium { width: 42%; }
+    .body-float-large  { width: 56%; }
+
+    .body-float-img img {
+        aspect-ratio: 4/5;
+    }
+}
+
+/* On mobile all floats collapse to full-width block */
+@media (max-width: 599px) {
+    .body-float-right,
+    .body-float-left {
+        float: none;
+        width: 100%;
+        margin: 8px 0 20px;
+    }
+}
+
+/* Clearfix — prevents container collapse after floated images */
+.body-float-clear {
+    clear: both;
+    display: table;
+    width: 100%;
+}
+
+
+/* ============================================================================
    21. ACTIONS BAR (like / share / save)
 ============================================================================ */
 .actions-bar {

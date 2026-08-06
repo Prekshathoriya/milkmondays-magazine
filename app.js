@@ -556,7 +556,7 @@
 
         var fullDate = fmtDate(post.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         var img      = post.coverImage || '';
-        var bodyHtml = buildBodyHtml(post.body || '');
+        var bodyHtml = buildBodyHtml(post.body || '', { image2: post.image2, image3: post.image3 });
         var liked    = isLiked(post.id);
         var base     = baselineLikes(post.id);
         var heartFill   = liked ? '#F3C1C6' : 'none';
@@ -1490,17 +1490,41 @@
        Supports: > blockquote, HTML tags passthrough,
        plain paragraphs
     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    function buildBodyHtml(raw) {
+    function buildBodyHtml(raw, images) {
         if (!raw) return '<p>Content not available.</p>';
 
-        return raw.split('\n').map(function (line) {
+        /* images = { image2: 'url', image3: 'url' } — both optional.
+           Old posts with no markers in their body are completely unaffected:
+           the marker regex never matches, hasFloat stays false, output is identical. */
+        var hasFloat = false;
+
+        var parts = raw.split('\n').map(function (line) {
             line = line.trim();
             if (!line) return '';
+
+            /* AI-placed marker: [IMAGE2:right:medium] or [IMAGE3:left:small] etc.
+               Side : left | right
+               Size : small (28%) | medium (42%) | large (56%) */
+            var m = line.match(/^\[IMAGE([23]):(left|right):(small|medium|large)\]$/i);
+            if (m) {
+                var src = images && images['image' + m[1]];
+                if (!src) return '';
+                hasFloat = true;
+                return '<figure class="body-float-img body-float-' + m[2].toLowerCase() +
+                       ' body-float-' + m[3].toLowerCase() + '">' +
+                           '<img src="' + esc(src) + '" alt="" loading="lazy"' +
+                           ' onerror="this.parentNode.style.display=\'none\'">' +
+                       '<\/figure>';
+            }
+
             if (line.charAt(0) === '>') {
                 return '<blockquote>' + sanitiseInline(line.slice(1).trim()) + '</blockquote>';
             }
             return '<p>' + sanitiseInline(line) + '</p>';
-        }).join('');
+        });
+
+        var html = parts.join('');
+        return hasFloat ? html + '<div class="body-float-clear"><\/div>' : html;
     }
 
     function sanitiseInline(s) {
