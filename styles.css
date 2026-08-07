@@ -1379,13 +1379,16 @@ svg { display: block; }
     }
 }
 
-/* On mobile all floats collapse to full-width block */
+/* On mobile: floats collapse to full-width blocks with landscape crop */
 @media (max-width: 599px) {
     .body-float-right,
     .body-float-left {
         float: none;
         width: 100%;
-        margin: 8px 0 20px;
+        margin: 16px 0 24px;
+    }
+    .body-float-img img {
+        aspect-ratio: 3/2;   /* landscape on mobile — much less tall than 4/5 portrait */
     }
 }
 
@@ -1814,6 +1817,13 @@ input:focus-visible {
 .reader-body img {
     border-radius: var(--radius-sm);
     margin: 20px 0;
+}
+/* Override: float figures manage their own img sizing — don't let the
+   generic .reader-body img rule add margin/radius inside the figure */
+.reader-body .body-float-img img {
+    border-radius: 0;
+    margin: 0;
+    aspect-ratio: inherit;  /* each breakpoint sets its own ratio */
 }
 
 /* ============================================================================
