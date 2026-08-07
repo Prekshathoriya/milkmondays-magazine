@@ -556,7 +556,37 @@
 
         var fullDate = fmtDate(post.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         var img      = post.coverImage || '';
-        var bodyHtml = buildBodyHtml(post.body || '');
+        /* ── BACKWARD COMPAT: image2 / image3 fields → inline markers ──
+           Articles published before the marker format store extra images as
+           separate JSON fields. If the body has no [IMG| markers yet, convert
+           those fields into markers so they render through the same path. */
+        var rawBody = post.body || '';
+        if ((post.image2 || post.image3) && rawBody.indexOf('[IMG|') === -1) {
+            var _imgs  = [post.image2, post.image3].filter(Boolean);
+            var _sides = ['right', 'left'];
+            var _after = [2, 5];
+            var _lines = rawBody.split('\n');
+            var _pCnt  = 0;
+            var _iIdx  = 0;
+            var _out   = [];
+            for (var _i = 0; _i < _lines.length; _i++) {
+                _out.push(_lines[_i]);
+                var _t = _lines[_i].trim();
+                if (_t && _t.charAt(0) !== '>') {
+                    _pCnt++;
+                    if (_iIdx < _imgs.length && _pCnt === _after[_iIdx]) {
+                        _out.push('[IMG|' + _imgs[_iIdx] + '|' + _sides[_iIdx] + '|medium]');
+                        _iIdx++;
+                    }
+                }
+            }
+            while (_iIdx < _imgs.length) {
+                _out.push('[IMG|' + _imgs[_iIdx] + '|' + _sides[_iIdx] + '|medium]');
+                _iIdx++;
+            }
+            rawBody = _out.join('\n');
+        }
+        var bodyHtml = buildBodyHtml(rawBody);
         var liked    = isLiked(post.id);
         var base     = baselineLikes(post.id);
         var heartFill   = liked ? '#F3C1C6' : 'none';
