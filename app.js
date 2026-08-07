@@ -556,7 +556,7 @@
 
         var fullDate = fmtDate(post.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         var img      = post.coverImage || '';
-        var bodyHtml = buildBodyHtml(post.body || '', { image2: post.image2, image3: post.image3 });
+        var bodyHtml = buildBodyHtml(post.body || '');
         var liked    = isLiked(post.id);
         var base     = baselineLikes(post.id);
         var heartFill   = liked ? '#F3C1C6' : 'none';
@@ -1490,24 +1490,25 @@
        Supports: > blockquote, HTML tags passthrough,
        plain paragraphs
     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    function buildBodyHtml(raw, images) {
+    function buildBodyHtml(raw) {
         if (!raw) return '<p>Content not available.</p>';
 
-        /* images = { image2: 'url', image3: 'url' } — both optional.
-           Old posts with no markers in their body are completely unaffected:
-           the marker regex never matches, hasFloat stays false, output is identical. */
+        /* Inline image marker format (unlimited, AI-placed):
+             [IMG|https://image-url.jpg|left|medium]
+           Pipe-delimited to avoid clashing with colon in https://.
+           Side : left | right   (AI decides per image)
+           Size : small (28%) | medium (42%) | large (56%)  (AI decides per image)
+           Old posts with none of these markers are completely unaffected. */
         var hasFloat = false;
+        var IMG_RE = /^\[IMG\|([^|\[\]]+)\|(left|right)\|(small|medium|large)\]$/i;
 
         var parts = raw.split('\n').map(function (line) {
             line = line.trim();
             if (!line) return '';
 
-            /* AI-placed marker: [IMAGE2:right:medium] or [IMAGE3:left:small] etc.
-               Side : left | right
-               Size : small (28%) | medium (42%) | large (56%) */
-            var m = line.match(/^\[IMAGE([23]):(left|right):(small|medium|large)\]$/i);
+            var m = line.match(IMG_RE);
             if (m) {
-                var src = images && images['image' + m[1]];
+                var src = m[1].trim();
                 if (!src) return '';
                 hasFloat = true;
                 return '<figure class="body-float-img body-float-' + m[2].toLowerCase() +
