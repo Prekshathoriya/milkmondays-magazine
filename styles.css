@@ -76,10 +76,11 @@
     --cat-saved:        var(--grey);
     --cat-all:          var(--black);
 
-    /* ---- Typography (unchanged families) ---- */
-    --serif: 'Playfair Display', Georgia, serif;
-    --sans:  'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    --logo:  'Playball', cursive;
+/* ---- Typography ---- */
+--serif: 'Playfair Display', Georgia, serif;
+--sans:  'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+--logo:  'Playball', cursive;
+--article-title: 'Bodoni Moda', Didot, 'Times New Roman', serif;
 
     /* ---- Type scale (fluid, clamps between mobile & desktop) ---- */
     --fs-xxs:  10px;
@@ -1108,8 +1109,10 @@ svg { display: block; }
 }
 
 .hero-headline {
+    font-family: var(--article-title);
     font-size: var(--fs-2xl);
-    font-style: italic;
+    font-style: normal;
+    font-weight: 500;
     line-height: 1.12;
 }
 
@@ -1191,11 +1194,12 @@ svg { display: block; }
 }
 
 .card-h {
+    font-family: var(--article-title);
     font-size: var(--fs-lg);
-    font-style: italic;
+    font-style: normal;
+    font-weight: 500;
     line-height: 1.25;
 }
-
 .card-sub {
     color: var(--grey);
     font-size: var(--fs-sm);
@@ -1304,7 +1308,13 @@ svg { display: block; }
    20. READER BODY TYPOGRAPHY
 ============================================================================ */
 .reader-header { margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px; }
-.reader-title { font-size: var(--fs-2xl); font-style: italic; line-height: 1.14; }
+.reader-title {
+    font-family: var(--article-title);
+    font-size: var(--fs-2xl);
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.14;
+}
 .reader-date { font-size: var(--fs-xs); color: var(--grey); }
 
 .reader-hero {
@@ -2133,8 +2143,10 @@ body::before {
     color: var(--pink-deep);
 }
 .site-search-result-title {
-    font-family: var(--serif);
+    font-family: var(--article-title);
     font-size: var(--fs-sm);
+    font-style: normal;
+    font-weight: 500;
     color: var(--black);
     line-height: 1.35;
 }
@@ -2223,8 +2235,9 @@ body::before {
     color: var(--pink);
 }
 .recirc-next-btn-title {
-    font-family: var(--serif);
-    font-style: italic;
+    font-family: var(--article-title);
+    font-style: normal;
+    font-weight: 500;
     font-size: var(--fs-md);
     line-height: 1.3;
 }
@@ -2291,8 +2304,10 @@ body::before {
     padding: 0 12px;
 }
 .recirc-related-title {
-    font-family: var(--serif);
+    font-family: var(--article-title);
     font-size: var(--fs-xs);
+    font-style: normal;
+    font-weight: 500;
     line-height: 1.35;
     color: var(--black);
     padding: 0 12px 12px;
