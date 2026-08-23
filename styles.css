@@ -3363,3 +3363,751 @@ body::before {
 .mm-comment-report {
     display: none !important;
 }
+
+/* ============================================================================
+   36. MEMBERS' CORNER — members-corner.html
+   ----------------------------------------------------------------------------
+   Purely additive. Uses only existing CSS custom properties from section 01.
+   Nothing above this line is touched.
+   All selectors are prefixed with .mc- to guarantee zero collision.
+
+   TABLE (this section only):
+   36a. Members' Corner hero
+   36b. Coming-soon card + notify form
+   36c. Editions grid + edition cards
+   36d. Page-flip reader overlay
+   36e. Value strip (what's inside)
+   36f. Nav active state for Members' Corner link
+   36g. Responsive overrides
+============================================================================ */
+
+
+/* ── 36a. HERO ─────────────────────────────────────────────────────────── */
+.mc-hero {
+    max-width: 1240px;
+    margin: 56px auto 0;
+    padding: 0 32px;
+}
+
+.mc-hero-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 72px 72px 72px 80px;
+    background: var(--knit);
+    border: 1px solid var(--black);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lift);
+}
+
+/* Subtle dots.jpg texture layer — same as the cover hero */
+.mc-hero-inner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('dots.jpg');
+    background-size: cover;
+    background-position: left center;
+    opacity: 0.18;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+}
+
+/* Gingham layer — same as the cover hero ::after */
+.mc-hero-inner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('Cute.jpg');
+    background-size: cover;
+    background-position: right center;
+    opacity: 0.30;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.mc-hero-copy {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 560px;
+}
+
+.mc-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--black);
+}
+
+.mc-hero-eyebrow-line {
+    display: inline-block;
+    width: 28px;
+    height: 1px;
+    background: var(--black);
+    flex-shrink: 0;
+}
+
+.mc-hero-title {
+    font-family: var(--serif);
+    font-size: var(--fs-4xl);
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.04;
+    color: var(--black);
+}
+
+.mc-hero-title em {
+    font-style: normal;
+    color: var(--ribbon-deep);
+}
+
+.mc-hero-sub {
+    font-size: var(--fs-md);
+    color: var(--black);
+    opacity: 0.72;
+    line-height: 1.72;
+    max-width: 44ch;
+}
+
+/* Decorative badge — top-right corner of the hero */
+.mc-hero-badge {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 5px solid var(--white);
+    box-shadow: 0 14px 34px -10px rgba(18,18,18,0.45);
+    animation: gentleFloat 5s ease-in-out infinite;
+}
+
+.mc-hero-badge-inner {
+    font-family: var(--logo);
+    font-size: 34px;
+    color: var(--pink);
+    line-height: 1;
+}
+
+/* Ribbon bookmark — top-left edge of the hero, reuses site motif */
+.mc-hero-ribbon {
+    position: absolute;
+    top: -6px;
+    left: 44px;
+    width: 16px;
+    height: 52px;
+    background: linear-gradient(180deg, var(--ribbon) 0%, var(--ribbon-deep) 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 82%, 50% 100%, 0 82%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22);
+    z-index: 3;
+}
+
+
+/* ── 36b. COMING-SOON CARD + NOTIFY FORM ──────────────────────────────── */
+.mc-wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 32px 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.mc-coming-soon {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.mc-cs-card {
+    position: relative;
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 56px 56px 48px;
+    background: var(--white);
+    border: 1px solid var(--black);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lift);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    overflow: hidden;
+}
+
+/* Dot texture corner — same as category tiles */
+.mc-cs-card::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    bottom: -40px;
+    width: 200px;
+    height: 200px;
+    background-image: radial-gradient(var(--black) 1.4px, transparent 1.8px);
+    background-size: 14px 14px;
+    opacity: 0.06;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.mc-cs-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--black);
+    margin-bottom: 6px;
+}
+
+.mc-cs-eyebrow {
+    color: var(--ribbon-deep);
+}
+
+.mc-cs-title {
+    font-family: var(--serif);
+    font-size: var(--fs-2xl);
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.14;
+    color: var(--black);
+}
+
+.mc-cs-sub {
+    font-size: var(--fs-md);
+    color: var(--grey);
+    line-height: 1.74;
+    max-width: 46ch;
+}
+
+/* Notify form */
+.mc-notify-form {
+    width: 100%;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mc-notify-fields {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mc-notify-input {
+    flex: 1 1 160px;
+    font-family: var(--sans);
+    font-size: var(--fs-sm);
+    padding: 13px 18px;
+    border: 1px solid var(--black);
+    border-radius: var(--radius-full);
+    background: var(--cream);
+    color: var(--black);
+    outline: none;
+    transition: border-color var(--dur-fast) var(--ease),
+                box-shadow var(--dur-fast) var(--ease);
+}
+.mc-notify-input::placeholder { color: var(--grey); }
+.mc-notify-input:focus {
+    border-color: var(--ribbon-deep);
+    box-shadow: 0 0 0 3px rgba(243,193,198,0.3);
+}
+
+.mc-notify-btn {
+    flex: 0 0 auto;
+    gap: 8px;
+}
+
+.mc-notify-msg {
+    font-size: var(--fs-xs);
+    color: var(--grey);
+    min-height: 18px;
+    line-height: 1.5;
+}
+.mc-notify-msg.success { color: #47714D; }
+.mc-notify-msg.error   { color: var(--red); }
+
+.mc-notify-note {
+    font-size: var(--fs-xxs);
+    color: var(--grey);
+    letter-spacing: 0.04em;
+}
+
+/* Decorative polka-dot strip below the card */
+.mc-cs-dots {
+    width: 100%;
+    max-width: 680px;
+    height: 48px;
+    margin: -4px auto 0;
+    background-image: radial-gradient(var(--ink) 1.2px, transparent 1.6px);
+    background-size: 18px 18px;
+    opacity: 0.06;
+    pointer-events: none;
+}
+
+
+/* ── 36c. EDITIONS GRID + EDITION CARDS ───────────────────────────────── */
+.mc-editions-header {
+    margin-bottom: 8px;
+}
+
+.mc-editions-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+.mc-edition-card {
+    position: relative;
+    background: var(--white);
+    border: 1px solid var(--black);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--dur-med) var(--ease),
+                box-shadow var(--dur-med) var(--ease);
+}
+.mc-edition-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-card-hover);
+}
+.mc-edition-card:hover .ribbon-tab { transform: translateY(4px) rotate(-4deg); }
+
+/* Pink accent bar at top (same as category tiles) */
+.mc-edition-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--ribbon) 0%, var(--lily) 100%);
+}
+
+.mc-edition-cover-wrap {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--knit);
+    border-bottom: 1px solid var(--border);
+}
+
+.mc-edition-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease);
+    display: block;
+}
+.mc-edition-card:hover .mc-edition-cover { transform: scale(1.04); }
+
+/* Lock badge overlaid on locked editions */
+.mc-edition-lock {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 32px;
+    height: 32px;
+    background: var(--black);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    z-index: 2;
+}
+
+.mc-edition-body {
+    padding: 24px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.mc-edition-issue {
+    font-size: var(--fs-xxs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--grey);
+}
+
+.mc-edition-title {
+    font-family: var(--article-title);
+    font-size: var(--fs-lg);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--black);
+}
+
+.mc-edition-desc {
+    font-size: var(--fs-sm);
+    color: var(--grey);
+    line-height: 1.65;
+}
+
+.mc-edition-preview-note {
+    font-size: var(--fs-xxs);
+    letter-spacing: 0.04em;
+    color: var(--ribbon-deep);
+}
+
+.mc-edition-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    align-items: center;
+}
+
+/* Placeholder message shown by mc-app.js before payment is live */
+.mc-edition-payment-placeholder {
+    width: 100%;
+    font-size: var(--fs-xs);
+    color: var(--grey);
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+
+/* ── 36d. PAGE-FLIP READER OVERLAY ────────────────────────────────────── */
+.mc-reader-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(18,18,18,0.82);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    z-index: 1100;
+    padding: 0;
+}
+.mc-reader-overlay.hidden {
+    display: none;
+}
+
+.mc-reader-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1100px;
+    margin: 32px auto;
+    background: var(--black);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lift);
+}
+
+.mc-reader-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--black);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+
+.mc-reader-title-label {
+    font-size: var(--fs-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+}
+
+.mc-reader-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    transition: background var(--dur-fast) var(--ease),
+                transform var(--dur-fast) var(--ease);
+}
+.mc-reader-close:hover {
+    background: rgba(255,255,255,0.12);
+    transform: rotate(90deg);
+}
+
+.mc-reader-iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: var(--black);
+    min-height: 0;
+}
+
+.mc-reader-loading {
+    position: absolute;
+    inset: 48px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: rgba(255,255,255,0.5);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.06em;
+    pointer-events: none;
+}
+/* Reuses the existing .load-dots keyframe from section 25 */
+.mc-reader-loading .load-dots span { background: var(--pink); opacity: 0.7; }
+
+
+/* ── 36e. VALUE STRIP ──────────────────────────────────────────────────── */
+.mc-value-strip {
+    background: var(--white);
+    border-top: 1px solid var(--black);
+    margin-top: 80px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Polka-dot texture — same opacity as site footer */
+.mc-value-strip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('polka_dot.jpg');
+    background-size: 280px 280px;
+    background-repeat: repeat;
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.mc-value-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 80px 32px 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 48px;
+}
+
+.mc-value-eyebrow {
+    color: var(--ribbon-deep);
+}
+
+.mc-value-heading {
+    font-family: var(--serif);
+    font-size: var(--fs-2xl);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--black);
+    max-width: 24ch;
+}
+
+.mc-value-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px 48px;
+    width: 100%;
+    max-width: 860px;
+}
+
+.mc-value-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.mc-value-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--black);
+    flex-shrink: 0;
+}
+
+.mc-value-item-title {
+    font-family: var(--serif);
+    font-size: var(--fs-md);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--black);
+}
+
+.mc-value-item-desc {
+    font-size: var(--fs-sm);
+    color: var(--grey);
+    line-height: 1.7;
+    max-width: 28ch;
+}
+
+
+/* ── 36f. NAV ACTIVE STATE FOR MEMBERS' CORNER LINK ──────────────────── */
+/* The Members' Corner nav link is an <a> not a <button>,
+   but it shares the same .nav-btn class so existing hover/active
+   styles apply automatically. This block only adds the section-
+   specific accent dot (same pattern as category nav dots). */
+.mc-nav-btn::after {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: middle;
+    background: var(--ribbon-deep);
+    opacity: 0.85;
+}
+
+
+/* ── 36g. RESPONSIVE OVERRIDES ────────────────────────────────────────── */
+@media (max-width: 1200px) {
+    .mc-hero { padding-left: 24px; padding-right: 24px; }
+    .mc-wrap  { padding-left: 24px; padding-right: 24px; }
+    .mc-value-inner { padding-left: 24px; padding-right: 24px; }
+}
+
+@media (max-width: 1024px) {
+    .mc-editions-list { grid-template-columns: repeat(2, 1fr); }
+    .mc-value-grid    { grid-template-columns: repeat(3, 1fr); gap: 32px 36px; }
+}
+
+@media (max-width: 900px) {
+    .mc-hero-inner { padding: 52px 48px; }
+    .mc-hero-title { font-size: var(--fs-3xl); }
+    .mc-hero-badge { width: 88px; height: 88px; }
+    .mc-hero-badge-inner { font-size: 26px; }
+}
+
+@media (max-width: 768px) {
+    .mc-hero { margin-top: 32px; }
+    .mc-hero-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 44px 32px;
+        gap: 24px;
+    }
+    .mc-hero-badge { display: none; }
+    .mc-hero-title { font-size: var(--fs-2xl); }
+    .mc-hero-sub   { font-size: var(--fs-sm); }
+
+    .mc-wrap { padding: 40px 20px 30px; }
+
+    .mc-cs-card { padding: 36px 28px 36px; }
+    .mc-cs-title { font-size: var(--fs-xl); }
+
+    .mc-notify-fields { flex-direction: column; }
+    .mc-notify-input  { flex: none; width: 100%; }
+    .mc-notify-btn    { width: 100%; justify-content: center; }
+
+    .mc-editions-list { grid-template-columns: 1fr; }
+
+    .mc-reader-panel { margin: 0; border-radius: 0; }
+
+    .mc-value-inner { padding: 56px 20px 48px; gap: 36px; }
+    .mc-value-grid  { grid-template-columns: 1fr; gap: 28px; max-width: 360px; }
+    .mc-value-item  { align-items: flex-start; text-align: left; }
+    .mc-value-item-desc { max-width: none; }
+}
+
+@media (max-width: 600px) {
+    .mc-hero-inner { padding: 36px 22px; }
+    .mc-hero-title { font-size: var(--fs-xl); }
+
+    .mc-cs-card { padding: 30px 22px 30px; }
+    .mc-cs-title { font-size: var(--fs-lg); }
+}
+
+@media (max-width: 480px) {
+    .mc-value-inner { padding-left: 16px; padding-right: 16px; }
+    .mc-wrap        { padding-left: 16px; padding-right: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mc-hero-badge { animation: none; }
+}
+
+@media print {
+    .mc-hero-ribbon,
+    .mc-reader-overlay,
+    .mc-cs-dots,
+    .mc-value-strip::before { display: none !important; }
+}
+
+
+/* ── Members' Corner homepage tile accent bar ────────────────────────────
+   Appended last so it never touches any rule above.
+   The tile reuses .category-tile layout fully; only the accent colour
+   and the grid span differ from the existing five category tiles.     */
+.category-tile[data-cat="members-corner"]::before {
+    background: linear-gradient(90deg, var(--ribbon) 0%, var(--lily) 100%);
+}
+
+.category-tile-members {
+    grid-column: span 3;
+    min-height: 120px;
+    flex-direction: row;
+    align-items: center;
+    background: var(--cream);
+    border: 1px dashed var(--black);
+    box-shadow: none;
+}
+
+.category-tile-members:hover {
+    background: var(--knit);
+    border-style: solid;
+    box-shadow: var(--shadow-card);
+}
+
+.category-tile-members .category-tile-index {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ribbon-deep);
+}
+
+.category-tile-members .category-tile-name {
+    font-size: var(--fs-lg);
+    margin-top: 8px;
+}
+
+@media (max-width: 1024px) {
+    .category-tile-members { grid-column: span 2; }
+}
+
+@media (max-width: 768px) {
+    .category-tile-members {
+        grid-column: span 1;
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: 140px;
+    }
+}

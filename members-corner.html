@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <base href="/">
+    <title>Members' Corner — Milk Mondays</title>
+    <meta name="description" content="Members' Corner — exclusive long-form editions from Milk Mondays. Coming soon.">
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Playball&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/styles.css">
+
+    <!-- ── MEMBERS' CORNER: PAYWALL HOOK (future use) ─────────────────────
+         When you integrate a payment provider:
+         1. Add the provider's <script> tag here (e.g. Lemon Squeezy overlay)
+         2. Set MM_MEMBERS_ENABLED = true in the <script> below
+         3. The mc-locked sections will switch from display:none to visible
+         4. The mc-coming-soon section will hide automatically
+         All hooks are already wired — no HTML restructuring needed.
+    ──────────────────────────────────────────────────────────────────────── -->
+</head>
+<body>
+
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- ── TOP BAR ── -->
+    <div class="bar">A collection of everyday things. If it looks good, it belongs here.</div>
+
+    <!-- ── HEADER (identical to magazine.html) ── -->
+    <header class="site-header">
+        <div class="logo-wrap">
+            <a href="/" class="brand">
+                <span class="m">Milk</span><span class="n">Mondays</span>
+            </a>
+        </div>
+        <div class="nav-row">
+            <nav class="nav" aria-label="Site navigation">
+                <a href="/magazine" class="nav-btn">Magazine</a>
+                <a href="/members-corner" class="nav-btn active mc-nav-btn" aria-current="page">Members' Corner</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         ── MEMBERS' CORNER HERO ──
+         Sits above everything. Always visible — no gate, no paywall.
+         Introduces the section and sets the editorial tone.
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="mc-hero" aria-label="Members' Corner introduction">
+        <div class="mc-hero-inner">
+
+            <!-- Ribbon bookmark decoration (reuses site motif) -->
+            <span class="mc-hero-ribbon" aria-hidden="true"></span>
+
+            <div class="mc-hero-copy">
+                <p class="u-eyebrow mc-hero-eyebrow">
+                    <span class="mc-hero-eyebrow-line" aria-hidden="true"></span>
+                    Members' Corner
+                </p>
+                <h1 class="mc-hero-title">The long read.<br><em>Properly done.</em></h1>
+                <p class="mc-hero-sub">
+                    Everything on the main magazine is free. Members' Corner is where the longer, more considered work lives — full page-flip editions you can sit with. Curated, designed, and meant to be read slowly.
+                </p>
+            </div>
+
+            <div class="mc-hero-badge" aria-hidden="true">
+                <span class="mc-hero-badge-inner">MC</span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         ── COMING SOON STATE ──
+         Shown right now because no editions are published yet.
+
+         WHEN YOU'RE READY TO LAUNCH:
+         Remove the mc-coming-soon section entirely (or set display:none),
+         and uncomment / populate the mc-editions-grid section below.
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <main class="mc-wrap" id="mc-main">
+
+        <section class="mc-coming-soon" id="mc-coming-soon" aria-label="Coming soon">
+
+            <div class="mc-cs-card">
+
+                <!-- Decorative ribbon tab (site motif) -->
+                <span class="ribbon-tab" aria-hidden="true"></span>
+
+                <!-- Lock icon -->
+                <div class="mc-cs-icon" aria-hidden="true">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+
+                <p class="u-eyebrow mc-cs-eyebrow">Coming Soon</p>
+                <h2 class="mc-cs-title">The first edition<br>is being made.</h2>
+                <p class="mc-cs-sub">
+                    Members' Corner editions are long-form page-flip magazines — the kind you read properly, not scroll through. The first one is on its way. Drop your email and you'll hear about it the moment it drops.
+                </p>
+
+                <!-- ── NOTIFY FORM ───────────────────────────────────────
+                     Collects interest before payment is set up.
+                     Replace the action URL with your own form handler,
+                     or swap for a Brevo / Mailchimp embed when ready.
+                     The form structure intentionally mirrors gate-form.html.
+
+                     FUTURE HOOK: when payment is live, replace this form
+                     with a "Browse Editions" button pointing to #mc-editions-grid.
+                ─────────────────────────────────────────────────────────── -->
+                <form class="mc-notify-form" id="mc-notify-form" novalidate>
+                    <div class="mc-notify-fields">
+                        <input
+                            type="text"
+                            id="mc-notify-name"
+                            name="name"
+                            class="mc-notify-input"
+                            placeholder="Your name"
+                            autocomplete="given-name"
+                            required
+                            minlength="2"
+                            maxlength="60"
+                        >
+                        <input
+                            type="email"
+                            id="mc-notify-email"
+                            name="email"
+                            class="mc-notify-input"
+                            placeholder="Your email"
+                            autocomplete="email"
+                            required
+                        >
+                        <button type="submit" class="btn btn-primary mc-notify-btn" id="mc-notify-submit">
+                            Notify me
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                    <p class="mc-notify-msg" id="mc-notify-msg" role="alert" aria-live="polite"></p>
+                    <p class="mc-notify-note">No spam. Unsubscribe any time. Only sent when a new edition drops.</p>
+                </form>
+
+            </div>
+
+            <!-- Decorative dot grid (reuses site motif from category tiles) -->
+            <div class="mc-cs-dots" aria-hidden="true"></div>
+
+        </section>
+
+
+        <!-- ════════════════════════════════════════════════════════════════
+             ── EDITIONS GRID ──
+             Hidden now. Populate and show this when you have magazines.
+
+             HOW TO ADD AN EDITION:
+             Copy one .mc-edition-card block, fill in the fields, done.
+             The card is structured to support:
+               - Page-flip iframe embed (mc-edition-embed)
+               - OR external page-flip link (mc-edition-link)
+               - Cover image fallback while embed loads
+               - Free preview vs locked state
+               - Future payment CTA hook (mc-edition-buy-btn)
+
+             WHEN TO SHOW THIS:
+             1. Remove "hidden" from the mc-editions-grid section below
+             2. Remove or hide the mc-coming-soon section above
+             3. Add your edition card(s) following the template
+        ════════════════════════════════════════════════════════════════ -->
+        <section class="mc-editions-grid hidden" id="mc-editions-grid" aria-label="Members' Corner editions">
+
+            <div class="mc-editions-header">
+                <div class="divider">
+                    <span class="divider-label">All Editions</span>
+                    <div class="divider-line"></div>
+                </div>
+            </div>
+
+            <div class="mc-editions-list" id="mc-editions-list">
+
+                <!--
+                ════════════════════════════════════════════════════════
+                EDITION CARD TEMPLATE — copy this block for each magazine
+                ════════════════════════════════════════════════════════
+
+                <article class="mc-edition-card" data-edition-id="UNIQUE-ID-HERE">
+
+                    <span class="ribbon-tab" aria-hidden="true"></span>
+
+                    ── COVER IMAGE (always visible, free) ──
+                    <div class="mc-edition-cover-wrap">
+                        <img
+                            src="URL-TO-COVER-IMAGE"
+                            alt="EDITION TITLE cover"
+                            class="mc-edition-cover"
+                            loading="lazy"
+                        >
+                        ── Lock badge: shown on locked editions only ──
+                        <span class="mc-edition-lock" aria-label="Locked edition">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </span>
+                    </div>
+
+                    <div class="mc-edition-body">
+                        <p class="mc-edition-issue">Issue 01 · January 2027</p>
+                        <h3 class="mc-edition-title">EDITION TITLE HERE</h3>
+                        <p class="mc-edition-desc">A short 1–2 sentence description of what this edition covers. Keep it editorial and specific.</p>
+
+                        ── PREVIEW BADGE (free teaser) ──
+                        <p class="mc-edition-preview-note">Free preview: first 3 pages open to all.</p>
+
+                        ── ACTION ROW ──
+                        <div class="mc-edition-actions">
+
+                            ── OPTION A: embedded page-flip reader (Heyzine, FlipHTML5, etc.)
+                               Set data-embed-url to your embed URL.
+                               The reader opens in an overlay on the same page.
+                            ──
+                            <button
+                                class="btn btn-outline mc-edition-read-btn"
+                                data-embed-url="https://YOUR-FLIPBOOK-EMBED-URL"
+                                aria-label="Read preview of EDITION TITLE"
+                            >
+                                Read Preview
+                            </button>
+
+                            ── OPTION B: direct link to hosted page-flip
+                               Use this if your flip tool gives a standalone URL.
+                               Replace OPTION A button with this one instead.
+                            ──
+                            <a
+                                href="https://YOUR-FLIPBOOK-DIRECT-URL"
+                                target="_blank"
+                                rel="noopener"
+                                class="btn btn-outline mc-edition-read-btn"
+                            >
+                                Read Preview ↗
+                            </a>
+
+                            ── BUY / UNLOCK BUTTON ──
+                            ── PAYMENT HOOK: when your payment provider is ready,
+                               wire this button to open the checkout flow.
+                               The data-edition-id and data-price attributes
+                               are available to the payment handler via JS.
+                            ──
+                            <button
+                                class="btn btn-primary mc-edition-buy-btn"
+                                data-edition-id="UNIQUE-ID-HERE"
+                                data-price="3.99"
+                                data-currency="USD"
+                                aria-label="Unlock full edition of EDITION TITLE for $3.99"
+                            >
+                                Unlock — $3.99
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                            </button>
+
+                        </div>
+                    </div>
+
+                </article>
+
+                END TEMPLATE
+                ════════════════════════════════════════════════════════
+                -->
+
+            </div>
+
+        </section>
+
+
+        <!-- ════════════════════════════════════════════════════════════════
+             ── PAGE-FLIP READER OVERLAY ──
+             Opens when a reader clicks "Read Preview" on an edition card.
+             The iframe src is set dynamically by mc-app.js.
+             Works with any embed URL (Heyzine, FlipHTML5, Issuu, Flipsnack).
+
+             PAYMENT HOOK: to show full edition vs preview only, pass
+             the access token as a URL param to your embed URL in mc-app.js.
+        ════════════════════════════════════════════════════════════════ -->
+        <div class="mc-reader-overlay hidden" id="mc-reader-overlay" role="dialog" aria-modal="true" aria-label="Edition reader">
+            <div class="mc-reader-panel" id="mc-reader-panel">
+
+                <div class="mc-reader-topbar">
+                    <span class="mc-reader-title-label" id="mc-reader-title-label">Reading edition</span>
+                    <button class="mc-reader-close" id="mc-reader-close" aria-label="Close reader">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- The iframe that hosts the page-flip embed -->
+                <iframe
+                    id="mc-reader-iframe"
+                    class="mc-reader-iframe"
+                    src="about:blank"
+                    title="Magazine edition reader"
+                    allowfullscreen
+                    loading="lazy"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                ></iframe>
+
+                <!-- Shown while iframe loads -->
+                <div class="mc-reader-loading" id="mc-reader-loading" aria-live="polite">
+                    <div class="load-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <p>Opening edition…</p>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+
+    <!-- ── WHAT'S INSIDE STRIP ────────────────────────────────────────────
+         Always visible. Gives non-members a sense of what they're getting.
+         Edit the three items freely — no code structure change needed.
+    ────────────────────────────────────────────────────────────────────── -->
+    <section class="mc-value-strip" aria-label="What Members' Corner includes">
+        <div class="mc-value-inner">
+
+            <p class="u-eyebrow mc-value-eyebrow">What's inside</p>
+            <h2 class="mc-value-heading">More than a post. Less than a novel.</h2>
+
+            <div class="mc-value-grid">
+
+                <div class="mc-value-item">
+                    <div class="mc-value-icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="mc-value-item-title">Page-flip editions</h3>
+                    <p class="mc-value-item-desc">Designed like a real magazine. Flip through it properly — no infinite scroll, no pop-ups, no rush.</p>
+                </div>
+
+                <div class="mc-value-item">
+                    <div class="mc-value-icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <h3 class="mc-value-item-title">Long-form only</h3>
+                    <p class="mc-value-item-desc">Nothing here is a quick take. These are longer, more considered pieces that needed more room to breathe.</p>
+                </div>
+
+                <div class="mc-value-item">
+                    <div class="mc-value-icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
+                    <h3 class="mc-value-item-title">Curated, not algorithmic</h3>
+                    <p class="mc-value-item-desc">Every edition is put together by hand. What goes in is chosen because it earns its place, not because it performs well.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ── FOOTER (identical to magazine.html) ── -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div>
+                <h4 class="footer-heading">Milk Mondays</h4>
+                <p class="footer-blurb">A collection of everyday things. Built around skincare, makeup, and fashion. If it looks good, it belongs here. Everything is picked with some thought.</p>
+            </div>
+            <div>
+                <h4 class="footer-heading">Join The Club</h4>
+                <p class="footer-sub">Drop your thoughts or apply to collaborate below.</p>
+                <a href="https://forms.gle/xEZQGAnCKHLkUvFTA" target="_blank" rel="noopener" class="footer-cta">Open Digital Application Form ↗</a>
+            </div>
+            <div class="founder-box">
+                <h4 class="footer-heading">About The Founder</h4>
+                <p class="footer-text">
+                    Hi, I'm Preksha Thoriya a digital creator with a strong inclination toward aesthetics, media, and contemporary internet culture.
+                    My work often revolves around visual storytelling, trend curation, and building thoughtfully designed online spaces.
+                    <br><br>
+                    Currently overanalyzing fonts, layouts, and whether a shade of beige feels emotionally correct.
+                </p>
+                <div class="mascot-corner">
+                    <span class="mascot-avatar">
+                        <img src="/eyes.jpg" alt="Milk Mondays illustrated mascot" loading="lazy">
+                    </span>
+                </div>
+                <h4 class="footer-heading" style="margin-top: 20px;">Digital Indexes</h4>
+                <ul class="footer-social-list">
+                    <li><a href="https://www.instagram.com/milkmondayss/" target="_blank" rel="noopener">Instagram ↗</a></li>
+                    <li><a href="mailto:milkmondaysbiz@gmail.com">Email Editorial ↗</a></li>
+                    <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeJXuNUvNWlvlJMZzQz0Re5Kmu2Ew5G_2smDMUnfhYkmn0gTw/viewform?usp=publish-editor" target="_blank" rel="noopener">Submit a Story Time Entry ↗</a></li>
+                    <li class="footer-fallback-link"><a href="https://forms.gle/ag7ZiZ99ivKEaoqaA" target="_blank" rel="noopener">Form not loading? Use backup link ↗</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bar">&copy; 2026 Milk Mondays. All rights reserved. Curated for the modern archive.</div>
+    </footer>
+
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         mc-app.js handles:
+           - Notify form submission (currently wired to a no-op / mailto fallback)
+           - Edition card "Read Preview" → opens mc-reader-overlay with iframe
+           - Reader overlay close button
+           - Edition card "Unlock" button → PAYMENT HOOK (currently logs to console)
+
+         PAYMENT INTEGRATION POINT:
+         When you choose a payment provider, edit mc-app.js only.
+         No HTML changes needed. The hook is: function mcHandlePurchase(editionId, price, currency)
+    ════════════════════════════════════════════════════════════════════ -->
+    <script src="/mc-app.js"></script>
+
+</body>
+</html>
