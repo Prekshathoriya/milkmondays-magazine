@@ -26,6 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Playball&display=swap" rel="stylesheet">
     <!-- Root-absolute critical asset: must work from /magazine/<article-id>. -->
     <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/patreon-promo.css">
 
     <!-- ── MODAL FIX ───────────────────────────────────────────────────────
          The modal overlay must be position:fixed so it covers the entire
@@ -152,8 +153,6 @@
                 <button class="nav-btn" data-category="archives">Archives</button>
                 <button class="nav-btn" data-category="story-time">Story Time</button>
                 <button class="nav-btn" data-category="saved">Saved</button>
-                <!-- Members' Corner nav entry — links out, does not filter the magazine feed -->
-                <a href="/members-corner" class="nav-btn mc-nav-btn" aria-label="Members' Corner — exclusive editions">Members' Corner</a>
             </nav>
             <div class="site-search-wrap">
                 <input type="text" id="site-search-input" class="site-search-input" placeholder="Search articles…" autocomplete="off" aria-label="Search articles">
@@ -296,6 +295,7 @@
     <!-- ── APP SCRIPT ── -->
     <!-- Root-absolute application entry: direct shared links must load it. -->
     <script src="/app.js"></script>
+    <script src="/patreon-promo.js"></script>
 
     <!-- Back to top button -->
     <button id="back-to-top" class="back-to-top" aria-label="Back to top">

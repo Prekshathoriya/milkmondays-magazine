@@ -4111,3 +4111,34 @@ body::before {
         min-height: 140px;
     }
 }
+
+/* Keep the five remaining homepage categories visually centred after the
+   Members' Corner entry tile is retired. This is deliberately scoped to the
+   homepage grid; the preserved legacy Members' Corner styles above remain
+   untouched for an easy rollback. */
+@media (min-width: 1025px) {
+    .category-grid-members-retired {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .category-grid-members-retired > .category-tile:not(.category-tile-large) {
+        grid-column: span 2;
+    }
+
+    .category-grid-members-retired > .category-tile[data-cat="archives"] {
+        grid-column: 2 / span 2;
+    }
+
+    .category-grid-members-retired > .category-tile-large,
+    .category-grid-members-retired > .saved-tile {
+        grid-column: span 6;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .category-grid-members-retired > .category-tile[data-cat="story-time"] {
+        grid-column: 1 / -1;
+        width: calc((100% - 26px) / 2);
+        justify-self: center;
+    }
+}

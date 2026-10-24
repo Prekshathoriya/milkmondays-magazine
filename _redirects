@@ -1,1 +1,4 @@
+/members-corner /magazine 302
+/members-corner/ /magazine 302
+/members-corner.html /magazine 302
 /magazine/:id /magazine?article=:id 302
