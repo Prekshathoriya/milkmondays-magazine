@@ -1124,6 +1124,7 @@ svg { display: block; }
 }
 
 .read-btn {
+    display: inline-block;
     align-self: flex-start;
     margin-top: 8px;
     border: 1px solid var(--black);
@@ -1156,6 +1157,7 @@ svg { display: block; }
 }
 
 .card-img-wrap {
+    display: block;
     position: relative;
     aspect-ratio: 4/5;
     width: 100%;
@@ -1444,6 +1446,44 @@ svg { display: block; }
     border-top: 1px solid var(--black);
     background: var(--white);
     margin-top: 60px;
+}
+
+/* Privacy policy: a standalone legal page using the existing editorial
+   typography and palette, without changing shared site layouts. */
+.policy-wrap {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 56px 32px 20px;
+}
+.policy-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 52px 56px;
+    box-shadow: var(--shadow-card);
+}
+.policy-kicker {
+    color: var(--pink-deep);
+    font-size: var(--fs-xxs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.policy-card h1,
+.policy-card h2 {
+    font-family: var(--article-title);
+    font-style: normal;
+    font-weight: 500;
+}
+.policy-card h1 { font-size: var(--fs-xxl); line-height: 1.1; }
+.policy-card h2 { font-size: var(--fs-lg); margin: 34px 0 10px; }
+.policy-card p { color: var(--grey); font-size: var(--fs-sm); line-height: 1.8; }
+.policy-card .policy-effective { color: var(--black); font-size: var(--fs-xs); margin-top: 10px; }
+.policy-card a { text-decoration: underline; text-decoration-color: var(--pink-deep); }
+
+@media (max-width: 640px) {
+    .policy-wrap { padding: 36px 20px 0; }
+    .policy-card { padding: 34px 22px; }
 }
 
 .footer-grid {

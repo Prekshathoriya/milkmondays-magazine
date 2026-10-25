@@ -31,7 +31,7 @@
  * _redirects needed to change.
  */
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1200';
+const FALLBACK_IMAGE = '/android-chrome-512x512.png';
 const SITE_NAME = 'Milk Mondays';
 const DEFAULT_DESCRIPTION =
   'A collection of everyday things. Skincare, fashion, and pop culture — curated for the modern archive.';
@@ -54,18 +54,30 @@ async function handleArticleRequest(context) {
      there's a single source of truth and no separate content to keep
      in sync. ── */
   let post = null;
+  let postsLoaded = false;
   try {
     const postsRes = await env.ASSETS.fetch(new URL('/content/posts.json', url.origin));
     if (postsRes.ok) {
+      postsLoaded = true;
       const data = await postsRes.json();
       const posts = (data && data.posts) || [];
       post = posts.find(function (p) { return p && p.id === articleId; }) || null;
     }
   } catch (err) {
-    /* If posts.json can't be read for any reason, fall through and
-       serve the shell with generic site-wide meta tags below instead
-       of failing the whole page load. */
+    /* A transient content-source failure is handled below with a retryable
+       503 so crawlers do not permanently drop a valid article URL. */
     post = null;
+  }
+
+  if (!postsLoaded) {
+    return serviceUnavailableResponse(request.method);
+  }
+
+  /* Unknown article paths must be real 404s. Returning the generic magazine
+     shell with a 200 status makes search engines treat arbitrary URLs as
+     valid pages and can create large numbers of soft-404s. */
+  if (!post) {
+    return notFoundResponse(request.method);
   }
 
   /* ── Fetch the untouched magazine.html shell. Using the ASSETS
@@ -78,23 +90,47 @@ async function handleArticleRequest(context) {
   }
 
   const canonicalUrl = url.origin + '/magazine/' + encodeURIComponent(articleId);
-  const pageTitle = post ? (post.title + ' — ' + SITE_NAME) : SITE_NAME;
-  const pageDescription = post && post.subtitle ? post.subtitle : DEFAULT_DESCRIPTION;
-  const pageImage = post && post.coverImage ? post.coverImage : FALLBACK_IMAGE;
+  const pageTitle = post.title + ' — ' + SITE_NAME;
+  const pageDescription = post.subtitle || DEFAULT_DESCRIPTION;
+  const pageImage = absoluteUrl(post.coverImage || FALLBACK_IMAGE, url.origin);
+  const publishedTime = post.date || '';
+  const articleSection = post.category || '';
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    mainEntityOfPage: canonicalUrl,
+    headline: post.title,
+    description: pageDescription,
+    image: [pageImage],
+    datePublished: publishedTime,
+    articleSection: articleSection,
+    isAccessibleForFree: false,
+    hasPart: {
+      '@type': 'WebPageElement',
+      isAccessibleForFree: false,
+      cssSelector: '.reader-body',
+    },
+    author: {
+      '@type': 'Person',
+      name: 'Preksha Thoriya',
+      url: url.origin + '/',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: url.origin + '/',
+      logo: {
+        '@type': 'ImageObject',
+        url: url.origin + '/android-chrome-512x512.png',
+      },
+    },
+  };
 
   const extraHeadTags =
-    '<meta property="og:type" content="article">' +
-    '<meta property="og:site_name" content="' + escAttr(SITE_NAME) + '">' +
-    '<meta property="og:title" content="' + escAttr(pageTitle) + '">' +
-    '<meta property="og:description" content="' + escAttr(pageDescription) + '">' +
-    '<meta property="og:image" content="' + escAttr(pageImage) + '">' +
-    '<meta property="og:image:secure_url" content="' + escAttr(pageImage) + '">' +
-    '<meta property="og:url" content="' + escAttr(canonicalUrl) + '">' +
-    '<meta name="twitter:card" content="summary_large_image">' +
-    '<meta name="twitter:title" content="' + escAttr(pageTitle) + '">' +
-    '<meta name="twitter:description" content="' + escAttr(pageDescription) + '">' +
-    '<meta name="twitter:image" content="' + escAttr(pageImage) + '">' +
-    '<link rel="canonical" href="' + escAttr(canonicalUrl) + '">' +
+    (publishedTime ? '<meta property="article:published_time" content="' + escAttr(publishedTime) + '">' : '') +
+    (articleSection ? '<meta property="article:section" content="' + escAttr(articleSection) + '">' : '') +
+    '<script type="application/ld+json">' + safeJson(articleSchema) + '</script>' +
     '<script>window.__mmArticleId = ' + JSON.stringify(articleId) + ';</script>';
 
   const rewriter = new HTMLRewriter()
@@ -108,6 +144,18 @@ async function handleArticleRequest(context) {
         el.setAttribute('content', pageDescription);
       },
     })
+    .on('link[rel="canonical"]', setAttribute('href', canonicalUrl))
+    .on('meta[property="og:type"]', setAttribute('content', 'article'))
+    .on('meta[property="og:site_name"]', setAttribute('content', SITE_NAME))
+    .on('meta[property="og:title"]', setAttribute('content', pageTitle))
+    .on('meta[property="og:description"]', setAttribute('content', pageDescription))
+    .on('meta[property="og:image"]', setAttribute('content', pageImage))
+    .on('meta[property="og:image:secure_url"]', setAttribute('content', pageImage))
+    .on('meta[property="og:url"]', setAttribute('content', canonicalUrl))
+    .on('meta[name="twitter:card"]', setAttribute('content', 'summary_large_image'))
+    .on('meta[name="twitter:title"]', setAttribute('content', pageTitle))
+    .on('meta[name="twitter:description"]', setAttribute('content', pageDescription))
+    .on('meta[name="twitter:image"]', setAttribute('content', pageImage))
     .on('head', {
       element: function (el) {
         el.append(extraHeadTags, { html: true });
@@ -116,11 +164,62 @@ async function handleArticleRequest(context) {
 
   const rewritten = rewriter.transform(shellRes);
 
-  return new Response(rewritten.body, {
+  return new Response(request.method === 'HEAD' ? null : rewritten.body, {
     status: 200,
     headers: {
       'Content-Type': 'text/html; charset=UTF-8',
       'Cache-Control': 'public, max-age=300',
+    },
+  });
+}
+
+function setAttribute(name, value) {
+  return {
+    element: function (el) {
+      el.setAttribute(name, value);
+    },
+  };
+}
+
+function absoluteUrl(value, origin) {
+  try {
+    return new URL(value, origin).href;
+  } catch (error) {
+    return origin + FALLBACK_IMAGE;
+  }
+}
+
+function safeJson(value) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
+function notFoundResponse(method) {
+  const body = '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+    '<meta name="robots" content="noindex, nofollow"><title>Article not found — ' + SITE_NAME + '</title>' +
+    '</head><body><h1>Article not found</h1><p><a href="/magazine">Return to the magazine</a></p></body></html>';
+
+  return new Response(method === 'HEAD' ? null : body, {
+    status: 404,
+    headers: {
+      'Content-Type': 'text/html; charset=UTF-8',
+      'Cache-Control': 'public, max-age=60',
+      'X-Robots-Tag': 'noindex, nofollow',
+    },
+  });
+}
+
+function serviceUnavailableResponse(method) {
+  const body = '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+    '<meta name="robots" content="noindex, nofollow"><title>Temporarily unavailable — ' + SITE_NAME + '</title>' +
+    '</head><body><h1>Temporarily unavailable</h1><p>Please try again shortly.</p></body></html>';
+
+  return new Response(method === 'HEAD' ? null : body, {
+    status: 503,
+    headers: {
+      'Content-Type': 'text/html; charset=UTF-8',
+      'Cache-Control': 'no-store',
+      'Retry-After': '300',
+      'X-Robots-Tag': 'noindex, nofollow',
     },
   });
 }

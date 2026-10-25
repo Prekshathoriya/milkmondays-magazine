@@ -9,7 +9,7 @@
 
     /* â”€â”€ CONFIG â”€â”€ */
     var LIKES_API = 'https://muddy-shadow-6c19.milkmondaysbiz.workers.dev';
-    var POSTS_URL = 'https://milkmondays-magazine.pages.dev/content/posts.json';
+    var POSTS_URL = '/content/posts.json';
     var COMMENTS_API = '/api/comments';
     var COMMENTS_REFRESH_MS = 10000;
     var COMMENTS_MAX_LENGTH = 1200;
@@ -76,6 +76,10 @@
         return String(s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
         });
+    }
+
+    function articleUrl(id) {
+        return '/magazine/' + encodeURIComponent(id);
     }
 
     function gatePassed() {
@@ -266,15 +270,16 @@
             }
 
             results.innerHTML = matches.map(function (p) {
-                return '<button class="site-search-result" data-id="' + esc(p.id) + '">' +
+                return '<a class="site-search-result" href="' + esc(articleUrl(p.id)) + '" data-id="' + esc(p.id) + '">' +
                     '<span class="site-search-result-cat">' + esc(p.category) + '</span>' +
                     '<span class="site-search-result-title">' + esc(p.title) + '</span>' +
-                '</button>';
+                '</a>';
             }).join('');
             openResults();
 
             results.querySelectorAll('.site-search-result').forEach(function (btn) {
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', function (event) {
+                    event.preventDefault();
                     var p = allPosts.find(function (post) { return post.id === btn.dataset.id; });
                     if (p) {
                         checkGateAndOpen(p);
@@ -470,11 +475,12 @@
                 '</div>' +
                 '<h2 class="hero-headline">' + esc(post.title) + '</h2>' +
                 '<p class="hero-hook">' + esc(post.subtitle || '') + '</p>' +
-                '<button class="read-btn" data-id="' + esc(post.id) + '">Read Article</button>' +
+                '<a class="read-btn" href="' + esc(articleUrl(post.id)) + '" data-id="' + esc(post.id) + '">Read Article</a>' +
             '</div>';
 
         var readBtn = heroSection.querySelector('.read-btn');
-        if (readBtn) readBtn.addEventListener('click', function () {
+        if (readBtn) readBtn.addEventListener('click', function (event) {
+            event.preventDefault();
             var id = readBtn.dataset.id;
             var p = allPosts.find(function(post) { return post.id === id; });
             if (p) checkGateAndOpen(p);
@@ -503,9 +509,9 @@
             card.className = 'article-card';
             card.style.animationDelay = (i * 0.06) + 's';
             card.innerHTML =
-                '<div class="card-img-wrap">' +
+                '<a class="card-img-wrap" href="' + esc(articleUrl(post.id)) + '" aria-label="Read ' + esc(post.title) + '">' +
                     '<img src="' + esc(img) + '" alt="' + esc(post.title) + '" loading="lazy">' +
-                '</div>' +
+                '</a>' +
                 '<div class="card-meta">' +
                     '<span class="tag">' + esc(post.category) + '</span>' +
                     '<button class="save-btn ' + savedClass + '" data-id="' + esc(post.id) + '" aria-label="Save for later">' +
@@ -514,11 +520,12 @@
                         '</svg>' +
                     '</button>' +
                 '</div>' +
-                '<h3 class="card-h">' + esc(post.title) + '</h3>' +
+                '<h3 class="card-h"><a href="' + esc(articleUrl(post.id)) + '">' + esc(post.title) + '</a></h3>' +
                 '<p class="card-sub">' + esc(post.subtitle || '') + '</p>';
 
             card.addEventListener('click', function (e) {
                 if (e.target.closest('.save-btn')) return;
+                e.preventDefault();
                 checkGateAndOpen(post);
             });
 
@@ -782,14 +789,14 @@
             var nextImg = nextPost.coverImage || '';
             html += '<div class="recirc-nextup">' +
                 '<span class="recirc-nextup-label">Keep reading</span>' +
-                '<button class="recirc-next-btn" data-id="' + esc(nextPost.id) + '">' +
+                '<a class="recirc-next-btn" href="' + esc(articleUrl(nextPost.id)) + '" data-id="' + esc(nextPost.id) + '">' +
                     (nextImg ? '<img class="recirc-next-btn-img" src="' + esc(nextImg) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
                     '<span class="recirc-next-btn-text">' +
                         '<span class="recirc-next-btn-eyebrow">Read Next</span>' +
                         '<span class="recirc-next-btn-title">' + esc(nextPost.title) + '</span>' +
                     '</span>' +
                     '<svg class="recirc-next-btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>' +
-                '</button>' +
+                '</a>' +
             '</div>';
         }
 
@@ -809,11 +816,11 @@
                 '<div class="recirc-related-grid">' +
                 related.map(function (p) {
                     var img = p.coverImage || '';
-                    return '<button class="recirc-related-card" data-id="' + esc(p.id) + '">' +
+                    return '<a class="recirc-related-card" href="' + esc(articleUrl(p.id)) + '" data-id="' + esc(p.id) + '">' +
                         (img ? '<img src="' + esc(img) + '" alt="' + esc(p.title) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
                         '<span class="recirc-related-tag">' + esc(p.category) + '</span>' +
                         '<span class="recirc-related-title">' + esc(p.title) + '</span>' +
-                    '</button>';
+                    '</a>';
                 }).join('') +
                 '</div>' +
             '</div>';
@@ -853,11 +860,13 @@
             var topicPill = e.target.closest('.recirc-topic-pill');
 
             if (nextBtn) {
+                e.preventDefault();
                 var p = allPosts.find(function (post) { return post.id === nextBtn.dataset.id; });
                 if (p) checkGateAndOpen(p, true);
                 return;
             }
             if (relatedCard) {
+                e.preventDefault();
                 var p2 = allPosts.find(function (post) { return post.id === relatedCard.dataset.id; });
                 if (p2) checkGateAndOpen(p2, true);
                 return;
@@ -1490,11 +1499,11 @@
             '<div class="recirc-related-grid recirc-topic-grid">' +
             matches.map(function (p) {
                 var img = p.coverImage || '';
-                return '<button class="recirc-related-card" data-id="' + esc(p.id) + '">' +
+                return '<a class="recirc-related-card" href="' + esc(articleUrl(p.id)) + '" data-id="' + esc(p.id) + '">' +
                     (img ? '<img src="' + esc(img) + '" alt="' + esc(p.title) + '" loading="lazy" onerror="this.style.display=\'none\'">' : '') +
                     '<span class="recirc-related-tag">' + esc(p.category) + '</span>' +
                     '<span class="recirc-related-title">' + esc(p.title) + '</span>' +
-                '</button>';
+                '</a>';
             }).join('') +
             '</div>';
 
@@ -1506,6 +1515,7 @@
         modalBody.addEventListener('click', function handler(e) {
             var card = e.target.closest('.recirc-related-card');
             if (card) {
+                e.preventDefault();
                 var p = allPosts.find(function (post) { return post.id === card.dataset.id; });
                 if (p) {
                     modalBody.removeEventListener('click', handler);
