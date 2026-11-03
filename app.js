@@ -379,7 +379,16 @@
                 }
                 if (targetId) {
                     var match = allPosts.find(function (p) { return p.id === targetId; });
-                    if (match) checkGateAndOpen(match);
+                    if (match) {
+                        /* Direct article responses are server-rendered by the
+                           Cloudflare Pages Function. Open those immediately so
+                           search/organic landings stay on the canonical article
+                           instead of being redirected to the email gate. Normal
+                           in-site card clicks still use checkGateAndOpen(), so
+                           the existing reader gate continues to work there. */
+                        if (window.__mmServerArticle === true) launchReader(match);
+                        else checkGateAndOpen(match);
+                    }
                 }
             })
             .catch(function (err) {

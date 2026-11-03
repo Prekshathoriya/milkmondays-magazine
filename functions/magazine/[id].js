@@ -16,12 +16,11 @@
  * WHAT THIS FUNCTION DOES
  * It intercepts requests to an individual article URL (/magazine/<id>),
  * looks that post up in content/posts.json, fetches the *exact same*
- * magazine.html shell that the site already serves, and rewrites just the
- * <head> meta tags (title, description, Open Graph, Twitter Card,
- * canonical link) to match that specific article before responding. Real
- * visitors get back the identical HTML/CSS/JS — same gate, same likes,
- * same modal, same everything — just with correct meta tags already
- * baked into the initial HTML response, which is what crawlers require.
+ * magazine.html shell that the site already serves, rewrites the <head>
+ * metadata for that article, and places the article body in the initial
+ * HTML response. This gives crawlers and no-JavaScript readers meaningful
+ * content immediately; app.js then hydrates the same reader experience for
+ * real visitors (likes, comments, sharing, related articles, and so on).
  *
  * NOTE ON ROUTING
  * Cloudflare Pages Functions take precedence over the _redirects file for
@@ -94,7 +93,10 @@ async function handleArticleRequest(context) {
   const pageDescription = post.subtitle || DEFAULT_DESCRIPTION;
   const pageImage = absoluteUrl(post.coverImage || FALLBACK_IMAGE, url.origin);
   const publishedTime = post.date || '';
+  const modifiedTime = post.dateModified || post.updated || publishedTime;
   const articleSection = post.category || '';
+  const articleTags = Array.isArray(post.tags) ? post.tags.filter(Boolean) : [];
+  const serverArticleHtml = buildServerArticleHtml(post);
 
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -104,13 +106,10 @@ async function handleArticleRequest(context) {
     description: pageDescription,
     image: [pageImage],
     datePublished: publishedTime,
+    dateModified: modifiedTime,
     articleSection: articleSection,
-    isAccessibleForFree: false,
-    hasPart: {
-      '@type': 'WebPageElement',
-      isAccessibleForFree: false,
-      cssSelector: '.reader-body',
-    },
+    keywords: articleTags.join(', '),
+    isAccessibleForFree: true,
     author: {
       '@type': 'Person',
       name: 'Preksha Thoriya',
@@ -129,9 +128,17 @@ async function handleArticleRequest(context) {
 
   const extraHeadTags =
     (publishedTime ? '<meta property="article:published_time" content="' + escAttr(publishedTime) + '">' : '') +
+    (modifiedTime ? '<meta property="article:modified_time" content="' + escAttr(modifiedTime) + '">' : '') +
     (articleSection ? '<meta property="article:section" content="' + escAttr(articleSection) + '">' : '') +
+    articleTags.map(function (tag) {
+      return '<meta property="article:tag" content="' + escAttr(tag) + '">';
+    }).join('') +
+    '<meta name="author" content="Preksha Thoriya">' +
+    '<meta property="og:image:alt" content="' + escAttr(post.title) + '">' +
+    '<meta name="twitter:image:alt" content="' + escAttr(post.title) + '">' +
     '<script type="application/ld+json">' + safeJson(articleSchema) + '</script>' +
-    '<script>window.__mmArticleId = ' + JSON.stringify(articleId) + ';</script>';
+    '<script>window.__mmArticleId = ' + JSON.stringify(articleId) +
+      '; window.__mmServerArticle = true;</script>';
 
   const rewriter = new HTMLRewriter()
     .on('title', {
@@ -156,6 +163,19 @@ async function handleArticleRequest(context) {
     .on('meta[name="twitter:title"]', setAttribute('content', pageTitle))
     .on('meta[name="twitter:description"]', setAttribute('content', pageDescription))
     .on('meta[name="twitter:image"]', setAttribute('content', pageImage))
+    .on('#article-modal', {
+      element: function (el) {
+        const currentClass = el.getAttribute('class') || '';
+        if (!/(^|\s)open(\s|$)/.test(currentClass)) {
+          el.setAttribute('class', (currentClass + ' open').trim());
+        }
+      },
+    })
+    .on('#modal-body', {
+      element: function (el) {
+        el.setInnerContent(serverArticleHtml, { html: true });
+      },
+    })
     .on('head', {
       element: function (el) {
         el.append(extraHeadTags, { html: true });
@@ -168,8 +188,106 @@ async function handleArticleRequest(context) {
     status: 200,
     headers: {
       'Content-Type': 'text/html; charset=UTF-8',
-      'Cache-Control': 'public, max-age=300',
+      'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
+      'Link': '<' + canonicalUrl + '>; rel="canonical"',
+      'X-Robots-Tag': 'index, follow',
+      'X-Content-Type-Options': 'nosniff',
     },
+  });
+}
+
+function buildServerArticleHtml(post) {
+  const rawBody = addLegacyImages(post);
+  const bodyHtml = buildBodyHtml(rawBody);
+  const image = post.coverImage || '';
+  const date = formatDisplayDate(post.date);
+
+  return '<header class="reader-header">' +
+    '<span class="tag pink">' + escapeHtml(post.category || '') + '</span>' +
+    '<h1 class="reader-title">' + escapeHtml(post.title || '') + '</h1>' +
+    (date ? '<time class="reader-date" datetime="' + escAttr(post.date) + '">' + escapeHtml(date) + '</time>' : '') +
+    '</header>' +
+    (image ? '<img class="reader-hero" src="' + escAttr(image) + '" alt="' + escAttr(post.title || '') + '" loading="eager">' : '') +
+    '<div class="reader-body" id="reader-body-content">' + bodyHtml + '</div>';
+}
+
+function addLegacyImages(post) {
+  let rawBody = String(post.body || '');
+  if (!(post.image2 || post.image3) || rawBody.indexOf('[IMG|') !== -1) {
+    return rawBody;
+  }
+
+  const images = [post.image2, post.image3].filter(Boolean);
+  const sides = ['right', 'left'];
+  const afterParagraph = [2, 5];
+  const lines = rawBody.split('\n');
+  const output = [];
+  let paragraphCount = 0;
+  let imageIndex = 0;
+
+  lines.forEach(function (line) {
+    output.push(line);
+    const text = line.trim();
+    if (text && text.charAt(0) !== '>') {
+      paragraphCount += 1;
+      if (imageIndex < images.length && paragraphCount === afterParagraph[imageIndex]) {
+        output.push('[IMG|' + images[imageIndex] + '|' + sides[imageIndex] + '|medium]');
+        imageIndex += 1;
+      }
+    }
+  });
+
+  while (imageIndex < images.length) {
+    output.push('[IMG|' + images[imageIndex] + '|' + sides[imageIndex] + '|medium]');
+    imageIndex += 1;
+  }
+
+  return output.join('\n');
+}
+
+function buildBodyHtml(raw) {
+  if (!raw) return '<p>Content not available.</p>';
+
+  let hasFloat = false;
+  const imagePattern = /^\[IMG\|([^|\[\]]+)\|(left|right)\|(small|medium|large)\]$/i;
+  const parts = String(raw).split('\n').map(function (line) {
+    const text = line.trim();
+    if (!text) return '';
+
+    const image = text.match(imagePattern);
+    if (image) {
+      const src = image[1].trim();
+      if (!src) return '';
+      hasFloat = true;
+      return '<figure class="body-float-img body-float-' + image[2].toLowerCase() +
+        ' body-float-' + image[3].toLowerCase() + '">' +
+        '<img src="' + escAttr(src) + '" alt="" loading="lazy">' +
+        '</figure>';
+    }
+
+    if (text.charAt(0) === '>') {
+      return '<blockquote>' + preserveEditorialInlineHtml(text.slice(1).trim()) + '</blockquote>';
+    }
+    return '<p>' + preserveEditorialInlineHtml(text) + '</p>';
+  });
+
+  const html = parts.join('');
+  return hasFloat ? html + '<div class="body-float-clear"></div>' : html;
+}
+
+function preserveEditorialInlineHtml(value) {
+  return String(value).replace(/&(?![a-zA-Z]+;|#\d+;)/g, '&amp;');
+}
+
+function formatDisplayDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
 }
 
@@ -230,4 +348,9 @@ function escAttr(str) {
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function escapeHtml(value) {
+  return escAttr(value)
+    .replace(/'/g, '&#39;');
 }
