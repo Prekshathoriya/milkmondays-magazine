@@ -610,30 +610,6 @@
             .otp-container { gap: 6px; }
             .card { padding: 28px 20px; }
         }
-        .auth-view { display: none; }
-        .auth-links { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 18px; }
-        .auth-link {
-            border: 0; background: transparent; color: var(--ink); cursor: pointer;
-            font: inherit; font-size: 12px; text-decoration: underline; text-underline-offset: 3px;
-        }
-        .auth-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; color: var(--grey); font-size: 11px; }
-        .auth-divider::before, .auth-divider::after { content: ''; height: 1px; background: var(--border); flex: 1; }
-        .error-msg.success { color: #356b48; }
-        .account-summary { border: 1px solid var(--border); padding: 14px 16px; margin-bottom: 18px; background: rgba(255,255,255,.55); }
-        .account-summary strong { display: block; font-family: var(--serif); font-size: 20px; margin-bottom: 3px; }
-        .account-summary span { color: var(--grey); font-size: 12px; word-break: break-word; }
-        .account-stack { display: grid; gap: 10px; }
-        .account-stack details { border: 1px solid var(--border); background: rgba(255,255,255,.45); padding: 12px 14px; }
-        .account-stack summary { cursor: pointer; font-size: 13px; font-weight: 600; }
-        .account-stack form { padding-top: 14px; }
-        .account-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-        .secondary-btn {
-            width: 100%; border: 1px solid var(--ink); background: transparent; color: var(--ink);
-            padding: 12px 14px; cursor: pointer; font: inherit; font-size: 12px;
-        }
-        .danger-btn { border-color: #9b3c3c; color: #7d2424; }
-        .field-hint { color: var(--grey); font-size: 11px; margin-top: 6px; line-height: 1.45; }
-        @media (max-width: 520px) { .account-actions { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -667,139 +643,6 @@
 
         <!-- ── RIGHT: FORM CARD ── -->
         <div class="card" role="region" aria-label="Gate form">
-
-            <div class="step-indicator" id="auth-progress" aria-label="Progress" style="display:none;">
-                <div class="step-item active" id="auth-step-ind-1">
-                    <span class="step-num" aria-hidden="true">1</span><span class="step-label">Email</span>
-                </div>
-                <div class="step-connector" aria-hidden="true"></div>
-                <div class="step-item" id="auth-step-ind-2">
-                    <span class="step-num" aria-hidden="true">2</span><span class="step-label">Verify</span>
-                </div>
-                <div class="step-connector" aria-hidden="true"></div>
-                <div class="step-item" id="auth-step-ind-3">
-                    <span class="step-num" aria-hidden="true">3</span><span class="step-label">Account</span>
-                </div>
-            </div>
-
-            <section class="auth-view" id="login-view" aria-label="Log in">
-                <span class="card-eyebrow">Welcome back</span>
-                <h1 class="card-title">Open the archive</h1>
-                <p class="card-intro">Log in and we'll take you straight back to what you were reading.</p>
-                <form id="login-form" novalidate>
-                    <div class="field"><label for="login-identifier">Username</label><input id="login-identifier" autocomplete="username" maxlength="24" required></div>
-                    <div class="field"><label for="login-password">Password</label><input type="password" id="login-password" autocomplete="current-password" maxlength="128" required></div>
-                    <p class="error-msg" id="login-message" role="alert" aria-live="polite"></p>
-                    <button type="submit" class="submit-btn" id="login-submit">Log in →</button>
-                </form>
-                <div class="auth-links"><button type="button" class="auth-link" id="show-recovery">Forgot password?</button></div>
-                <div class="auth-divider">New to Milk Mondays?</div>
-                <button type="button" class="secondary-btn" id="show-signup">Create an account</button>
-            </section>
-
-            <section class="auth-view" id="signup-view" aria-label="Create account">
-                <span class="card-eyebrow">One quick step</span>
-                <h1 class="card-title">Before you read…</h1>
-                <p class="card-intro">Enter your email and we'll send a quick code to confirm it's yours.</p>
-                <form id="signup-email-form" novalidate>
-                    <div class="field"><label for="signup-email">Email address</label><input type="email" id="signup-email" autocomplete="email" maxlength="254" inputmode="email" required></div>
-                    <p class="error-msg" id="signup-message" role="alert" aria-live="polite"></p>
-                    <button type="submit" class="submit-btn" id="signup-submit">Send verification code →</button>
-                </form>
-                <div class="auth-links"><button type="button" class="auth-link" id="show-login">Already have an account? Log in</button></div>
-            </section>
-
-            <section class="auth-view" id="otp-view" aria-label="Verify email">
-                <span class="card-eyebrow">Check your inbox</span>
-                <h2 class="card-title">Enter your code</h2>
-                <p class="verify-subtext">We sent a 6-digit code to <strong id="otp-destination"></strong>.</p>
-                <form id="otp-form" novalidate>
-                    <div class="otp-container" id="auth-otp-container" role="group" aria-label="6-digit verification code">
-                        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
-                        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 2">
-                        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 3">
-                        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 4">
-                        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 5">
-                        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 6">
-                    </div>
-                    <p class="error-msg" id="otp-message" role="alert" aria-live="polite"></p>
-                    <button type="submit" class="submit-btn" id="otp-submit" disabled>Verify →</button>
-                </form>
-                <div class="verify-actions">
-                    <button type="button" class="resend-link" id="resend-otp">Resend code</button>
-                    <button type="button" class="back-link" id="back-from-otp">← Go back</button>
-                </div>
-            </section>
-
-            <section class="auth-view" id="credentials-view" aria-label="Choose login details">
-                <span class="card-eyebrow">Almost there</span>
-                <h2 class="card-title">Create your login</h2>
-                <form id="credentials-form" novalidate>
-                    <div class="field"><label for="new-username">Username</label><input id="new-username" autocomplete="username" minlength="3" maxlength="24" required><p class="field-hint">3–24 letters, numbers, dots, or underscores.</p></div>
-                    <div class="field"><label for="new-password">Password</label><input type="password" id="new-password" autocomplete="new-password" minlength="10" maxlength="128" required><p class="field-hint">Use at least 10 characters.</p></div>
-                    <div class="field"><label for="confirm-password">Confirm password</label><input type="password" id="confirm-password" autocomplete="new-password" minlength="10" maxlength="128" required></div>
-                    <p class="error-msg" id="credentials-message" role="alert" aria-live="polite"></p>
-                    <button type="submit" class="submit-btn" id="credentials-submit">Create account →</button>
-                </form>
-            </section>
-
-            <section class="auth-view" id="recovery-view" aria-label="Recover account">
-                <span class="card-eyebrow">Account help</span>
-                <h2 class="card-title">Reset your password</h2>
-                <p class="card-intro">Enter your username or email.</p>
-                <form id="recovery-form" novalidate>
-                    <div class="field"><label for="recovery-identifier">Username or email</label><input id="recovery-identifier" autocomplete="username" maxlength="254" required></div>
-                    <p class="error-msg" id="recovery-message" role="alert" aria-live="polite"></p>
-                    <button type="submit" class="submit-btn" id="recovery-submit">Send recovery code →</button>
-                </form>
-                <div class="auth-links"><button type="button" class="auth-link" id="show-login-2">Back to login</button></div>
-            </section>
-
-            <section class="auth-view" id="reset-view" aria-label="Choose a new password">
-                <span class="card-eyebrow">Account help</span>
-                <h2 class="card-title">Choose a new password</h2>
-                <form id="reset-form" novalidate>
-                    <div class="field"><label for="reset-password">New password</label><input type="password" id="reset-password" autocomplete="new-password" minlength="10" maxlength="128" required></div>
-                    <div class="field"><label for="reset-confirm">Confirm password</label><input type="password" id="reset-confirm" autocomplete="new-password" minlength="10" maxlength="128" required></div>
-                    <p class="error-msg" id="reset-message" role="alert" aria-live="polite"></p>
-                    <button type="submit" class="submit-btn" id="reset-submit">Save new password →</button>
-                </form>
-            </section>
-
-            <section class="auth-view" id="account-view" aria-label="Account settings">
-                <span class="card-eyebrow">Your account</span>
-                <h1 class="card-title">Account settings</h1>
-                <div class="account-summary"><strong id="account-name"></strong><span id="account-email"></span></div>
-                <div class="account-stack">
-                    <details><summary>Change username</summary><form id="username-form">
-                        <div class="field"><label for="account-username">New username</label><input id="account-username" minlength="3" maxlength="24" required></div>
-                        <div class="field"><label for="username-password">Password</label><input type="password" id="username-password" autocomplete="current-password" required></div>
-                        <p class="error-msg" id="username-message" role="status"></p><button class="secondary-btn" id="username-submit">Change username</button>
-                    </form></details>
-                    <details><summary>Change password</summary><form id="password-form">
-                        <div class="field"><label for="account-current-password">Current password</label><input type="password" id="account-current-password" autocomplete="current-password" required></div>
-                        <div class="field"><label for="account-new-password">New password</label><input type="password" id="account-new-password" autocomplete="new-password" minlength="10" maxlength="128" required></div>
-                        <div class="field"><label for="account-confirm-password">Confirm password</label><input type="password" id="account-confirm-password" autocomplete="new-password" minlength="10" maxlength="128" required></div>
-                        <p class="error-msg" id="password-message" role="status"></p><button class="secondary-btn" id="password-submit">Change password</button>
-                    </form></details>
-                    <details><summary>Change email</summary><form id="email-form">
-                        <div class="field"><label for="account-new-email">New email</label><input type="email" id="account-new-email" autocomplete="email" required></div>
-                        <div class="field"><label for="email-password">Password</label><input type="password" id="email-password" autocomplete="current-password" required></div>
-                        <p class="error-msg" id="email-message" role="status"></p><button class="secondary-btn" id="email-submit">Change email</button>
-                    </form></details>
-                </div>
-                <p class="error-msg" id="account-message" role="alert"></p>
-                <div class="account-actions"><button type="button" class="secondary-btn" id="logout-btn">Log out</button><button type="button" class="secondary-btn danger-btn" id="logout-all-btn">Log out everywhere</button></div>
-            </section>
-
-            <section class="auth-view" id="email-otp-view" aria-label="Verify new email">
-                <span class="card-eyebrow">Check your inbox</span><h2 class="card-title">Verify new email</h2>
-                <p class="card-intro">Enter the code sent to <strong id="email-otp-destination"></strong>.</p>
-                <form id="email-otp-form"><div class="field"><label for="email-otp-code">6-digit code</label><input id="email-otp-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></div>
-                    <p class="error-msg" id="email-otp-message" role="alert"></p><button class="submit-btn" id="email-otp-submit">Verify email →</button></form>
-            </section>
-
-            <div hidden aria-hidden="true">
 
             <!-- Step indicator -->
             <div class="step-indicator" aria-label="Progress">
@@ -963,8 +806,6 @@
                 </div>
             </div>
 
-            </div><!-- legacy gate retained for safe rollback -->
-
         </div><!-- /.card -->
     </div><!-- /.gate-wrap -->
 
@@ -975,7 +816,7 @@
     <!-- ================================================================
          BREVO (VIA SERVER-SIDE PROXY) + GATE LOGIC
     ================================================================ -->
-    <script type="text/plain" id="legacy-gate-script">
+    <script>
     (function () {
         'use strict';
 
@@ -1697,8 +1538,6 @@
 
     })();
     </script>
-    <script src="/auth-client.js"></script>
-    <script src="/gate-auth.js"></script>
 
 </body>
 </html>
