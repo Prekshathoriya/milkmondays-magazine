@@ -1,3 +1,5 @@
+import { getSessionUser } from '../_lib/auth.js';
+
 /**
  * Milk Mondays â€” persistent live comments API
  *
@@ -53,11 +55,11 @@ export async function onRequestPost(context) {
         var action = String(body.action || '');
 
         if (action === 'get_profile') {
-            return await getProfile(context.env, body);
+            return await getProfile(context.request, context.env, body);
         }
 
         if (action === 'set_profile') {
-            return await setProfile(context.env, body);
+            return await setProfile(context.request, context.env, body);
         }
 
         if (action === 'post_comment') {
@@ -65,7 +67,7 @@ export async function onRequestPost(context) {
         }
 
         if (action === 'report_comment') {
-            return await reportComment(context.env, body);
+            return await reportComment(context.request, context.env, body);
         }
 
         if (action === 'hide_comment') {
@@ -92,8 +94,8 @@ export async function onRequestDelete(context) {
     }
 }
 
-async function getProfile(env, body) {
-    var userId = await userIdFromEmail(body.email, env.COMMENTS_IDENTITY_SECRET);
+async function getProfile(request, env, body) {
+    var userId = await userIdForRequest(request, env, body.email);
     var row = await env.COMMENTS_DB.prepare(
         'SELECT display_name, created_at FROM comment_profiles WHERE user_id = ?1 LIMIT 1'
     ).bind(userId).first();
@@ -107,8 +109,8 @@ async function getProfile(env, body) {
     });
 }
 
-async function setProfile(env, body) {
-    var userId = await userIdFromEmail(body.email, env.COMMENTS_IDENTITY_SECRET);
+async function setProfile(request, env, body) {
+    var userId = await userIdForRequest(request, env, body.email);
     var displayName = cleanDisplayName(body.displayName);
     var now = Date.now();
 
@@ -138,7 +140,7 @@ async function setProfile(env, body) {
 async function postComment(request, env, body) {
     var articleId = cleanArticleId(body.articleId);
     var commentBody = cleanCommentBody(body.body);
-    var userId = await userIdFromEmail(body.email, env.COMMENTS_IDENTITY_SECRET);
+    var userId = await userIdForRequest(request, env, body.email);
 
     var profile = await env.COMMENTS_DB.prepare(
         'SELECT display_name FROM comment_profiles WHERE user_id = ?1 LIMIT 1'
@@ -177,10 +179,10 @@ async function postComment(request, env, body) {
     }, 201);
 }
 
-async function reportComment(env, body) {
+async function reportComment(request, env, body) {
     var articleId = cleanArticleId(body.articleId);
     var commentId = cleanId(body.commentId, 'comment');
-    var userId = await userIdFromEmail(body.email, env.COMMENTS_IDENTITY_SECRET);
+    var userId = await userIdForRequest(request, env, body.email);
     var reason = cleanReason(body.reason);
 
     var comment = await env.COMMENTS_DB.prepare(
@@ -261,6 +263,12 @@ async function userIdFromEmail(value, secret) {
     return Array.from(new Uint8Array(signature)).map(function (byte) {
         return byte.toString(16).padStart(2, '0');
     }).join('');
+}
+
+async function userIdForRequest(request, env, fallbackEmail) {
+    var account = null;
+    try { account = await getSessionUser(request, env, false); } catch (error) {}
+    return userIdFromEmail(account ? account.email : fallbackEmail, env.COMMENTS_IDENTITY_SECRET);
 }
 
 function cleanArticleId(value) {
