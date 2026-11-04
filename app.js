@@ -23,6 +23,7 @@
     var commentTurnstileSiteKey = '';
     var commentTurnstileToken = '';
     var commentTurnstileWidgetId = null;
+    var readerLoadVersion = 0;
 
     /* â”€â”€ DOM REFS (set after DOMContentLoaded) â”€â”€ */
     var stateView, magContent, heroSection, postsGrid;
@@ -214,10 +215,17 @@
 
         function positionResults() {
             var rect = input.getBoundingClientRect();
+            var edge = 12;
+            var maxWidth = Math.max(0, window.innerWidth - (edge * 2));
+            var width = Math.min(rect.width, maxWidth);
+            var left = Math.min(Math.max(rect.left, edge), window.innerWidth - width - edge);
+            var topLimit = Math.max(edge, window.innerHeight - 120 - edge);
+            var top = Math.min(Math.max(rect.bottom + 8, edge), topLimit);
             results.style.position = 'fixed';
-            results.style.top      = (rect.bottom + 8) + 'px';
-            results.style.left     = rect.left + 'px';
-            results.style.width    = rect.width + 'px';
+            results.style.top      = top + 'px';
+            results.style.left     = left + 'px';
+            results.style.width    = width + 'px';
+            results.style.maxHeight = Math.max(0, window.innerHeight - top - edge) + 'px';
         }
 
         function openResults() {
@@ -325,6 +333,7 @@
 
     function closeModal() {
         if (!modalBg) return;
+        readerLoadVersion++;
         stopComments();
         modalBg.classList.remove('open');
         document.body.style.overflow = '';
@@ -516,7 +525,7 @@
 
             var card = document.createElement('div');
             card.className = 'article-card';
-            card.style.animationDelay = (i * 0.06) + 's';
+            card.style.animationDelay = (Math.min(i, 10) * 0.04) + 's';
             card.innerHTML =
                 '<a class="card-img-wrap" href="' + esc(articleUrl(post.id)) + '" aria-label="Read ' + esc(post.title) + '">' +
                     '<img src="' + esc(img) + '" alt="' + esc(post.title) + '" loading="lazy">' +
@@ -569,6 +578,26 @@
     function launchReader(post, scrollToTop) {
         if (!modalBody) return;
         stopComments();
+
+        /* Show the reader shell immediately, then build the article after the
+           browser has painted it. This keeps a click responsive even for the
+           longest entries and on slower phones. The version guard prevents a
+           queued render from reopening content after the reader was closed. */
+        var loadVersion = ++readerLoadVersion;
+        modalBody.textContent = '';
+        try { window.history.pushState({}, '', '/magazine/' + encodeURIComponent(post.id)); } catch (e) {}
+        openModal();
+        window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(function () {
+                if (loadVersion !== readerLoadVersion ||
+                    !modalBg || !modalBg.classList.contains('open')) return;
+                renderReader(post, scrollToTop);
+            });
+        });
+    }
+
+    function renderReader(post, scrollToTop) {
+        if (!modalBody) return;
 
         var fullDate = fmtDate(post.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
         var img      = post.coverImage || '';
@@ -646,11 +675,6 @@
             '</div>' +
             buildCommentsShellHtml(post) +
             buildRecircHtml(post);
-
-        /* update URL */
-        try { window.history.pushState({}, '', '/magazine/' + encodeURIComponent(post.id)); } catch (e) {}
-
-        openModal();
 
         /* fetch live likes then wire up buttons */
         var serverLikes = 0;
