@@ -84,9 +84,7 @@
     }
 
     function gatePassed() {
-        if (window.MilkMondaysAuth && window.MilkMondaysAuth.getUser()) return true;
-        try { return localStorage.getItem('mm_gate_passed') === 'true'; }
-        catch (error) { return false; }
+        try { return localStorage.getItem('mm_gate_passed') === 'true'; } catch (e) { return false; }
     }
 
     function baselineLikes(id) {
@@ -568,18 +566,10 @@
     function checkGateAndOpen(post, scrollToTop) {
         if (gatePassed()) {
             launchReader(post, scrollToTop);
-            return;
+        } else {
+            var returnUrl = window.location.origin + '/magazine/' + encodeURIComponent(post.id);
+            window.location.href = 'gate-form.html?redirect=' + encodeURIComponent(returnUrl);
         }
-
-        var returnUrl = window.location.origin + '/magazine/' + encodeURIComponent(post.id);
-        if (window.MilkMondaysAuth) {
-            window.MilkMondaysAuth.getSession(false).then(function (user) {
-                if (user) launchReader(post, scrollToTop);
-                else window.location.href = '/gate-form.html?redirect=' + encodeURIComponent(returnUrl);
-            });
-            return;
-        }
-        window.location.href = '/gate-form.html?redirect=' + encodeURIComponent(returnUrl);
     }
 
     /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1047,14 +1037,9 @@
     function getReaderIdentity() {
         var name = '';
         var email = '';
-        var accountUser = window.MilkMondaysAuth && window.MilkMondaysAuth.getUser();
-        if (accountUser) {
-            name = String(accountUser.username || '').trim();
-            email = String(accountUser.email || '').trim().toLowerCase();
-        }
         try {
-            if (!name) name = String(localStorage.getItem('mm_user_name') || '').trim();
-            if (!email) email = String(localStorage.getItem('mm_user_email') || '').trim().toLowerCase();
+            name = String(localStorage.getItem('mm_user_name') || '').trim();
+            email = String(localStorage.getItem('mm_user_email') || '').trim().toLowerCase();
         } catch (error) {}
 
         if (!email && gatePassed()) {
